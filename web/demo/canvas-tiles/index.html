@@ -1,0 +1,452 @@
+<html>
+	<head>
+		<title>Canvas Tiles Demo</title>
+		<meta name="viewport" content="user-scalable=no"/>
+		<script type="text/javascript" src="lib/timer.js"></script>
+		<script type="text/javascript" src="lib/modestmaps.js"></script>
+		<script type="text/javascript" src="lib/polymaps.js"></script>
+		<script type="text/javascript" src="lib/jquery-1.5.min.js"></script>
+		<!--[if lt IE 9]>
+		<script type="text/javascript" src="lib/excanvas.js"></script>
+		<script type="text/javascript" src="lib/bc.js"></script>
+		<![endif]-->
+		<style type="text/css">
+
+			html, body {
+				width: 100%;
+				height: 100%;
+				padding: 0;
+				margin: 0;
+			}
+
+			#container {
+				width: 100%;
+				height: 100%;
+				background: #eee;
+				position: relative;
+			}
+
+			body.debug #container {
+				width: 500px;
+				height: 300px;
+			}
+
+			canvas {
+				z-index: 100;
+				pointer-events: none;
+			}
+
+			#map, #container canvas {
+				position: absolute;
+				top: 0; left: 0;
+				width: 100%;
+				height: 100%;
+			}
+
+			#gutter {
+				margin: 1em 0 0 0;
+				display: none;
+			}
+
+			#gutter canvas {
+				float: left;
+				border: 1px solid #ccc;
+				margin: 0 1em 1em 0;
+			}
+
+			body.debug #gutter {
+				display: block;
+			}
+
+			#controls {
+				position: absolute;
+				z-index: 1001;
+				top: 1em;
+				left: 1em;
+				margin: 0;
+			}
+
+			#controls p { margin: 0; }
+
+			#controls button {
+				display: inline-block;
+				margin-left: 1em;
+			}
+
+		</style>
+
+		<script type="text/javascript" defer="defer">
+		$(function() {
+			var mm = com.modestmaps,
+					po = org.polymaps;
+
+			var strut;
+			// use flashcanvas if available
+			if (typeof FlashCanvas != "undefined") {
+				// alert("using FlashCanvas");
+				strut = FlashCanvas.initElement;
+			// otherwise, look for excanvas
+			} else if (typeof G_vmlCanvasManager != "undefined") {
+				// alert("using excanvas");
+				strut = G_vmlCanvasManager.initElement;
+			// let IE users know it's broken if neither exists
+			} else if (navigator.userAgent.match(/MSIE/)) {
+				// alert("no strut!");
+			}
+
+			function makeCanvas() {
+				var c = document.createElement("canvas");
+				// initialize the canvas interface 
+				if (typeof strut == "function") strut(c);
+				return c;
+			}
+
+			var container = document.getElementById("container"),
+					main = container.appendChild(makeCanvas()),
+					gutter = document.getElementById("gutter");
+
+			// our map has an Acetate base
+			var provider = new mm.TemplatedMapProvider("http://acetate.geoiq.com/tiles/acetate-base/{Z}/{X}/{Y}.png"),
+					tileSize = {x: provider.tileWidth, y: provider.tileHeight},
+					map = new mm.Map(container, provider);
+
+			// tiles{} is our hash table of ModestMap tile objects keyed on tile ID
+			var tiles = {},
+					// stash JSON requests too, just in case
+					requests = {};
+
+			map.setCenterZoom({lat: 38, lon: -96}, 4);
+
+			// URL generator function for tiled JSON features
+			var dataURL = "http://polymaps.appspot.com/state/{Z}/{X}/{Y}.json"
+			var url = po.url("slimjim.php?url=" + dataURL);
+
+			map.addCallback("tileadd", function(manager, tile) {
+				if (typeof requests[tile.id] != "undefined") {
+					// console.log("(request already pending for " + tile.id + ")");
+					return;
+				}
+				var u = url(tile.coord);
+				
+				// var loading = $("<p/>").appendTo($(gutter)).text("loading: " + u);
+				$.ajax(u, {
+					dataType: "jsonp",
+					success: function(data) {
+						delete requests[tile.id];
+						// loading.remove();
+						if (data && data.features && data.features.length) {
+							// console.log("...fetched! " + u + " (" + data.features.length + " feature(s))");
+							tile.features = data.features;
+							tile.key = [tile.coord.zoom, tile.coord.row, tile.coord.column].join("/");
+							addTile(tile);
+						}
+					},
+					error: function(req, status, error) {
+						// TODO: error handling?
+					}
+				});
+
+				// console.log("requesting: " + u + " ..."); 
+				function abort() {
+					// TODO: is there a way to cancel jQuery ajax requests?
+				}
+				requests[tile.id] = {abort: abort};
+			});
+
+			// when a tile request gets canceled, cancel the corresponding JSON
+			// request and remove its tile canvas
+			map.addCallback("tilecancel", function(manager, tile) {
+				cancel(tile.id);
+				removeTile(tile.id);
+			});
+
+			// when an image gets removed, cancel the JSON request and remove the
+			// corresponding tile
+			map.addCallback("tileremove", function(manager, tile) {
+				cancel(tile.id);
+				removeTile(tile.id);
+			});
+
+			// redraw the rendered tiles to the main canvas whenever the map moves
+			map.addCallback("drawn", function() {
+				move();
+			});
+
+			// cancel a pending tile request
+			function cancel(id) {
+				if (requests[id]) {
+					if (typeof requests[id].abort == "function") {
+						requests[id].abort(true);
+					}
+					delete requests[id];
+				}
+			}
+
+			// add a tile to the map, creating its <canvas> if need be
+			function addTile(tile) {
+				// FIXME: should there ever be collisions here?
+				if (!tiles[tile.id]) {
+					tiles[tile.id] = tile;
+				}
+				updateTile(tile);
+				move();
+			}
+
+			// remove a tile from the map, and delete its <canvas>
+			function removeTile(id) {
+				var tile = tiles[id];
+				if (tile) {
+					// console.log("removeTile(): " + tile.key);
+					if (tile.canvas) {
+						gutter.removeChild(tile.canvas);
+					}
+					delete tiles[id];
+					move();
+				}
+			}
+
+			// returns a random color for each unique GeoJSON feature's "name" property
+			var stash = {};
+			function color(f) {
+				// return "rgba(0,0,0,.1)";
+				var key = f.properties.name;
+				if (!stash[key]) {
+					var rgb = [0,0,0].map(function() { return Math.round(Math.random() * 255); });
+					return stash[key] = "rgba(" + rgb.join(",") + ",.5)";
+				}
+				return stash[key];
+			}
+
+			// defer a function call by a number of milliseconds
+			function defer(timeout, f) {
+				return function() {
+					clearTimeout(f.timeout);
+					// TODO: pass along arguments array?
+					return f.timeout = setTimeout(f, timeout);
+				};
+			}
+
+			var updateAll = defer(10, function() {
+				var t = timer().start();
+				// clear the stash
+				stash = {};
+				// update all of the individual tile canvases
+				// TODO: this could be done async
+				for (var key in tiles) {
+					updateTile(tiles[key]);
+				}
+				move();
+				var took = t.end();
+				$("#timer").text("took " + took + "ms");
+			});
+
+			function clear(canvas) {
+				canvas.width = canvas.width;
+				// for excanvas
+				canvas.setAttribute("width", canvas.width);
+			}
+
+			function move() {
+				// console.log("move(): clearing main canvas");
+				var ctx = main.getContext("2d"),
+						zoom = map.getZoom();
+				clear(main);
+
+				for (var key in tiles) {
+					var tile = tiles[key];
+					// only draw tiles at this zoom level? XXX
+					if (tile.coord.zoom != zoom) {
+						continue;
+					}
+					if (tile.canvas) {
+						var pos = map.coordinatePoint(tile.coord);
+						pos.x = Math.round(pos.x);
+						pos.y = Math.round(pos.y);
+						// paste the tile at its top-left corner
+						try {
+							// XXX: beware that tile.width and tile.height may be scaled by a zoom factor
+							// console.log("drawing tile " + tile.key + " @ " + pos.x + "," + pos.y + " (" + tile.width + "x" + tile.height + ")");
+							ctx.drawImage(tile.canvas, pos.x, pos.y, tile.width, tile.height);
+						} catch (e) {
+							// console.log("X: " + e);
+						}
+					}
+				}
+			};
+
+			function updateTile(tile) {
+				// create a canvas if it hasn't been created yet
+				if (!tile.canvas) {
+					tile.canvas = makeCanvas();
+					tile.canvas.id = tile.key;
+					tile.canvas.setAttribute("width", tileSize.x);
+					tile.canvas.setAttribute("height", tileSize.y);
+				}
+				if (!tile.canvas.parentNode) {
+					gutter.appendChild(tile.canvas);
+				}
+				clear(tile.canvas);
+				// get drawing context and save state
+				var ctx = tile.canvas.getContext("2d");
+				ctx.save();
+				// get the tile coordinate's screen position
+				var corner = map.coordinatePoint(tile.coord),
+						offset = corner;
+				// this is our projection function which offsets by the top-left corner
+				// of the tile's screen position
+				var proj = function(c) {
+					var p = map.locationPoint({lon: c[0], lat: c[1]});
+					return {x: p.x - offset.x, y: p.y - offset.y};
+				};
+				for (var i = 0; i < tile.features.length; i++) {
+					drawFeature(tile.features[i], ctx, proj);
+				}
+				// restore drawing state
+				ctx.restore();
+			}
+
+			var draw = {};
+
+			draw.Polygon = function(rings, ctx, proj) {
+				ctx.beginPath();
+				for (var i = 0; i < rings.length; i++) {
+					var points = rings[i].map(proj);
+					if (points.length > 0) {
+						var n = points.length,
+								p = points[0];
+						ctx.moveTo(p.x, p.y);
+						for (var j = 1; j < n; j++) {
+							p = points[j];
+							ctx.lineTo(p.x, p.y);
+						}
+					}
+				}
+				ctx.fill();
+				// ctx.stroke();
+				ctx.closePath();
+			};
+
+			draw.MultiPolygon = function(polygons, ctx, proj) {
+				var n = polygons.length;
+				for (var i = 0; i < n; i++) draw.Polygon(polygons[i], ctx, proj);
+			};
+
+			function drawFeature(feature, ctx, proj) {
+				ctx.fillStyle = color(feature);
+				// ctx.strokeStyle = "black";
+				// ctx.lineWidth = .3;
+
+				var geom = feature.geometry;
+				if (typeof draw[geom.type] == "function") {
+					draw[geom.type].call(feature, geom.coordinates, ctx, proj);
+				}
+			}
+
+			function resize(e) {
+				main.width = container.offsetWidth;
+				main.height = container.offsetHeight;
+				move();
+			}
+
+			// resize the canvas
+			$(window).bind("resize", resize);
+
+			// bind the zoom and update controls
+			$("a.zoom-in").bind("click", function() { map.zoomIn(); return false; });
+			$("a.zoom-out").bind("click", function() { map.zoomOut(); return false; });
+			$("button.update").bind("click", function(e) { updateAll(); return false; });
+
+			// get an {x,y} object from a mouse event or Touch instance
+			function touchPoint(o) {
+				return {x: o.clientX, y: o.clientY};
+			}
+
+			// there's some funky stuff going on here with zooming, but panning works
+			var panning = false,
+					pos = null,
+					zooming = false,
+					scale = 1,
+					center = null;
+			$(container)
+				.bind("touchstart", function(e) {
+					if (!panning && !zooming) {
+						// console.log("+ pan");
+						panning = true;
+						pos = touchPoint(e.originalEvent.touches[0]);
+						e.preventDefault();
+					}
+				})
+				.bind("touchmove", function(e) {
+						if (zooming && e.originalEvent.touches.length >= 2) {
+						var touches = e.originalEvent.touches;
+						var first = touchPoint(touches[0]),
+								last = touchPoint(touches[1]);
+						center = {x: first.x + (last.x - first.x) / 2, y: first.y + (last.y - first.y) / 2};
+						// console.log("center: (" + center.x + "," + center.y + ")");
+					} else if (panning) {
+						var cur = touchPoint(e.originalEvent.touches[0]),
+								delta = {x: cur.x - pos.x, y: cur.y - pos.y};
+						map.panBy(delta.x, delta.y);
+						pos.x = cur.x;
+						pos.y = cur.y;
+						e.preventDefault();
+					}
+				})
+				.bind("touchend", function(e) {
+					if (panning) {
+						// console.log("- pan");
+						panning = false;
+						pos = null;
+					}
+				});
+
+			/*
+			// gesture handling is kind of broken right now...
+			$(container)
+				.bind("gesturestart", function(e) {
+					if (!zooming) {
+						// no panning
+						panning = false;
+						zooming = true;
+						scale = 1;
+						startZoom = map.getZoom();
+						center = null;
+					}
+				})
+				.bind("gesturechange", function(e) {
+					if (zooming && center != null) {
+						var curScale = e.originalEvent.scale;
+						if (curScale != scale) {
+							// console.log(scale + " -> " + curScale + ", about (" + center.x + "," + center.y + ")");
+							map.zoomByAbout(curScale - scale, center);
+							scale = curScale;
+						}
+					}
+				})
+				.bind("gestureend", function(e) {
+					if (zooming) {
+						zooming = false;
+						scale = 1;
+						center = null;
+					}
+				});
+				*/
+
+			resize();
+
+		});
+		</script>
+	</head>
+	<body>
+		<div id="container">
+			<div id="map"></div>
+		</div>
+		<form id="controls">
+			<p>
+				<a class="zoom-in" href="#">zoom in</a> / <a class="zoom-out" href="#">zoom out</a>
+				<button class="update">update</button> <span id="timer"></span>
+			</p>
+		</form>
+		<div id="gutter"></div>
+	</body>
+</html>
