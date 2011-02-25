@@ -8,10 +8,9 @@ html, body {
 
 #wrapper{
 	position: relative;
-	width:80%;
-	min-width:800px;
+	width:980px;
 	margin:0 auto;
-	padding:20px;
+	padding:10px 20px 20px;
 	background-color:rgba(0,0,0,.6);
 	color:#fff;
 	font-family: Helvetica, Arial, sans-serif;
@@ -20,7 +19,7 @@ html, body {
 
 #map {
 	position: relative;
-	width: 45%;
+	width: 470px;
 	height: 800px;
 	background: #000;
 	float:left;
@@ -28,17 +27,31 @@ html, body {
 
 #controls{
 	position: relative;
-	width: 50%;
+	width: 490px;
 	min-height: 800px;
 	background: none;
 	float:right;
 }
 
 #status{
+	position:absolute;
+	top:0;
+	left:0;
 	font-size:10px;
 	text-transform: uppercase;
 	font-weight:normal;
-	color:rgb(217,95,14);
+	background:rgba(0,0,0,1);
+	color:#166;
+	margin:0;
+	padding:4px 0;
+	width:100%;
+	z-index:7000;
+}
+#proj_head{
+	padding:0;
+	margin: 0 0 5px;
+	font-size: 3em;
+	text-transform:uppercase;
 }
 
 .clear{
@@ -59,9 +72,10 @@ form {
 	margin: 0;
 }
 #controls h3{
-	margin:0 0 20px;
-	font-size: 2em;
-	font-weight: normal;
+	margin:0 0 15px;
+	padding:0 0 0 5px;
+	font-size: 1.5em;
+	font-weight: 100;
 	color:#555;
 }
 
@@ -69,7 +83,6 @@ form {
 	margin: 0 auto 20px;
 	width: 94%;
 	padding: 3%;
-	background: black;
 }
 
 
@@ -84,7 +97,7 @@ form {
 }
 
 
-#control_header h5{
+#price_label{
 	margin:0;
 	padding:0;
 	font-size: 16px;
@@ -93,18 +106,69 @@ form {
 	float:left;
 }
 
-#control_header p{
+#price_range{
 	margin:0;
 	font-size:12px;
 	color:#fff;
 	float:right;
 }
-#control_header p span{
+#price_range span{
 	padding-right:20px;
-	color:rgb(217,95,14);
+	color:#166;
+}
+#timescale{
+	margin:10px 0 0;
+	width: 460px;
 }
 
 
+
+#geocoder{
+	position:absolute;
+	bottom:0;
+	margin:0;
+	width: 100%;
+}
+
+#geocoder h3{
+	padding-right:20px;
+	margin:0;
+	font-weight:500;
+	padding-top:3px;
+	float:right;
+	color:#fff;
+}
+#geocoder p{
+	float:right;
+}
+
+#address{
+	background-color:#fff;
+	border:1px solid #ccc;
+	margin:0;
+	padding:6px;
+	color:#666;
+	width: 250px;
+	font-size: 14px;
+}
+
+#geocodeBtn{
+	font-size: 14px;
+	background: white;
+	cursor: pointer;
+	padding: 6px;
+	border: 1px solid #666;
+	outline-width: 0;
+	margin: 0;
+	font-weight: bold;
+}
+
+#geo_status{
+	font-size:10px;
+	color:#166;
+}
+
+/* ui slider */
 #controls .ui-slider-horizontal {
 height: .4em;
 }
@@ -118,6 +182,10 @@ width: .7em;
 height: .7em;
 }
 
+/* 	removed the background images from these
+	so I could do some quick color changes
+	TODO: will need to check compatiablity
+*/
 #controls .ui-widget-content {
 border: 1px solid #333;
 background: #666;
@@ -132,4 +200,46 @@ border: 1px solid #999;
 background: #999;
 font-weight: normal;
 color: #555;
+}
+
+
+/* map compass */
+.compass .back {
+  fill: #eee;
+  fill-opacity: .8;
+}
+
+.compass .fore {
+  stroke: #999;
+  stroke-width: 1.5px;
+}
+
+.compass rect.back.fore {
+  fill: #999;
+  fill-opacity: .3;
+  stroke: #eee;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+
+.compass .direction {
+  fill: none;
+}
+
+.compass .chevron {
+  fill: none;
+  stroke: #999;
+  stroke-width: 5px;
+}
+
+.compass .zoom .chevron {
+  stroke-width: 4px;
+}
+
+.compass .active .chevron, .compass .chevron.active {
+  stroke: #fff;
+}
+
+.compass.active .active .direction {
+  fill: #999;
 }

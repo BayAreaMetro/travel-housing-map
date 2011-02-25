@@ -5,7 +5,7 @@ $(function() {
 	
 	map.center({lon: -122.2757, lat: 37.8355})
 	map.zoom(9);
-	map.zoomRange([8, 12]);
+	map.zoomRange([9, 12]);
 
 	var taz = po.geoJson()
 		.url(null)
@@ -22,6 +22,8 @@ $(function() {
 	map.add(taz);
 	map.add(labels);
 	map.add(po.interact());
+	map.add(po.compass()
+	    .pan("none"));
 	map.add(po.hash());
 
 	$(labels.container())
@@ -29,14 +31,14 @@ $(function() {
 		
 	var scale = pv.Scale.linear()
 		.domain(0, 250000, 1000000)
-		.range("rgb(233,163,201)", "white", "rgb(161,215,106)");
+		.range("rgb(222,235,247)", "rgb(158,202,225)", "rgb(8,69,148)");
 
 	var thresholdMin = 0;
 	var thresholdMax = 1000000;
 
 	function update() {
 		var _out = "LOW:<span> $"+commize(thresholdMin)+"</span>HI:<span> $"+commize(thresholdMax)+"</span>";
-		$("#control_header p").html(_out);
+		$("#price_range").html(_out);
 		// console.log("threshold: " + commize(threshold));
 		//var t = timer().start();
 		taz.reshow();
@@ -59,7 +61,9 @@ $(function() {
 		_options.min = min;
 		_options.max = max;
 		_options.values = [ thresholdMin , thresholdMax ];
+		_options.disabled = false;
 		$( "#slider" ).slider( "option", _options );
+		$( "#slider" ).css("opacity",1);
 	}
 
 	var style = po.stylist();
@@ -93,12 +97,14 @@ $(function() {
 	/* SLIDER INIT */
 	$( "#slider" ).slider({
 		range: true,
+		disabled: true,
 		change: function( event, ui ) {
 					thresholdMin = ui.values[0];
 					thresholdMax = ui.values[1];
 					update();
 						//updateOutput(output,ui.value);
-				}
+				},
+		create: function(event, ui) { $( "#slider" ).css("opacity",.3); }
 	});
 	
 
@@ -129,24 +135,88 @@ $(function() {
 				.key(priceGroup)
 				.rollup(function(group) { return group.length; });
 			// [{key: 100000, value: 10}, ...]
-			console.log(priceGroups);
-			/*
-			priceGroups.forEach(function(group) {
-				var entry = $("<div/>").text(group.key + ": " + group.value);
-				$("#controls").append(entry);
-			});
-			*/
+
+			createBars("timescale",priceGroups);
 
 			thresholdMin = median;
 			thresholdMax = max;
 			
 			scale.domain(min, median, max);
 			
-			$("#status").attr("class", "loaded").text("Loaded " + features.length + " TAZs; median: " + formatPrice(median));
+			$("#status").attr("class", "loaded").text("Loaded " + features.length + " TAZs");
+			var _ti = setTimeout(function(){
+				$("#status").fadeOut();
+			},1000);
 
 			taz.features(features);
 			setSlider(min,max);
+			initGeocoding();
 		}
 	});
+	
+	/**/
+	
+	function createBars(el,data){
+
+		var _data = [];
+		for(i in data){
+			_data.push(data[i]);
+		}
+
+		if(!_data.length)return;
+		
+		var min = pv.min(_data),
+			max = pv.max(_data);
+					
+		var _w = $("#"+el).parent().width();
+		var _h = 20;
+		var _s = Number(_w) / _data.length;
+	
+		var viz = new pv.Panel()
+			.width(_w)
+			.height(_h)
+			.canvas(el)
+		
+		//pv.Bar
+		var bars = viz.add(pv.Area)
+			.data(_data)
+			.bottom(0)
+			.width(_s)
+			.height( function(d) {return (d / max) * _h;} )
+			.left( function() { return this.index * _s;} )
+			.fillStyle("#166");			
+
+		viz.render();
+		 
+	}
+	
+	/* GEOCODING STUFF 
+	 *
+	 * TODO: validate returned address is within bounds
+	*/
+	function initGeocoding(){
+		var geocoder = new google.maps.Geocoder();
+		var $this = this;
+		
+		$("#geocodeBtn").click(function(e){
+			e.preventDefault();
+			var _address = $("#address").val();
+			if(_address && _address.length)findMe(_address);
+		});
+	
+		function findMe(address){
+			geocoder.geocode( { 'address': address}, function(results, status) {
+				if (status == google.maps.GeocoderStatus.OK) {
+					map.center({lon: results[0].geometry.location.lng(), lat: results[0].geometry.location.lat()})
+					map.zoom(12);
+					//var t=setTimeout("alertMsg()",3000);
+					$("#address").val("enter your address");
+				} else {
+					$("#address").val("error");
+				}
+			});
+		}
+		
+	}
 	
 });
