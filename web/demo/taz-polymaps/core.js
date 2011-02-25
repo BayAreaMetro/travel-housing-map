@@ -187,7 +187,10 @@ $(function() {
 
 			var bars = graph.add(pv.Bar)
 				.data(priceGroups)
-				.fillStyle("#ff0")
+				.fillStyle(function(g) {
+						console.log(g);
+					return scale(g.min + (g.max - g.min) / 2);
+				})
 				.left(x)
 				.bottom(15)
 				.width(x.range().band - 1)
