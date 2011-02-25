@@ -17,33 +17,52 @@
 	</head>
 	<body>
 		<div id="wrapper">
-			<h1 id="proj_head">mtcscs</h1>
-			<div id="map">
-				<p id="status"></p>
-			</div>
+			<div id="map"></div>
 			<div id="controls">
-				<div id="control_group">
-					<div id="control_header">
-						<h5 id="price_label">Median Housing Price</h5><p id="price_range"></p>
-						<div class="clear"></div>
+				<h1>MTC: TAZ Median Housing Prices</h1>
+				<p id="status"></p>
+				<div id="price" class="control_group">
+					<h3>Median Housing Price</h3>
+					<p class="value">
+						<strong class="count">0</strong> TAZs
+						between <strong class="min">$0</strong> and
+						<strong class="max">$1,000,000</strong>
+					</p>
+					<div class="slider"></div>
+					<div class="graph">
+						<div class="canvas"></div>
+						<!-- <p class="caption">value distribution</p> -->
 					</div>
-					<div id="slider"></div>
-					<div id="timescale"></div>
 				</div>
-				
-				<div id="geocoder" class="findTaz">
-						
-						<p style="opacity:.6;">
-							<input id="address" value="enter your address"/>
-							<input id="geocodeBtn" type="submit" value="FIND"/>
-						</p>
-						<h3>Where am I?</h3>
-						<div class="clear"></div>
-				</div>
-				
+
+				<form id="geocoder" method="GET">
+					<h3>Where am I?</h3>
+					<p>
+						<input type="text" class="address" value="enter your address"/>
+						<input type="submit" class="submit" value="FIND"/>
+					</p>
+					<p class="status"></p>
+				</form>
+
+				<!--
+				<table class="groups">
+					<colgroup>
+						<col class="key"/>
+						<col class="value"/>
+					</colgroup>
+					<thead>
+						<tr>
+							<th>Price</th>
+							<th>Count</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+				-->
+
 			</div>
-			<div class="clear"></div>
 		</div>
-		
+	
 	</body>
 </html>

@@ -10,7 +10,7 @@ $(function() {
 	var taz = po.geoJson()
 		.url(null)
 		.tile(false)
-		.zoom(map.zoom() + 2);
+		.zoom(10); // map zoom +/- 2
 
 	var base = po.image()
 		.url("http://a.acetate.geoiq.com/tiles/acetate-base/{Z}/{X}/{Y}.png");
@@ -31,20 +31,26 @@ $(function() {
 		
 	var scale = pv.Scale.linear()
 		.domain(0, 250000, 1000000)
-		.range("rgb(222,235,247)", "rgb(158,202,225)", "rgb(8,69,148)");
+		.range("rgb(222,235,247)", "rgb(158,202,225)", "rgb(255,69,148)");
 
 	var thresholdMin = 0;
 	var thresholdMax = 1000000;
 
+	function inBounds(feature) {
+		var p = price(feature);
+		return p >= thresholdMin && p <= thresholdMax;
+	}
+
 	function update() {
-		var _out = "LOW:<span> $"+commize(thresholdMin)+"</span>HI:<span> $"+commize(thresholdMax)+"</span>";
-		$("#price_range").html(_out);
-		// console.log("threshold: " + commize(threshold));
-		//var t = timer().start();
+		$("#price .min").text(formatPrice(thresholdMin));
+		$("#price .max").text(formatPrice(thresholdMax));
+		var count = taz.features().filter(inBounds).length;
+		$("#price .count").text(commize(count));
+
+		// var t = timer().start();
 		taz.reshow();
-		
-		//var took = t.end();
-		//$("#timer").text("(took " + took + "ms)");
+		// var took = t.end();
+		// $("#timer").text("(took " + took + "ms)");
 		return false;
 	}
 
@@ -56,19 +62,20 @@ $(function() {
 		return "$" + commize(p);
 	}
 	
-	function setSlider(min,max){
+	function setSlider(min, max, step){
 		var _options = {};
 		_options.min = min;
 		_options.max = max;
 		_options.values = [ thresholdMin , thresholdMax ];
+		_options.step = step;
 		_options.disabled = false;
-		$( "#slider" ).slider( "option", _options );
-		$( "#slider" ).css("opacity",1);
+		$( "#price .slider" ).slider( "option", _options );
+		// $( "#slider" ).css("opacity",1);
 	}
 
 	var style = po.stylist();
 	style.attr("stroke", "#999");
-	style.attr("stroke-width", .5);
+	style.attr("stroke-width", .2);
 	style.title(function(feature) {
 		return feature.properties["TAZ1454"] + ": " + formatPrice(price(feature));
 	});
@@ -87,7 +94,7 @@ $(function() {
 	
 	//hide features that don't meet our critera
 	style.attr("display", function(feature) {
-		if (price(feature) >= thresholdMin && price(feature) <= thresholdMax) {
+		if (inBounds(feature)) {
 			return "";
 		} else {
 			return "none";
@@ -95,16 +102,14 @@ $(function() {
 	});
 	
 	/* SLIDER INIT */
-	$( "#slider" ).slider({
+	$( "#price .slider" ).slider({
 		range: true,
-		disabled: true,
-		change: function( event, ui ) {
-					thresholdMin = ui.values[0];
-					thresholdMax = ui.values[1];
-					update();
-						//updateOutput(output,ui.value);
-				},
-		create: function(event, ui) { $( "#slider" ).css("opacity",.3); }
+		slide: function( event, ui ) {
+			thresholdMin = ui.values[0];
+			thresholdMax = ui.values[1];
+			update();
+		} // ,
+		// create: function(event, ui) { $( "#slider" ).css("opacity",.3); }
 	});
 	
 
@@ -119,104 +124,159 @@ $(function() {
 			$("#status").attr("class", "error").text("Error: " + text);
 		},
 		success: function(collection) {
-
-			var features = collection.features;
+			var features = collection.features,
+					len = features.length;
 
 			var min = pv.min(features, price),
 					median = pv.median(features, price),
 					max = pv.max(features, price);
+
+			$("#status").attr("class", "loaded").text("Loaded " + len + " TAZs, median: " + formatPrice(median));
 
 			var step = 100000;
 			function priceGroup(feature) {
 				return Math.round(price(feature) / step) * step;
 			}
 			
-			var priceGroups = pv.nest(features)
-				.key(priceGroup)
-				.rollup(function(group) { return group.length; });
-			// [{key: 100000, value: 10}, ...]
+			var priceGroups = {};
+			for (var i = 0; i < len; i++) {
+				var g = features[i].properties.priceGroup = priceGroup(features[i]);
+				if (typeof priceGroups[g] != "undefined") {
+					priceGroups[g]++;
+				} else {
+					priceGroups[g] = 1;
+				}
+			}
+			priceGroups = pv.entries(priceGroups)
+				.map(function(entry) {
+					return {min: parseInt(entry.key),
+									max: parseInt(entry.key) + step,
+									count: entry.value};
+				})
+				.sort(function(a, b) {
+					return a.min - b.min;
+				});
+			// console.log(priceGroups);
 
-			createBars("timescale",priceGroups);
+			/*
+			var table = $("#controls .groups tbody");
+			for (var i = 0; i < priceGroups.length; i++) {
+				var group = priceGroups[i],
+						row = $("<tr/>").appendTo(table),
+						key = $("<td/>").appendTo(row),
+						value = $("<td/>").appendTo(row);
+				key.text("<= " + formatPrice(group.max));
+				value.text(group.count);
+			}
+			*/
 
-			thresholdMin = median;
+			var container = $("#price .graph div.canvas"),
+			var size = {x: container.innerWidth(), y: 80},
+					graph = new pv.Panel()
+						.canvas(container[0])
+						.width(size.x)
+						.height(size.y);
+
+			var x = pv.Scale.ordinal(pv.keys(priceGroups)).by(pv.index).splitBanded(0, size.x),
+					h = pv.Scale.linear(priceGroups, prop("count").get).range(1, size.y - 15);
+
+			var bars = graph.add(pv.Bar)
+				.data(priceGroups)
+				.fillStyle("#ff0")
+				.left(x)
+				.bottom(15)
+				.width(x.range().band - 1)
+				.height(function(g) { return h(g.count); });
+
+			x = pv.Scale.linear(min, max).range(0, size.x - 1);
+			var rules = graph.add(pv.Rule)
+				.data([min, median, max])
+				.strokeStyle("#999")
+				.left(x)
+				.top(0)
+				.height(size.y - 13)
+				.anchor("bottom")
+					.add(pv.Label)
+					.text(formatPrice)
+					.textStyle("white")
+					.textAlign(function(v) {
+						switch (v) {
+							case min:
+							case median:
+								return "left";
+							case max:
+								return "right";
+						}
+						return "center";
+					})
+					.textBaseline("top");
+
+			graph.render();
+
+			thresholdMin = min;
 			thresholdMax = max;
-			
+
 			scale.domain(min, median, max);
-			
-			$("#status").attr("class", "loaded").text("Loaded " + features.length + " TAZs");
-			var _ti = setTimeout(function(){
-				$("#status").fadeOut();
-			},1000);
+			scale.nice();
 
 			taz.features(features);
-			setSlider(min,max);
+			setSlider(min, max, step);
+			update();
 			initGeocoding();
 		}
 	});
-	
-	/**/
-	
-	function createBars(el,data){
-
-		var _data = [];
-		for(i in data){
-			_data.push(data[i]);
-		}
-
-		if(!_data.length)return;
-		
-		var min = pv.min(_data),
-			max = pv.max(_data);
-					
-		var _w = $("#"+el).parent().width();
-		var _h = 20;
-		var _s = Number(_w) / _data.length;
-	
-		var viz = new pv.Panel()
-			.width(_w)
-			.height(_h)
-			.canvas(el)
-		
-		//pv.Bar
-		var bars = viz.add(pv.Area)
-			.data(_data)
-			.bottom(0)
-			.width(_s)
-			.height( function(d) {return (d / max) * _h;} )
-			.left( function() { return this.index * _s;} )
-			.fillStyle("#166");			
-
-		viz.render();
-		 
-	}
 	
 	/* GEOCODING STUFF 
 	 *
 	 * TODO: validate returned address is within bounds
 	*/
-	function initGeocoding(){
+	function initGeocoding() {
 		var geocoder = new google.maps.Geocoder();
-		var $this = this;
 		
-		$("#geocodeBtn").click(function(e){
-			e.preventDefault();
-			var _address = $("#address").val();
-			if(_address && _address.length)findMe(_address);
+		var addr = $("#geocoder input.address"),
+				prompt = addr.val();
+		addr.focus(function() {
+			if (addr.val() == prompt) {
+				addr.val("");
+			} else {
+				// addr.select();
+			}
 		});
-	
-		function findMe(address){
-			geocoder.geocode( { 'address': address}, function(results, status) {
+		addr.blur(function() {
+			if (addr.val() == "") {
+				addr.val(prompt);
+			}
+		});
+
+		$("#geocoder").submit(function(e) {
+			// e.preventDefault();
+			var _address = addr.val();
+			if(_address && _address.length) {
+				findMe(_address);
+			}
+			return false;
+		});
+
+		function findMe(address) {
+			geocoder.geocode({"address": address}, function(results, status) {
 				if (status == google.maps.GeocoderStatus.OK) {
-					map.center({lon: results[0].geometry.location.lng(), lat: results[0].geometry.location.lat()})
-					map.zoom(12);
-					//var t=setTimeout("alertMsg()",3000);
-					$("#address").val("enter your address");
+					var result = results[0],
+							xx = result.geometry.bounds.P,
+							yy = result.geometry.bounds.W,
+							found = result.formatted_address;
+					// zoom to the extent
+					map.extent([
+						{lon: xx.d, lat: yy.b},
+						{lon: xx.b, lat: yy.d}
+					]);
+					// then floor the zoom
+					map.zoom(Math.floor(map.zoom()));
+					$("#geocoder .status").text("Found: " + found);
 				} else {
-					$("#address").val("error");
+					$("#geocoder .status").text("Error: " + status);
 				}
 			});
 		}
-		
 	}
 	
 });

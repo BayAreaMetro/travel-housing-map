@@ -9,7 +9,7 @@ function commize(n) {
       o = Math.round(n).toString(),
       parts = [];
   while (o.length > c) {
-    parts.push(o.substr(o.length - c));
+    parts.unshift(o.substr(o.length - c));
     o = o.substr(0, o.length - c);
   }
   parts.unshift(o);
