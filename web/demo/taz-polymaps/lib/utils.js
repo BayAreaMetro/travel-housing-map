@@ -4,7 +4,14 @@
 
 function identity(n) { return n; }
 
+function millionize(n) {
+  return (n / 1000000) + " million";
+}
+
 function commize(n) {
+  if (n >= 1000000 && (n % 100000) == 0) {
+    return millionize(n);
+  }
   var c = 3,
       o = Math.round(n).toString(),
       parts = [];

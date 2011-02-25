@@ -65,7 +65,12 @@ table.groups .key {
 #status {
 	margin: 0 0 .5em 0;
 	color: #666;
+	font-size: 85%;
 	font-style: italic;
+}
+
+#status.loaded {
+	font-style: normal;
 }
 
 #timer {

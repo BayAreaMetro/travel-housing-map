@@ -131,7 +131,7 @@ $(function() {
 					median = pv.median(features, price),
 					max = pv.max(features, price);
 
-			$("#status").attr("class", "loaded").text("Loaded " + len + " TAZs, median: " + formatPrice(median));
+			$("#status").attr("class", "loaded").text("Loaded " + commize(len) + " TAZs");
 
 			var step = 100000;
 			function priceGroup(feature) {
@@ -199,6 +199,7 @@ $(function() {
 					.add(pv.Label)
 					.text(formatPrice)
 					.textStyle("white")
+					.textMargin(2)
 					.textAlign(function(v) {
 						switch (v) {
 							case min:
