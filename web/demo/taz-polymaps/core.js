@@ -124,8 +124,13 @@ $(function() {
 			$("#status").attr("class", "error").text("Error: " + text);
 		},
 		success: function(collection) {
-			var features = collection.features,
-					len = features.length;
+			var features = collection.features;
+
+			features = features.filter(price); // filter out zeros
+			// features.pop();
+			// console.log(features.map(price));
+
+			var len = features.length;
 
 			var min = pv.min(features, price),
 					median = pv.median(features, price),
@@ -190,7 +195,7 @@ $(function() {
 
 			x = pv.Scale.linear(min, max).range(0, size.x - 1);
 			var rules = graph.add(pv.Rule)
-				.data([min, median, max])
+				.data([median])
 				.strokeStyle("#999")
 				.left(x)
 				.top(0)
