@@ -29,8 +29,9 @@ html, body {
 }
 
 #controls {
-	min-height: 100%; /* XXX: doesn't work */
-	padding: 1em 1em 1em 650px;
+	min-height: 90%; /* XXX: doesn't work */
+	height:90%;
+	padding: 1em 1em 0 650px;
 	background: #000;
 }
 
