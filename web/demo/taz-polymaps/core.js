@@ -28,10 +28,14 @@ $(function() {
 
 	$(labels.container())
 		.css("pointer-events", "none");
-		
+	//config.mapColors = ["rgb(229,70,97)", "rgb(120,102,168)","rgb(0,45,64)"];
+	//config.mapColors = ["rgb(222,235,247)", "rgb(158,202,225)", "rgb(255,69,148)"];
+	//config.mapColors = ["rgb(0,45,64)", "rgb(120,102,168)","rgb(229,70,97)"];
+	var config = {};
+	config.mapColors = ["rgb(224, 243, 219)", "rgb(158,202,225)", "rgb(67, 162, 202)"];	
 	var scale = pv.Scale.linear()
-		.domain(0, 250000, 1000000)
-		.range("rgb(222,235,247)", "rgb(158,202,225)", "rgb(255,69,148)");
+		.domain(0,1000000)
+		.range(config.mapColors[0],  config.mapColors[2]);
 
 	var thresholdMin = 0;
 	var thresholdMax = 1000000;
@@ -70,7 +74,6 @@ $(function() {
 		_options.step = step;
 		_options.disabled = false;
 		$( "#price .slider" ).slider( "option", _options );
-		// $( "#slider" ).css("opacity",1);
 	}
 
 	var style = po.stylist();
@@ -108,8 +111,7 @@ $(function() {
 			thresholdMin = ui.values[0];
 			thresholdMax = ui.values[1];
 			update();
-		} // ,
-		// create: function(event, ui) { $( "#slider" ).css("opacity",.3); }
+		} 
 	});
 	
 
@@ -175,7 +177,7 @@ $(function() {
 			}
 			*/
 
-			var container = $("#price .graph div.canvas"),
+			var container = $("#price .graph div.canvas");
 			var size = {x: container.innerWidth(), y: 80},
 					graph = new pv.Panel()
 						.canvas(container[0])
@@ -225,7 +227,7 @@ $(function() {
 			thresholdMin = min;
 			thresholdMax = max;
 
-			scale.domain(min, median, max);
+			scale.domain(min, max);
 			scale.nice();
 
 			taz.features(features);
