@@ -13,7 +13,7 @@ html, body {
 
 #wrapper {
 	position: relative;
-	width: 900px;
+	width: 1060px;
 	min-height: 100%;
 	margin: 0 auto;
 	background: #000;
@@ -23,14 +23,14 @@ html, body {
 #map {
 	position: absolute;
 	top: 0;
-	width: 470px;
-	height: 700px;
+	width: 630px;
+	height: 600px;
 	background: #AEB4B4;
 }
 
 #controls {
 	min-height: 100%; /* XXX: doesn't work */
-	padding: 1em 1em 1em 500px;
+	padding: 1em 1em 1em 650px;
 	background: #000;
 }
 

@@ -32,7 +32,7 @@ $(function() {
 	//config.mapColors = ["rgb(222,235,247)", "rgb(158,202,225)", "rgb(255,69,148)"];
 	//config.mapColors = ["rgb(0,45,64)", "rgb(120,102,168)","rgb(229,70,97)"];
 	var config = {};
-	config.mapColors = ["rgb(224, 243, 219)", "rgb(158,202,225)", "rgb(67, 162, 202)"];	
+	config.mapColors = ["white", "rgb(158,202,225)", "red"];	
 	var scale = pv.Scale.linear()
 		.domain(0,1000000)
 		.range(config.mapColors[0],  config.mapColors[2]);
@@ -190,7 +190,7 @@ $(function() {
 			var bars = graph.add(pv.Bar)
 				.data(priceGroups)
 				.fillStyle(function(g) {
-						console.log(g);
+						// console.log(g);
 					return scale(g.min + (g.max - g.min) / 2);
 				})
 				.left(x)
