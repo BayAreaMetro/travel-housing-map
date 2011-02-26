@@ -28,9 +28,7 @@ $(function() {
 
 	$(labels.container())
 		.css("pointer-events", "none");
-	//config.mapColors = ["rgb(229,70,97)", "rgb(120,102,168)","rgb(0,45,64)"];
-	//config.mapColors = ["rgb(222,235,247)", "rgb(158,202,225)", "rgb(255,69,148)"];
-	//config.mapColors = ["rgb(0,45,64)", "rgb(120,102,168)","rgb(229,70,97)"];
+
 	var config = {};
 	config.mapColors = ["white", "rgb(158,202,225)", "red"];	
 	var scale = pv.Scale.linear()
@@ -39,11 +37,6 @@ $(function() {
 
 	var thresholdMin = 0;
 	var thresholdMax = 1000000;
-
-	function inBounds(feature) {
-		var p = price(feature);
-		return p >= thresholdMin && p <= thresholdMax;
-	}
 
 	function update() {
 		$("#price .min").text(formatPrice(thresholdMin));
@@ -57,14 +50,6 @@ $(function() {
 		// $("#timer").text("(took " + took + "ms)");
 		return false;
 	}
-
-	function price(feature) {
-		return feature.properties.average_value_per_unit;
-	}
-
-	function formatPrice(p) {
-		return "$" + commize(p);
-	}
 	
 	function setSlider(min, max, step){
 		var _options = {};
@@ -75,7 +60,21 @@ $(function() {
 		_options.disabled = false;
 		$( "#price .slider" ).slider( "option", _options );
 	}
+	
+	function inBounds(feature) {
+		var p = price(feature);
+		return p >= thresholdMin && p <= thresholdMax;
+	}
 
+	function price(feature) {
+		return feature.properties.average_value_per_unit;
+	}
+
+	function formatPrice(p) {
+		return "$" + commize(p);
+	}
+	
+	
 	var style = po.stylist();
 	style.attr("stroke", "#999");
 	style.attr("stroke-width", .2);
@@ -85,7 +84,7 @@ $(function() {
 	
 	// color code fill based on home price value
 	style.attr("fill", function(feature) {
-		if (price(feature) >= thresholdMin && price(feature) <= thresholdMax) {
+		if (inBounds(feature)) {
 			var value = price(feature);
 			var color = scale(value).color;
 			// console.log(value + " -> " + color);
@@ -95,6 +94,7 @@ $(function() {
 		}
 	});
 	
+	
 	//hide features that don't meet our critera
 	style.attr("display", function(feature) {
 		if (inBounds(feature)) {
@@ -103,6 +103,7 @@ $(function() {
 			return "none";
 		}
 	});
+	
 	
 	/* SLIDER INIT */
 	$( "#price .slider" ).slider({
@@ -243,6 +244,7 @@ $(function() {
 	*/
 	function initGeocoding() {
 		var geocoder = new google.maps.Geocoder();
+		var _statusElm = $("#geocoder .status");
 		
 		var addr = $("#geocoder input.address"),
 				prompt = addr.val();
@@ -267,14 +269,30 @@ $(function() {
 			}
 			return false;
 		});
+		
 
 		function findMe(address) {
 			geocoder.geocode({"address": address}, function(results, status) {
-				if (status == google.maps.GeocoderStatus.OK) {
+				if (status == google.maps.GeocoderStatus.OK) {					
 					var result = results[0],
-							xx = result.geometry.bounds.P,
-							yy = result.geometry.bounds.W,
-							found = result.formatted_address;
+						xx = null,
+						yy = null,
+						found = null;
+
+					if(result.geometry.bounds){
+						xx = result.geometry.bounds.P,
+						yy = result.geometry.bounds.W;
+					}else if(result.geometry.viewport){
+						xx = result.geometry.viewport.P,
+						yy = result.geometry.viewport.W;
+					}else{}
+					
+					if(xx && yy){
+						found = result.formatted_address;
+					}else{
+						found = "Found but couldn't get info..."
+					}
+
 					// zoom to the extent
 					map.extent([
 						{lon: xx.d, lat: yy.b},
@@ -282,10 +300,13 @@ $(function() {
 					]);
 					// then floor the zoom
 					map.zoom(Math.floor(map.zoom()));
-					$("#geocoder .status").text("Found: " + found);
+					$(_statusElm).text("Found: " + found);
 				} else {
-					$("#geocoder .status").text("Error: " + status);
+					$(_statusElm).text("Error: " + status);
 				}
+				setTimeout(function(){
+					$(_statusElm).fadeOut().text("");
+				},3000);
 			});
 		}
 	}
