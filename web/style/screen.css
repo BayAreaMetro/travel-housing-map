@@ -81,8 +81,8 @@ ol li p {
 .controls {
 	position: absolute;
 	z-index: 1001;
-	top: .5em;
-	right: .5em;
+	top: 10px;
+	right: 10px;
 }
 
 	.controls a {
@@ -113,7 +113,9 @@ ol.steps li .step {
 	position: absolute;
 	line-height: 46px;
 	top: 0;
-	right: 0;
+	right: 10px;
+	padding: 0;
+	margin: 0;
 }
 
 	#geocoder .status {
@@ -124,7 +126,8 @@ input[type=submit] {
 	cursor: pointer;
 	background: #000;
 	color: #fff;
-	border: 1px solid #666;
+	padding: .25em .5em;
+	border: none;
 	outline-width: 0;
 	font-weight: bold;
 	font-size: inherit;
