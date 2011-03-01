@@ -72,10 +72,10 @@ ol li p {
 	z-index: 1000;
 	left: 50%;
 	top: 50%;
-	width: 5px;
-	height: 5px;
-	margin: -3px 0 0 -3px;
-	background: #f0f;
+	width: 15px;
+	height: 15px;
+	margin: -7px 0 0 -7px;
+	background-image: url(images/crosshair.png);
 }
 
 .controls {

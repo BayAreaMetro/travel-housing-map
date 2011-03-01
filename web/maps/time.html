@@ -18,6 +18,7 @@
 				 * in the query string.
 				 */
 
+				// our map is global
 				var map;
 
 				/*
@@ -75,6 +76,11 @@
 					// reset to prompt on blur if empty
 					addr.blur(function() { if (addr.val() == "") addr.val(prompt); });
 
+					/*
+					 * XXX: the submit input's "click" handler may not fire whenever the
+					 * user presses enter in the address field! We may need to handle
+					 * this another way.
+					 */
 					$("input[name=geocode]").click(function() {
 						geocoder.geocode({"address": addr.val()}, function(results, status) {
 							if (status == google.maps.GeocoderStatus.OK) {
@@ -82,7 +88,7 @@
 										xx = null,
 										yy = null,
 										found = null;
-								console.log(result);
+
 								if (result.geometry.bounds) {
 									xx = result.geometry.bounds.P;
 									yy = result.geometry.bounds.W;
@@ -94,17 +100,25 @@
 								}
 
 								if (xx && yy) {
+
 									found = result.formatted_address;
+									// set the extent to get an apporpriate zoom
+									map.extent([{lon: xx.d, lat: yy.b}, {lon: xx.b, lat: yy.d}]);
+									// floor the zoom (because tile seams are ugly)
+									map.zoom(Math.floor(map.zoom()));
+
 								} else {
-									found = "Found, but no info...";
+									// FIXME: need more useful message here?
+									found = "Found, but no bounding box...";
+									// show the status message, because this is weird
+									stat.css("display", "");
 								}
 
 								stat.text(found);
-								// set the extent to get an apporpriate zoom
-								map.extent([{lon: xx.d, lat: yy.b}, {lon: xx.b, lat: yy.d}]);
-								// floor the zoom (because tile seams are ugly)
-								map.zoom(Math.floor(map.zoom()));
+
 								// then, set the center back to its actual "location"
+								// (Google's "location" is different from the center of the
+								// bounding box, and usually positioned on the label.)
 								if (result.geometry.location) {
 									var loc = result.geometry.location;
 									map.center({lon: loc.Da, lat: loc.Ba});
@@ -145,7 +159,15 @@
 							<input type="hidden" name="location" value="37.7639,-122.4130"/>
 							<input type="hidden" name="zoom" value="9"/>
 							<div class="layer" data-type="image"
+								data-url="http://a.acetate.geoiq.com/tiles/acetate-base/{Z}/{X}/{Y}.png"></div>
+							<div class="layer" data-type="image"
+								data-url="http://a.acetate.geoiq.com/tiles/acetate-roads/{Z}/{X}/{Y}.png"></div>
+							<div class="layer" data-type="image"
+								data-url="http://a.acetate.geoiq.com/tiles/acetate-labels/{Z}/{X}/{Y}.png"></div>
+							<!--
+							<div class="layer" data-type="image"
 								data-url="http://c.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{Z}/{X}/{Y}.png"></div>
+							-->
 							<div class="crosshairs"></div>
 							<div class="controls">
 								<label>Zoom:</label> <a class="zoom-in" href="#location-map">In</a>
