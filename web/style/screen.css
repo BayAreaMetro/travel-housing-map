@@ -12,7 +12,8 @@ body {
 	font-family: "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
 
 	text-align: left;
-	width: 800px;
+	width: 80%;
+	min-width: 600px;
 	margin: 0 auto;
 	border-left: 24px solid #666;
 }
@@ -21,17 +22,13 @@ body {
 	padding: 10px;
 }
 
-h1 {
-	font-family: "Museo Slab", sans-serif;
-	font-weight: 500;
-	font-size: 64px;
+h1, h2 {
+	font: bold 64px "Stymie Lt BT", "Helvetica Neue", Helvetica, Arial, sans-serif;
 	margin: 0;
 }
 
 
 h2 {
-	font-family: "Museo Slab", sans-serif;
-	font-weight: 500;
 	font-size: 32px;
 	line-height: 40px;
 	margin: 0 0 10px 0;
@@ -82,19 +79,22 @@ ol li p {
 	position: absolute;
 	z-index: 1001;
 	top: 10px;
-	right: 10px;
+	left: 10px;
 }
 
 	.controls a {
+		display: inline-block;
 		text-decoration: none;
 		font-weight: bold;
-		background: #000;
+		background: #009DDC;
 		color: #fff;
-		padding: .25em .5em;
+		padding: 4px;
+		line-height: 0;
 	}
 
 	.controls label {
 		color: #666;
+		display: none;
 	}
 
 ol.steps li .step {
@@ -114,17 +114,24 @@ ol.steps li .step {
 	line-height: 46px;
 	top: 0;
 	right: 10px;
+	z-index: 1000;
 	padding: 0;
 	margin: 0;
 }
 
+	#geocoder label,
 	#geocoder .status {
 		display: none;
 	}
 
+input[type=search] {
+	font-size: 120%;
+	min-width: 24ex;
+}
+
 input[type=submit] {
 	cursor: pointer;
-	background: #000;
+	background: #009DDC;
 	color: #fff;
 	padding: .25em .5em;
 	border: none;
