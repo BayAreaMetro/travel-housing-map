@@ -16,6 +16,7 @@ $LAB
 	}
 });
 
+var sourceTemplate = "http://geo.stamen.com/mtcscs/scenarios/2005/time/{period}/from/{taz}.csv";
 var features, map;
 function loadTaz(collection) {
 	// console.log(["loadTaz()", collection]);
@@ -25,8 +26,23 @@ function loadTaz(collection) {
 function initialize() {
 	var po = org.polymaps;
 
+	var container = $("#map");
 	map = po.map()
-		.container($("#map")[0].appendChild(po.svg("svg")));
+		.container(container[0].appendChild(po.svg("svg")));
+
+	var legend = $('<div id="legend"/>')
+		.appendTo(container);
+	legend.append($("<label/>").text("Legend:"))
+	function updateLegend(sc) {
+		legend.children().not("label").remove();
+		var keys = sc.domain(),
+				values = sc.range(),
+				len = keys.length;
+		for (var i = 0; i < len; i++) {
+			var k = keys[i], v = values[i];
+			$("<span/>").text(k).css("background", v).appendTo(legend);
+		}
+	}
 	
 	map.center({lon: -122.2757, lat: 37.8355})
 	map.zoom(9);
@@ -60,6 +76,8 @@ function initialize() {
 		.domain(0,1000000)
 		.range(config.mapColors[0],  config.mapColors[2])
 		.by(price);
+
+	updateLegend(scale);
 
 	var thresholdMin = 0;
 	var thresholdMax = 1000000;
@@ -302,8 +320,7 @@ function initialize() {
 		updateDataTemplate();
 	});
 
-	var sourceTemplate = "http://geo.stamen.com/~allens/mtc-data/scenarios/2005/time/{period}/from/{taz}.csv",
-			dataTemplate;
+	var dataTemplate;
 	function updateDataTemplate() {
 		dataTemplate = sourceTemplate.replace("{period}", period);
 		if (selected) {
@@ -343,6 +360,8 @@ function initialize() {
 			.domain(NULL_VALUE, min, median, max)
 			.range("rgba(255,255,255,.1)", "#006837", "#78C679", "#FFFFCC")
 			.by(time);
+
+		updateLegend(scale);
 
 		update();
 	}

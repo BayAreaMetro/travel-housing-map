@@ -239,3 +239,28 @@ form {
 .compass.active .active .direction {
   fill: #999;
 }
+
+#legend {
+	position: absolute;
+	bottom: 1em;
+	right: 1em;
+	color: #000;
+	background: #fff;
+	padding: .25em;
+	border: 1px solid #999;
+}
+
+#legend label {
+	color: #999;
+	margin-right: 1em;
+}
+
+#legend span {
+	display: inline-block;
+	padding: 2px 4px;
+	margin: 0 .25em 0 0;
+}
+
+#legend span:last-child {
+	margin-right: 0;
+}
