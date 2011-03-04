@@ -265,3 +265,19 @@ function waterLevel(n, inlineText) {
 	return ((n > 0) ? ("+" + Math.floor(n)) : n) + " ft";
 }
 
+function parseCSV(text, nil) {
+	var delim = ",",
+			rows = text.split("\n"),
+			headers = rows.shift().split(delim),
+			hlen = headers.length,
+			len = rows.length;
+	for (var i  = 0; i < len; i++) {
+		var row = {},
+				parts = rows[i].split(delim);
+		for (var j = 0; j < hlen; j++) {
+			row[headers[j]] = parseFloat(parts[j]);
+		}
+		rows[i] = row;
+	}
+	return rows;
+}

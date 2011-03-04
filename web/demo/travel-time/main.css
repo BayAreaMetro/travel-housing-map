@@ -118,6 +118,10 @@ form {
 #geocoder {
 }
 
+#mode {
+	font-size: 200%;
+}
+
 #geocoder h3 {
 	padding-right: 20px;
 	margin: 0;

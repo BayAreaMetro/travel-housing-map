@@ -1,7 +1,32 @@
-$(function() {
-	var po = org.polymaps,
-			map = po.map()
-				.container($("#map")[0].appendChild(po.svg("svg")));
+
+$LAB
+.setOptions({AlwaysPreserveOrder: true})
+.script("lib/polymaps.min.js")
+.script("lib/jquery-1.5.min.js")
+.script("lib/jquery-ui-1.8.10.custom.min.js")
+.script("lib/protovis-r3.2.js")
+.script("lib/utils.js")
+// NOTE: this content is wrapped in a loadTaz() callback
+.script("taz.js")
+.wait(function() {
+	try {
+		initialize();
+	} catch (e) {
+		alert(e);
+	}
+});
+
+var features, map;
+function loadTaz(collection) {
+	// console.log(["loadTaz()", collection]);
+	features = collection.features;
+}
+
+function initialize() {
+	var po = org.polymaps;
+
+	map = po.map()
+		.container($("#map")[0].appendChild(po.svg("svg")));
 	
 	map.center({lon: -122.2757, lat: 37.8355})
 	map.zoom(9);
@@ -33,7 +58,8 @@ $(function() {
 	config.mapColors = ["white", "rgb(158,202,225)", "red"];	
 	var scale = pv.Scale.linear()
 		.domain(0,1000000)
-		.range(config.mapColors[0],  config.mapColors[2]);
+		.range(config.mapColors[0],  config.mapColors[2])
+		.by(price);
 
 	var thresholdMin = 0;
 	var thresholdMax = 1000000;
@@ -80,8 +106,6 @@ $(function() {
 
 	var style = po.stylist();
 	style.attr("id", tazid)
-	style.attr("stroke", "#999");
-	style.attr("stroke-width", .2);
 	style.title(function(feature) {
 		return feature.properties["TAZ1454"] + ": " + formatPrice(price(feature));
 	});
@@ -89,8 +113,7 @@ $(function() {
 	// color code fill based on home price value
 	style.attr("fill", function(feature) {
 		if (inBounds(feature)) {
-			var value = price(feature);
-			var color = scale(value).color;
+			var color = scale(feature).color;
 			// console.log(value + " -> " + color);
 			return color;
 		} else {
@@ -119,6 +142,11 @@ $(function() {
 		} 
 	});
 
+	// style these only once
+	taz.on("load", po.stylist()
+		.attr("stroke", "#999")
+		.attr("stroke-width", .2));
+
 	taz.on("load", function(e) {
 		var features = e.features,
 				len = e.features.length;
@@ -126,213 +154,301 @@ $(function() {
 			var element = e.features[i].element,
 					feature = e.features[i].data,
 					a = po.svg("a");
-			a.setAttributeNS(po.ns.xlink, "href", "#" + tazid(feature));
+			var id = tazid(feature);
+			feature.id = id.replace(/^taz/, '');
+			a.setAttributeNS(po.ns.xlink, "href", "#" + id);
 			element.parentNode.insertBefore(a, element);
 			a.appendChild(element);
 		}
 	});
 
+	taz.on("show", style);
+
+	$("#status").attr("class", "loading").text("Loading...");
+
+	// console.log(["loaded!", features.length]);
+
+	features = features.filter(price); // filter out zeros
+	// features.pop();
+	// console.log(features.map(price));
+
+	var len = features.length;
+
+	var min = pv.min(features, price),
+			median = pv.median(features, price),
+			max = pv.max(features, price);
+
+	$("#status").attr("class", "loaded").text("Loaded " + commize(len) + " TAZs");
+
+	var step = 100000;
+	function priceGroup(feature) {
+		return Math.round(price(feature) / step) * step;
+	}
+	
+	var priceGroups = {};
+	for (var i = 0; i < len; i++) {
+		var g = features[i].properties.priceGroup = priceGroup(features[i]);
+		if (typeof priceGroups[g] != "undefined") {
+			priceGroups[g]++;
+		} else {
+			priceGroups[g] = 1;
+		}
+	}
+	priceGroups = pv.entries(priceGroups)
+		.map(function(entry) {
+			return {min: parseInt(entry.key),
+							max: parseInt(entry.key) + step,
+							count: entry.value};
+		})
+		.sort(function(a, b) {
+			return a.min - b.min;
+		});
+	// console.log(priceGroups);
+
+	/*
+	var table = $("#controls .groups tbody");
+	for (var i = 0; i < priceGroups.length; i++) {
+		var group = priceGroups[i],
+				row = $("<tr/>").appendTo(table),
+				key = $("<td/>").appendTo(row),
+				value = $("<td/>").appendTo(row);
+		key.text("<= " + formatPrice(group.max));
+		value.text(group.count);
+	}
+	*/
+
+	var container = $("#price .graph div.canvas");
+	var size = {x: container.innerWidth(), y: 80},
+			graph = new pv.Panel()
+				.canvas(container[0])
+				.width(size.x)
+				.height(size.y);
+
+	var x = pv.Scale.ordinal(pv.keys(priceGroups)).by(pv.index).splitBanded(0, size.x),
+			h = pv.Scale.linear(priceGroups, prop("count").get).range(1, size.y - 15);
+
+	var c = scale.by(pv.identity);
+
+	var bars = graph.add(pv.Bar)
+		.data(priceGroups)
+		.fillStyle(function(g) {
+				// console.log(g);
+			return c(g.min + (g.max - g.min) / 2);
+		})
+		.left(x)
+		.bottom(15)
+		.width(x.range().band - 1)
+		.height(function(g) { return h(g.count); });
+
+	x = pv.Scale.linear(min, max).range(0, size.x - 1);
+	var rules = graph.add(pv.Rule)
+		.data([median])
+		.strokeStyle("#999")
+		.left(x)
+		.top(0)
+		.height(size.y - 13)
+		.anchor("bottom")
+			.add(pv.Label)
+			.text(formatPrice)
+			.textStyle("white")
+			.textMargin(2)
+			.textAlign(function(v) {
+				switch (v) {
+					case min:
+					case median:
+						return "left";
+					case max:
+						return "right";
+				}
+				return "center";
+			})
+			.textBaseline("top");
+
+	graph.render();
+
+	thresholdMin = min;
+	thresholdMax = max;
+
+	scale.domain(min, max);
+	scale.nice();
+
+	taz.features(features);
+	setSlider(min, max, step);
+	update();
+	initGeocoding();
+
+	/**
+	 * Travel time
+	 */
 	$(taz.container()).click(function(e) {
 		var target = e.target.id;
 		loadTazData(target.replace(/^taz/, ''))
 	});
 
-	function loadTazData(id) {
+	var travelTimes = {},
+			mode = $("#mode").val(),
+			period = $("#period").val();
+
+	var NULL_VALUE = -999.0,
+			selected;
+
+	$("#mode").change(function() {
+		mode = $(this).val();
+		updateTravelTimes();
+	});
+
+	$("#period").change(function() {
+		period = $(this).val();
+		updateDataTemplate();
+	});
+
+	var sourceTemplate = "http://geo.stamen.com/~allens/mtc-data/scenarios/2005/time/{period}/from/{taz}.csv",
+			dataTemplate;
+	function updateDataTemplate() {
+		dataTemplate = sourceTemplate.replace("{period}", period);
+		if (selected) {
+			loadTazData(selected.id.replace(/^taz/, ''));
+		}
 	}
 
-	taz.on("show", style);
+	updateDataTemplate();
 
-	$("#status").attr("class", "loading").text("Loading...");
+	function updateTravelTimes(times) {
+		if (times) travelTimes = times;
+		else if (!selected) return;
 
-	$.ajax("taz.js", {
-		dataType: "jsonp",
-		jsonpCallback: "loadTaz",
-		error: function(req, text, e) {
-			$("#status").attr("class", "error").text("Error: " + text);
-		},
-		success: function(collection) {
-			var features = collection.features;
-
-			features = features.filter(price); // filter out zeros
-			// features.pop();
-			// console.log(features.map(price));
-
-			var len = features.length;
-
-			var min = pv.min(features, price),
-					median = pv.median(features, price),
-					max = pv.max(features, price);
-
-			$("#status").attr("class", "loaded").text("Loaded " + commize(len) + " TAZs");
-
-			var step = 100000;
-			function priceGroup(feature) {
-				return Math.round(price(feature) / step) * step;
+		function time(feature) {
+			var t = travelTimes[feature.id];
+			if (!t) {
+				// console.log(["no entry for", id, feature]);
+				throw new Error();
 			}
-			
-			var priceGroups = {};
-			for (var i = 0; i < len; i++) {
-				var g = features[i].properties.priceGroup = priceGroup(features[i]);
-				if (typeof priceGroups[g] != "undefined") {
-					priceGroups[g]++;
-				} else {
-					priceGroups[g] = 1;
+			return t ? t[mode] : NULL_VALUE;
+		}
+
+		var values = features.map(time).filter(function(n) {
+			return n != NULL_VALUE;
+		});
+
+		var min = pv.min(values),
+				median = pv.median(values),
+				max = pv.max(values);
+		console.log([min, median, max]);
+
+		min = 15;
+		median = 30;
+		max = 60;
+
+		scale = pv.Scale.linear()
+			.domain(NULL_VALUE, min, median, max)
+			.range("rgba(255,255,255,.1)", "#006837", "#78C679", "#FFFFCC")
+			.by(time);
+
+		update();
+	}
+
+	function loadTazData(id) {
+		var url = dataTemplate .replace("{taz}", id);
+
+		if (selected) {
+			selected.setAttribute("stroke", "#999");
+			selected.setAttribute("stroke-width", .2);
+		}
+		selected = $("#taz" + id)[0]
+		if (selected) {
+			selected.setAttribute("stroke", "#ff0");
+			selected.setAttribute("stroke-width", 1.5);
+			selected.parentNode.appendChild(selected);
+		}
+
+		$.ajax(url, {
+			dataType: "text",
+			error: function(req, stat, text) {
+				console.log([url, "ERROR:", stat, text]);
+			},
+			success: function(text) {
+				var rows = parseCSV(text),
+						len = rows.length,
+						times = {};
+				for (var i = 0; i < len; i++) {
+					var row = rows[i];
+					times[row.dest] = row;
 				}
+				updateTravelTimes(times);
 			}
-			priceGroups = pv.entries(priceGroups)
-				.map(function(entry) {
-					return {min: parseInt(entry.key),
-									max: parseInt(entry.key) + step,
-									count: entry.value};
-				})
-				.sort(function(a, b) {
-					return a.min - b.min;
-				});
-			// console.log(priceGroups);
+		});
+	}
+}
 
-			/*
-			var table = $("#controls .groups tbody");
-			for (var i = 0; i < priceGroups.length; i++) {
-				var group = priceGroups[i],
-						row = $("<tr/>").appendTo(table),
-						key = $("<td/>").appendTo(row),
-						value = $("<td/>").appendTo(row);
-				key.text("<= " + formatPrice(group.max));
-				value.text(group.count);
-			}
-			*/
-
-			var container = $("#price .graph div.canvas");
-			var size = {x: container.innerWidth(), y: 80},
-					graph = new pv.Panel()
-						.canvas(container[0])
-						.width(size.x)
-						.height(size.y);
-
-			var x = pv.Scale.ordinal(pv.keys(priceGroups)).by(pv.index).splitBanded(0, size.x),
-					h = pv.Scale.linear(priceGroups, prop("count").get).range(1, size.y - 15);
-
-			var bars = graph.add(pv.Bar)
-				.data(priceGroups)
-				.fillStyle(function(g) {
-						// console.log(g);
-					return scale(g.min + (g.max - g.min) / 2);
-				})
-				.left(x)
-				.bottom(15)
-				.width(x.range().band - 1)
-				.height(function(g) { return h(g.count); });
-
-			x = pv.Scale.linear(min, max).range(0, size.x - 1);
-			var rules = graph.add(pv.Rule)
-				.data([median])
-				.strokeStyle("#999")
-				.left(x)
-				.top(0)
-				.height(size.y - 13)
-				.anchor("bottom")
-					.add(pv.Label)
-					.text(formatPrice)
-					.textStyle("white")
-					.textMargin(2)
-					.textAlign(function(v) {
-						switch (v) {
-							case min:
-							case median:
-								return "left";
-							case max:
-								return "right";
-						}
-						return "center";
-					})
-					.textBaseline("top");
-
-			graph.render();
-
-			thresholdMin = min;
-			thresholdMax = max;
-
-			scale.domain(min, max);
-			scale.nice();
-
-			taz.features(features);
-			setSlider(min, max, step);
-			update();
-			initGeocoding();
+/* GEOCODING STUFF 
+ *
+ * TODO: validate returned address is within bounds
+*/
+function initGeocoding() {
+	var geocoder = new google.maps.Geocoder();
+	var _statusElm = $("#geocoder .status");
+	
+	var addr = $("#geocoder input.address"),
+			prompt = addr.val();
+	addr.focus(function() {
+		if (addr.val() == prompt) {
+			addr.val("");
+		} else {
+			// addr.select();
 		}
 	});
-	
-	/* GEOCODING STUFF 
-	 *
-	 * TODO: validate returned address is within bounds
-	*/
-	function initGeocoding() {
-		var geocoder = new google.maps.Geocoder();
-		var _statusElm = $("#geocoder .status");
-		
-		var addr = $("#geocoder input.address"),
-				prompt = addr.val();
-		addr.focus(function() {
-			if (addr.val() == prompt) {
-				addr.val("");
-			} else {
-				// addr.select();
-			}
-		});
-		addr.blur(function() {
-			if (addr.val() == "") {
-				addr.val(prompt);
-			}
-		});
-
-		$("#geocoder").submit(function(e) {
-			// e.preventDefault();
-			var _address = addr.val();
-			if(_address && _address.length) {
-				findMe(_address);
-			}
-			return false;
-		});
-		
-
-		function findMe(address) {
-			geocoder.geocode({"address": address}, function(results, status) {
-				if (status == google.maps.GeocoderStatus.OK) {					
-					var result = results[0],
-						xx = null,
-						yy = null,
-						found = null;
-
-					if(result.geometry.bounds){
-						xx = result.geometry.bounds.P,
-						yy = result.geometry.bounds.W;
-					}else if(result.geometry.viewport){
-						xx = result.geometry.viewport.P,
-						yy = result.geometry.viewport.W;
-					}else{}
-					
-					if(xx && yy){
-						found = result.formatted_address;
-					}else{
-						found = "Found but couldn't get info..."
-					}
-
-					// zoom to the extent
-					map.extent([
-						{lon: xx.d, lat: yy.b},
-						{lon: xx.b, lat: yy.d}
-					]);
-					// then floor the zoom
-					map.zoom(Math.floor(map.zoom()));
-					$(_statusElm).text("Found: " + found);
-				} else {
-					$(_statusElm).text("Error: " + status);
-				}
-				setTimeout(function(){
-					$(_statusElm).fadeOut().text("");
-				},3000);
-			});
+	addr.blur(function() {
+		if (addr.val() == "") {
+			addr.val(prompt);
 		}
-	}
+	});
+
+	$("#geocoder").submit(function(e) {
+		// e.preventDefault();
+		var _address = addr.val();
+		if(_address && _address.length) {
+			findMe(_address);
+		}
+		return false;
+	});
 	
-});
+
+	function findMe(address) {
+		geocoder.geocode({"address": address}, function(results, status) {
+			if (status == google.maps.GeocoderStatus.OK) {					
+				var result = results[0],
+					xx = null,
+					yy = null,
+					found = null;
+
+				if(result.geometry.bounds){
+					xx = result.geometry.bounds.P,
+					yy = result.geometry.bounds.W;
+				}else if(result.geometry.viewport){
+					xx = result.geometry.viewport.P,
+					yy = result.geometry.viewport.W;
+				}else{}
+				
+				if(xx && yy){
+					found = result.formatted_address;
+				}else{
+					found = "Found but couldn't get info..."
+				}
+
+				// zoom to the extent
+				map.extent([
+					{lon: xx.d, lat: yy.b},
+					{lon: xx.b, lat: yy.d}
+				]);
+				// then floor the zoom
+				map.zoom(Math.floor(map.zoom()));
+				$(_statusElm).text("Found: " + found);
+			} else {
+				$(_statusElm).text("Error: " + status);
+			}
+			setTimeout(function(){
+				$(_statusElm).fadeOut().text("");
+			},3000);
+		});
+	}
+}

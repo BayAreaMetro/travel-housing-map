@@ -1,17 +1,12 @@
 <html>
 	<head>
 		<title>MTC: Travel Time Demo</title>
-		<script type="text/javascript" src="lib/polymaps.min.js"></script>
-		<script type="text/javascript" src="lib/jquery-1.5.min.js"></script>
-		<script type="text/javascript" src="lib/jquery-ui-1.8.10.custom.min.js"></script>
-		<script type="text/javascript" src="lib/timer.js"></script>
-		<script type="text/javascript" src="lib/protovis-r3.2.js"></script>
-		<script type="text/javascript" src="lib/utils.js"></script>
+		<script type="text/javascript" src="lib/LAB.min.js"></script>
 		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 		<script type="text/javascript" src="core.js" defer="defer"></script>
 		<style type="text/css">
-			@import url("main.css");
 			@import url("lib/ui_themes/smoothness/jquery-ui-1.8.10.custom.css");
+			@import url("main.css");
 		</style>
 		
 	</head>
@@ -35,11 +30,40 @@
 					</div>
 				</div>
 
+				<div>
+					<h3>Time of Day</h3>
+					<p>
+					<select id="period">
+						<option value="EA">early AM</option>
+						<option value="AM">AM</option>
+						<option value="MD">mid-day</option>
+						<option value="PM">PM</option>
+						<option value="EV">evening</option>
+					</select>
+					</p>
+				</div>
+
+				<div>
+					<h3>Mode of Travel</h3>
+					<p>
+					<select id="mode">
+						<option value="bike">bike</option>
+						<option value="walk">walk</option>
+						<option value="da">drive (alone)</option>
+						<option value="s2">drive (2 people)</option>
+						<option value="s3">drive (3+ people)</option>
+						<option value="wTrnW">transit (walk/walk)</option>
+						<option value="wTrnD">transit (walk/drive)</option>
+						<option value="dTrnW">transit (drive/walk)</option>
+					</select>
+					</p>
+				</div>
+
 				<form id="geocoder" method="GET">
-					<h3>Where am I?</h3>
+					<h3>Find an address</h3>
 					<p>
 						<input type="text" class="address" value="enter your address"/>
-						<input type="submit" class="submit" value="FIND"/>
+						<input type="submit" class="submit" value="search"/>
 					</p>
 					<p class="status"></p>
 				</form>
@@ -63,6 +87,6 @@
 
 			</div>
 		</div>
-	
+
 	</body>
 </html>
