@@ -30,6 +30,7 @@ function initialize() {
 	map = po.map()
 		.container(container[0].appendChild(po.svg("svg")));
 
+	// TODO: click legend items to filter
 	var legend = $('<div id="legend"/>')
 		.appendTo(container);
 	legend.append($("<label/>").text("Legend:"))
@@ -45,7 +46,7 @@ function initialize() {
 	}
 	
 	map.center({lon: -122.2757, lat: 37.8355})
-	map.zoom(9);
+	map.zoom(10);
 	map.zoomRange([9, 12]);
 
 	var taz = po.geoJson()
@@ -55,18 +56,26 @@ function initialize() {
 
 	var base = po.image()
 		.url("http://a.acetate.geoiq.com/tiles/acetate-base/{Z}/{X}/{Y}.png");
-
+	var roads = po.image()
+		.url("http://a.acetate.geoiq.com/tiles/acetate-roads/{Z}/{X}/{Y}.png");
 	var labels = po.image()
 		.url("http://a.acetate.geoiq.com/tiles/acetate-labels/{Z}/{X}/{Y}.png");
 
 	map.add(base);
 	map.add(taz);
+	map.add(roads);
 	map.add(labels);
 	map.add(po.interact());
 	map.add(po.compass()
 	    .pan("none"));
 	map.add(po.hash());
 
+	$(roads.container())
+		.css("opacity", .5)
+		.css("-webkit-opacity", .5)
+		.css("-moz-opacity", .5);
+	$(roads.container())
+		.css("pointer-events", "none");
 	$(labels.container())
 		.css("pointer-events", "none");
 
@@ -350,7 +359,7 @@ function initialize() {
 		var min = pv.min(values),
 				median = pv.median(values),
 				max = pv.max(values);
-		console.log([min, median, max]);
+		// console.log([min, median, max]);
 
 		min = 15;
 		median = 30;
@@ -367,12 +376,13 @@ function initialize() {
 	}
 
 	function loadTazData(id) {
-		var url = dataTemplate .replace("{taz}", id);
+		var url = dataTemplate.replace("{taz}", id);
 
 		if (selected) {
 			selected.setAttribute("stroke", "#999");
 			selected.setAttribute("stroke-width", .2);
 		}
+		// FIXME: find another way to get the selected element
 		selected = $("#taz" + id)[0]
 		if (selected) {
 			selected.setAttribute("stroke", "#ff0");
@@ -383,7 +393,7 @@ function initialize() {
 		$.ajax(url, {
 			dataType: "text",
 			error: function(req, stat, text) {
-				console.log([url, "ERROR:", stat, text]);
+				// console.log([url, "ERROR:", stat, text]);
 			},
 			success: function(text) {
 				var rows = parseCSV(text),
@@ -397,6 +407,8 @@ function initialize() {
 			}
 		});
 	}
+
+	loadTazData(1);
 }
 
 /* GEOCODING STUFF 
