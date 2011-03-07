@@ -54,10 +54,6 @@ def map_row(row):
 			# del row[col]
 	return row
 
-def parse_val(val):
-	f = Decimal(val.strip())
-	return (f == NULL_VALUE and None) or f
-
 # Build a TAZ map for a list of rows keyed on the specified TAZ id column
 # (usually "orig" or "dest")
 def build_taz_map(rows, taz_col):
