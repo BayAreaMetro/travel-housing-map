@@ -1,7 +1,10 @@
 function blk2url(fips) {
-	var url = [], step = 3;
-	for (var i = 0; i < fips.length; i += step) {
-		url.push(fips.substr(i, step));
+	var n = 0,
+		bits = [2, 3, 6, 4],
+		url = [];
+	for (var i = 0; i < bits.length; i++) {
+		url.push(fips.substr(n, bits[i]));
+		n += bits[i];
 	}
 	return "http://move.onebayarea.org/data/blk2taz/" + url.join("/") + ".txt";
 }
