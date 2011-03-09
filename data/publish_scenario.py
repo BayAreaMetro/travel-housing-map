@@ -2,13 +2,12 @@ import csv, sys, re
 import os.path
 import itertools
 import mtc
-# for better floating point precision
-from decimal import Decimal
 
 NULL_VALUE = -999
 
 # filename pattern
-FILENAME_MATCH = re.compile('^(\w+)SkimsDatabase([A-Z]{2}).csv$')
+FILENAME_MATCH = re.compile('^(\w+)SkimsDatabase([A-Z]{2})(dest)?.csv$')
+COL_TO_DIR = {"orig": "to", "dest": "from"}
 
 # Process a filename into one or more files in an output directory.
 def process_file(in_filename, out_dir='.', **options):
@@ -16,65 +15,53 @@ def process_file(in_filename, out_dir='.', **options):
 	# print >> sys.stderr, "checking: %s ; basename = %s" % (filename, base)
 	match = FILENAME_MATCH.match(base)
 	if match:
-		metric, period = match.group(1).lower(), match.group(2)
+		metric, period, col = match.group(1).lower(), match.group(2), match.group(3)
+		if col is None:
+			col = "orig"
+		if not COL_TO_DIR.has_key(col):
+			print >> sys.stderr, "No matching direction for column '%s'" % col
+			return 0
+
+		direction = COL_TO_DIR.get(col)
+		# print base, "->", metric, period, col, direction
+		# return 0
 		
 		fp = open(filename, 'r')
 		reader = csv.DictReader(fp, dialect=mtc.MTCDialect)
 
-		written = 0
-
 		columns = reader.fieldnames[::]
-		columns.remove("orig")
-		orig = itertools.groupby(reader, lambda row: row["orig"])
-		dest = {}
-		written += write_taz_map(
+		columns.remove(col)
+		orig = itertools.groupby(reader, lambda row: row[col])
+		written = write_taz_map(
 			orig,
-			os.path.join(out_dir, "%s/%s/from/{taz}.csv" % (metric, period)),
-			columns,
-			dest,
-			lambda row: row["dest"]
-		)
-
-		columns = reader.fieldnames[::]
-		columns.remove("dest")
-		written += write_taz_map(
-			dest.items(),
-			os.path.join(out_dir, "%s/%s/to/{taz}.csv" % (metric, period)),
+			os.path.join(out_dir, "%s/%s/%s/{taz}.csv" % (metric, period, direction)),
 			columns
 		)
 
 		fp.close()
 		return written
-	return False
+	return 0
 
 # Write the TAZ map (a dict of lists with each key a TAZ id) to disk as a
 # separate files for each TAZ.
-def write_taz_map(taz_map, filename_format, columns, stash=None, stash_key=None):
+def write_taz_map(taz_map, filename_format, columns):
 	print >> sys.stderr, "  + writing taz_map entries to: %s..." % filename_format
 	written = 0
 	for taz_id, rows in taz_map:
 		filename = filename_format.replace("{taz}", taz_id)
+		written += 1
 		if os.path.isfile(filename):
-			pass
+			print >> sys.stderr, "  - skipped: %s" % filename
+			continue
 		mtc.prepdirs(os.path.dirname(filename))
 		print >> sys.stderr, "  + writing: %s" % filename
 		fp = open(filename, 'w')
 		writer = csv.DictWriter(fp, columns, dialect=mtc.MTCDialect, extrasaction="ignore")
 		# writer.writeheader()
 		writer.writerow(dict(zip(columns, columns)))
-
-		if stash is not None and stash_key is not None:
-			for row in rows:
-				key = stash_key(row)
-				if not stash.has_key(key):
-					stash[key] = []
-				stash[key].append(row)
-				writer.writerow(row)
-		else:
-			writer.writerows(rows)
+		writer.writerows(rows)
 
 		fp.close()
-		written += 1
 	return written
 
 if __name__ == "__main__":
