@@ -1,6 +1,7 @@
 import csv, sys, re
 import os.path
 import itertools
+import mtc
 # for better floating point precision
 from decimal import Decimal
 
@@ -8,18 +9,6 @@ NULL_VALUE = -999
 
 # filename pattern
 FILENAME_MATCH = re.compile('^(\w+)SkimsDatabase([A-Z]{2}).csv$')
-
-# Our MTC CSV dialect has no quotes or escape chars, but should skip initial
-# white space (as this is easier to do from within DictReader than calling
-# strip() on all the values)
-class MTCDialect(csv.Dialect):
-	delimiter = ','
-	doublequote = False
-	escapechar = None
-	skipinitialspace = True
-	quoting = csv.QUOTE_NONE
-	quotechar = None
-	lineterminator = '\n'
 
 # Process a filename into one or more files in an output directory.
 def process_file(in_filename, out_dir='.', **options):
@@ -30,7 +19,7 @@ def process_file(in_filename, out_dir='.', **options):
 		metric, period = match.group(1).lower(), match.group(2)
 		
 		fp = open(filename, 'r')
-		reader = csv.DictReader(fp, dialect=MTCDialect)
+		reader = csv.DictReader(fp, dialect=mtc.MTCDialect)
 
 		written = 0
 
@@ -67,12 +56,10 @@ def write_taz_map(taz_map, filename_format, columns, stash=None, stash_key=None)
 		filename = filename_format.replace("{taz}", taz_id)
 		if os.path.isfile(filename):
 			pass
-
-		prepdirs(filename)
-
+		mtc.prepdirs(os.path.dirname(filename))
 		print >> sys.stderr, "  + writing: %s" % filename
 		fp = open(filename, 'w')
-		writer = csv.DictWriter(fp, columns, dialect=MTCDialect, extrasaction="ignore")
+		writer = csv.DictWriter(fp, columns, dialect=mtc.MTCDialect, extrasaction="ignore")
 		# writer.writeheader()
 		writer.writerow(dict(zip(columns, columns)))
 
@@ -89,13 +76,6 @@ def write_taz_map(taz_map, filename_format, columns, stash=None, stash_key=None)
 		fp.close()
 		written += 1
 	return written
-
-# recursively make dirs for a given file path
-def prepdirs(filename):
-	dirname = os.path.dirname(filename)
-	if not os.path.isdir(dirname):
-		print >> sys.stderr, "  * makedirs(): %s" % dirname
-		os.makedirs(dirname)
 
 if __name__ == "__main__":
 	import optparse
