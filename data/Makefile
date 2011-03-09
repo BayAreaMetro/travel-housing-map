@@ -1,6 +1,9 @@
 SHAPEFILE_EXTS = shp shx prj sbn sbx dbf
 
-all: output/taz1454.json
+all: output/taz1454.json output/blk2taz/060971543024999.txt
+
+output/blk2taz/060971543024999.txt:
+	python publish_blk2taz.py input/BLK00_MTCTAZ.csv $(dir $@)
 
 output:
 	mkdir -p output

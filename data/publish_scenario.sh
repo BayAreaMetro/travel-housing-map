@@ -1,3 +1,6 @@
 #!/bin/sh
-python publish_scenario.py input/scenarios/$1/*.csv output/scenarios/$1
-python publish_blk2taz.py input/BLK00_MTCTAZ.csv output/block2taz
+INPUT=input/scenarios/$1
+OUTPUT=output/scenarios/$1
+cd $INPUT && unzip -u "*.zip"
+cd -
+python publish_scenario.py $INPUT/*.csv $OUTPUT
