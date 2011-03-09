@@ -5,7 +5,7 @@ LAST_BLKID = 060/971/543/024/999
 # Our "all" target makes:
 # 1. the TAZ GeoJSON file
 # 2. the blk2taz mapping files
-all: output/taz1454.json output/blk2taz/$(LAST_BLKID).txt
+all: output/taz1454.json output/blk2taz/$(LAST_BLKID).txt output-html
 
 # Unzip the TAZ boundaries and overwrite the SHP and SHX components with
 # simplified geometries.
@@ -26,6 +26,9 @@ input/taz1454.json: input/taz1454.shp
 
 output:
 	mkdir -p output
+
+output-html: output
+	rsync -avrC html/ output/
 
 # Merge fields from buildings_min.csv into the TAZ boundaries GeoJSON
 output/taz1454.json: input/taz1454.json input/buildings_min.csv output
