@@ -1,21 +1,30 @@
-all: taz-out.json
+SHAPEFILE_EXTS = shp shx prj sbn sbx dbf
 
-taz1454.shp:
-	unzip $(basename $@).zip
-	cp taz1454{-simplified,}.shp
-	cp taz1454{-simplified,}.shx
+all: output/taz1454.json
 
-buildings_min.csv: buildings.csv
+output:
+	mkdir -p output
+
+input/taz1454.shp:
+	unzip -d input $(basename $@).zip
+	cp $(basename $@)-simplified.shp $(basename $@).shp
+	cp $(basename $@)-simplified.shx $(basename $@).shx
+
+input/buildings_min.csv: input/buildings.csv
 	cat $< | cut -d , -f 1,3,11 > $@
 	perl -pi -e 's/:i4//g' $@
 
-taz-in.json: taz1454.shp
+input/taz1454.json: input/taz1454.shp
 	ogr2ogr -f GeoJSON -t_srs EPSG:4326 $@ $<
 
-taz-out.json: taz-in.json buildings_min.csv
-	python merge_taz.py buildings_min.csv $< > $@
+output/taz1454.json: input/taz1454.json input/buildings_min.csv output
+	python merge_taz.py input/buildings_min.csv $< > $@
 
 clean:
-	rm -f buildings_min.csv
-	rm -f taz-in.json taz-out.json
-	rm -f taz1454.{shp,shx,prj,sbn,sbx,dbf}
+	rm -f input/taz1454.json
+	rm -f output/*.csv
+	rm -f output/*.json
+	rm -f $(SHAPEFILE_EXTS:%=input/taz1454.%)
+
+really-clean: clean
+	rm -rf output
