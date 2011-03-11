@@ -1,0 +1,66 @@
+<html>
+	<head>
+		<title>MTC SCS: Travel Time</title>
+		<style type="text/css">
+			@import url(../style/screen.css);
+		</style>
+		<script type="text/javascript" src="../lib/jquery-1.5.min.js"></script>
+		<script type="text/javascript" src="../lib/modestmaps.js"></script>
+		<script type="text/javascript" src="../lib/htmapl.js"></script>
+		<script type="text/javascript" src="../lib/autofill.js" defer="defer"></script>
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+		<script type="text/javascript" src="js/travel-time.js" defer="defer"></script>
+	</head>
+	<body>
+		<div id="page">
+
+			<h1>Travel Time Map</h1>
+
+			<form class="autofill" action="time.html" method="GET">
+
+				<ol class="steps">
+					<li id="select-location">
+						<h2>Select a location</h2>
+
+						<div class="map interact" id="location-map" data-zoomRange="7,17">
+							<input type="hidden" name="location" value="37.7639,-122.4130"/>
+							<input type="hidden" name="zoom" value="9"/>
+							<!--
+							<div class="layer" data-type="image"
+								data-url="http://a.acetate.geoiq.com/tiles/acetate-base/{Z}/{X}/{Y}.png"></div>
+							<div class="layer" data-type="image"
+								data-url="http://a.acetate.geoiq.com/tiles/acetate-roads/{Z}/{X}/{Y}.png"></div>
+							<div class="layer" data-type="image"
+								data-url="http://a.acetate.geoiq.com/tiles/acetate-labels/{Z}/{X}/{Y}.png"></div>
+							-->
+							<div class="layer" data-type="image"
+								data-url="http://c.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{Z}/{X}/{Y}.png"></div>
+							<div class="crosshairs"></div>
+							<div class="controls">
+								<label>Zoom:</label> <a class="zoom-in" href="#location-map"><img alt="in" src="../style/images/zoom-plus.png"/></a>
+								<a class="zoom-out" href="#location-map"><img alt="out" src="../style/images/zoom-minus.png"/></a>
+							</div>
+
+							<div id="geocoder">
+								<p>
+									<label for="address">Find your address:</label>
+									<input accesskey="a" type="search" results="5" name="address"
+										value="" data-default="enter your address"/>
+									<input type="submit" name="geocode" value="Search"/>
+								</p>
+								<p class="status error">Unable to geocode: <tt>foo</tt></p>
+							</div>
+						</div>
+					</li>
+
+					<li id="submit">
+						<p><input type="submit" value="Map it!"/></p>
+					</li>
+
+				</ol>
+
+			</form>
+
+		</div>
+	</body>
+</html>
