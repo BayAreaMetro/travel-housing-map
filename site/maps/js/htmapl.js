@@ -548,7 +548,7 @@
 				engine.drag = handler(mm.MouseHandler);
 				// TODO: integrate some of Tom's other handlers, or write them here?
 				// engine.arrow = handler(mm.KeyboardHandler);
-				// engine.gesture = handler(mm.GestureHandler);
+				// engine.touch = handler(mm.TouchHandler);
 
 			})();
 			return engine;
@@ -570,19 +570,52 @@
 				return map;
 			},
 			image: function() {
-				return {};
+				return {map: function() {}};
 			},
 			geoJson: function() {
-				return {};
+				return {map: function() {}};
 			},
 			compass: function() {
-				return {};
+				return {map: function() {}};
 			},
 			interact: function() {
-				return {};
+				return {map: function() {}};
 			}
 		};
 	})();
+
+	/**
+	 * initControls() adds click handlers to elements (which we'll assume are
+	 * "links" even though we don't require them to be <a> elements) with the
+	 * following classes that apply their data to the map:
+	 *
+	 * "zoom-in": zooms the map in by 1 zoom level
+	 * "zoom-out": zooms the map out by 1 zoom level
+	 * "zoom-to": zooms the map to the zoom level specified in its "zoom" data
+	 * 	attribute
+	 * "set-center": centers the map on the {lat,lon} specified in its "center"
+	 * 	data attribute
+	 * "set-extent": sets the map extent to the [{lat,lon},{lat,lon}] specified in
+	 * 	its "extent" data attribute
+	 *
+	 * NOTE: both the "zoom-to" and "set-center" handlers set zoom *and* center if
+	 * they exist, so it's possible to have one link that does both.
+	 */
+	function initControls(root, map) {
+		// zoom-in and zoom-out links should, well, zoom in and out
+		root.find(".zoom-in").click(function() { map.zoomBy(1); return false; });
+		root.find(".zoom-out").click(function() { map.zoomBy(-1); return false; });
+		// zoom-to and set-center links should specify a zoom and/or center
+		root.find(".zoom-to, .set-center").click(function() {
+			applyData($(this), map, {zoom: getInt, center: getLatLon});
+			return false;
+		});
+		// set-extent links should 
+		root.find(".set-extent").click(function() {
+			applyData($(this), map, {extent: getExtent, zoom: getInt});
+			return false;
+		});
+	}
 
 	function htmapl(el, defaults, overrides) {
 
@@ -592,6 +625,7 @@
 		// the root element
 		var root = $(el),
 				container = engine.container();
+		container.style.width = container.style.height = "100%";
 
 		if (container) el.insertBefore(container, null);
 		else container = el;
@@ -634,16 +668,17 @@
 			if (engine.interact) {
 				map.add(engine.interact());
 			} else {
-				if (engine.dblclick) map.add(engine.dblclick());
 				if (engine.drag) map.add(engine.drag());
-				if (engine.arrow && !root.hasClass("no-kybd")) map.add(engine.arrow());
+				if (engine.dblclick) map.add(engine.dblclick());
+				if (engine.arrow && root.hasClass("kybd")) map.add(engine.arrow());
 				if (engine.wheel && root.hasClass("wheel")) {
 					map.add(engine.wheel().smooth(root.hasClass("smooth")));
 				}
 			}
 		} else {
-			if (root.hasClass("drag") && engine.drag) {
+			if (engine.drag && root.hasClass("drag")) {
 				map.add(engine.drag());
+				if (engine.dblclick) map.add(engine.dblclick());
 			}
 			if (engine.wheel && root.hasClass("wheel")) {
 				map.add(engine.wheel().smooth(root.hasClass("smooth")));
@@ -724,10 +759,15 @@
 
 			if (layer) {
 				applyData(source, layer, attrs);
-				if (source.id) layer.id(source.id);
 				map.add(layer);
+
+				if (typeof layer.container == "function") {
+					// TODO: do something nice here.
+				}
+
+				source.data("layer", layer);
 			}
-		}).remove();
+		});
 
 		var markers = root.find(".marker").filter(function(i, m) {
 			var marker = $(this),
@@ -766,6 +806,8 @@
 				});
 			});
 		}
+
+		initControls(root, map);
 
 		// force a move
 		map.center(map.center());

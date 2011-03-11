@@ -134,9 +134,7 @@ function parseQueryString(str) {
 			parts = str.split("&");
 	for (var i = 0; i < parts.length; i++) {
 		var part = parts[i].split('=');
-		if (part.length == 2) {
-			q[part[0]] = part[1];
-		}
+    q[part[0]] = part[1];
 	}
 	return q;
 }
