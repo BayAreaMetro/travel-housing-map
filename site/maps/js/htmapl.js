@@ -270,6 +270,46 @@
 	exports.getXY = getXY;
 	exports.templatize = templatize;
 
+	function collection() {
+		var list = [],
+				coll = {};
+
+		coll.add = function(obj, id) {
+			list.push({obj: obj, id: id});
+			return list.length;
+		};
+
+		coll.remove = function(test) {
+			var old = list.length;
+			list = list.filter(function(entry) {
+				return entry.obj == test || entry.id == test;
+			});
+			return old > list.length;
+		};
+
+		coll.find = function(id) {
+			var len = list.length;
+			for (var i = 0; i < len; i++) {
+				if (list[i].id == id) {
+					return list[i].obj;
+				}
+			}
+			return null;
+		};
+
+		return coll;
+	};
+
+	var MAPS = collection(),
+			LAYERS = collection();
+
+	exports.getMap = function(el) {
+		return MAPS.find(el);
+	};
+	exports.getLayer = function(el) {
+		return LAYERS.find(el);
+	};
+
 	/**
 	 * The engine is an interface which creates all of the necessary objects.
 	 * Initially we're assuming a Polymaps-like interface with the following
@@ -766,6 +806,9 @@
 				}
 
 				source.data("layer", layer);
+				LAYERS.add(layer, source.attr("id"));
+			} else {
+				// console.log("No layer!", source);
 			}
 		});
 
@@ -795,13 +838,18 @@
 				var size = map.size();
 				markers.each(function() {
 					var marker = $(this),
-							loc = marker.data("location"),
-							pos = map.locationPoint(loc);
-					if (pos.x >= 0 && pos.x <= size.x && pos.y >= 0 && pos.y <= size.y) {
-						marker.css("left", px(pos.x)).css("top", px(pos.y));
-						marker.css("display", "");
+							loc = getLatLon(marker.data("location"));
+					if (loc) {
+						var pos = map.locationPoint(loc);
+						if (pos.x >= 0 && pos.x <= size.x && pos.y >= 0 && pos.y <= size.y) {
+							marker.css("left", px(pos.x)).css("top", px(pos.y));
+							marker.removeClass("out-of-bounds");
+						} else {
+							marker.addClass("out-of-bounds");
+						}
+						marker.removeClass("invalid-location");
 					} else {
-						marker.css("display", "none");
+						marker.addClass("invalid-location");
 					}
 				});
 			});
@@ -826,6 +874,7 @@
 		}
 		deferredInit.timeout = setTimeout(deferredInit, 10);
 
+		MAPS.add(map, root.attr("id"));
 		// stash the map in the jQuery element data for future reference
 		return root.data("map", map);
 	}

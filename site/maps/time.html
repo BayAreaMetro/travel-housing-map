@@ -29,28 +29,31 @@
 			.script("js/autofill.js")
 			.script("js/geocode.js")
 			.script("/data/blk2taz/convert.js")
-			.script("js/travel-time.js").wait(initialize);
+			.script("js/travel-time.js").wait(function() {
+				$(initialize);
+			});
 
 			function initialize() {
+				var po = org.polymaps;
+
 				var form = $("form").first(),
 						// NOTE: this gets autopopulated from the query string in autofill.js
 						SELECTED = form.find("input[name=taz]").val(),
 						// And the map has been initialized via HTMAPL in travel-time.js
-						map = $("#travel-time").data("map");
+						map = $.fn.htmapl.getMap("travel-time");
 
 				var stat = $("#status").attr("class", "loading").text("Loading...");
 
-				var po = org.polymaps,
-						NULL_STYLE = po.stylist()
-							.attr("fill", "none")
-							.attr("stroke", function(feature) {
-								return feature.id == SELECTED ? "#ff0" : "none";
-							})
-							.attr("stroke-width", function(feature) {
-								return feature.id == SELECTED ? 2 : .1;
-							});
+				var NULL_STYLE = po.stylist()
+					.attr("fill", "none")
+					.attr("stroke", function(feature) {
+						return feature.id == SELECTED ? "#ff0" : "none";
+					})
+					.attr("stroke-width", function(feature) {
+						return feature.id == SELECTED ? 2 : .1;
+					});
 
-				var layer = $("#taz-shapes").data("layer");
+				var layer = $.fn.htmapl.getLayer("taz-shapes");
 
 				var config = {};
 				config.mode = form.find("select[name=mode]").change(function() {

@@ -27,7 +27,7 @@ $(function() {
 	geocoder = new google.maps.Geocoder();
 
 	var geocontainer = $("#geocoder"),
-	var addr = geocontainer.find("input[name=address]"),
+			addr = geocontainer.find("input[name=address]"),
 			prompt = addr.data("default"),
 			stat = geocontainer.find(".status");
 
