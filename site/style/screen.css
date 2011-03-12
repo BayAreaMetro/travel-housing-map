@@ -18,6 +18,16 @@ body {
 	border-left: 24px solid #666;
 }
 
+a:link,
+a:visited {
+	color: #009DDC;
+}
+
+a:visited {
+	text-decoration: none;
+	border-bottom: 1px dotted;
+}
+
 #page {
 	padding: 10px;
 }
@@ -86,7 +96,7 @@ ol li p {
 		display: inline-block;
 		text-decoration: none;
 		font-weight: bold;
-		background: #009DDC;
+		background: #000;
 		color: #fff;
 		padding: 6px;
 		line-height: 0;
@@ -119,6 +129,14 @@ ol.steps li .step {
 	margin: 0;
 }
 
+	#geocoder input[type=submit] {
+		background: #000;
+	}
+
+	#geocoder p {
+		margin: 0;
+	}
+
 	#geocoder label,
 	#geocoder .status {
 		display: none;
@@ -130,6 +148,13 @@ ol.steps li .step {
 		padding: 4px;
 		margin: 4px 2px;
 	}
+
+input, select {
+	font-size: inherit;
+	font-weight: inherit;
+	font-family: inherit;
+	line-height: inherit;
+}
 
 input[type=search] {
 	font-size: 120%;
@@ -144,14 +169,11 @@ input[type=submit] {
 	border: none;
 	outline-width: 0;
 	font-weight: bold;
-	font-size: inherit;
 }
 
 h2 input[type=submit] {
 	display: inline-block;
 	padding: .1em .5em;
-	font-family: inherit;
-	line-height: inherit;
 }
 
 ol.steps li.complete {
@@ -163,4 +185,29 @@ ol.steps li.complete .step {
 
 .complete #location-map {
 	display: none;
+}
+
+#info {
+	position: relative;
+	border-bottom: 1px solid transparent;
+}
+
+#info #status {
+	position: absolute;
+	color: #999;
+	right: 0;
+	bottom: 0;
+}
+
+#legend {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+	background: #E4E3DB;
+	padding: .5em;
+	z-index: 1002;
+}
+
+#legend .item {
+	padding: .25em .5em;
 }

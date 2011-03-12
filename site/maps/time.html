@@ -1,11 +1,15 @@
 <html>
 	<head>
-		<title>MTC SCS: Travel Time</title>
+		<title>One Bay Area: Move / Maps / Travel Time</title>
 		<style type="text/css">
 			@import url(../style/screen.css);
 
 			#travel-time {
 				height: 500px !important;
+			}
+
+			#selected-taz {
+				width: 6ex !important;
 			}
 
 		</style>
@@ -19,6 +23,7 @@
 			})
 			.script("js/jquery-1.5.min.js")
 			.script("js/polymaps.min.js")
+			.script("js/protovis-r3.2.js")
 			.script("js/htmapl.js")
 			.script("js/utils.js")
 			.script("js/autofill.js")
@@ -26,29 +31,141 @@
 			.script("/data/blk2taz/convert.js")
 			.script("js/travel-time.js").wait(initialize);
 
-			function tazID(feature) {
-				return feature.properties["TAZ1454"];
-			}
-
 			function initialize() {
-				var po = org.polymaps;
-
 				var form = $("form").first(),
-						selected = form.find("input[name=taz]").val(),
+						// NOTE: this gets autopopulated from the query string in autofill.js
+						SELECTED = form.find("input[name=taz]").val(),
+						// And the map has been initialized via HTMAPL in travel-time.js
 						map = $("#travel-time").data("map");
 
-				$("#selected-taz").text(selected);
+				var stat = $("#status").attr("class", "loading").text("Loading...");
+
+				var po = org.polymaps,
+						NULL_STYLE = po.stylist()
+							.attr("fill", "none")
+							.attr("stroke", function(feature) {
+								return feature.id == SELECTED ? "#ff0" : "none";
+							})
+							.attr("stroke-width", function(feature) {
+								return feature.id == SELECTED ? 2 : .1;
+							});
 
 				var layer = $("#taz-shapes").data("layer");
+
+				var config = {};
+				config.mode = form.find("select[name=mode]").change(function() {
+					config.mode = $(this).val();
+					layer.reshow();
+				}).val();
+				config.time = form.find("select[name=time]").change(function() {
+					config.time = $(this).val();
+					loadScenario();
+				}).val();
+				// console.log(config);
+
+				var featuresById = {};
+				function tazID(feature) {
+					return feature.properties["TAZ1454"];
+				}
+
+				function travelTime(feature) {
+					return (typeof feature.properties.travel == "object")
+						? feature.properties.travel[config.mode]
+						: -999;
+				}
+
+				var filters = [];
+
+				var colorScale = pv.Scale.linear()
+					.domain(-999, 	0,			15, 		30, 		60)
+					// .range("#000", "#063", "#063", "#8c7", "#ffc");
+					.range("#000", "#009DDC", "#009DDC", "#d87", "#ffe");
+				var legend = $("#legend .notches"),
+						steps = colorScale.domain().slice(1),
+						last = steps.length - 1;
+				for (var i = 1; i < steps.length; i++) {
+					var current = steps[i],
+							prev = steps[i - 1],
+							text = (prev == 0)
+								? ("<" + current)
+								: (i == last) ? (current + "+") : current;
+					var step = $("<a/>")
+						.text(text)
+						.attr("class", "item")
+						.data("minutes", current)
+						.css("background", colorScale(current).color);
+					step.appendTo(legend);
+				}
+
+				function defaultColor(feature) {
+					return (feature.id == SELECTED) ? "#ff0" : "none";
+				}
+
 				var style = po.stylist()
-					.attr("id", function(feature) { return "taz" + tazID(feature); })
-					.attr("fill", function(feature) {
-						return tazID(feature) == selected ? "yellow" : "blue";
+					.attr("id", function(feature) { return "taz" + feature.id; })
+					.title(function(feature) {
+						return "TAZ #" + feature.id + ": " + Math.ceil(travelTime(feature)) + " minutes";
 					})
-					.attr("fill-opacity", ".8");
+					.attr("fill", function(feature) {
+						if (typeof feature.properties.travel == "object") {
+							var value = travelTime(feature);
+							if (value == -999) {
+								return defaultColor(feature);
+							} else {
+								return colorScale(value).color;
+							}
+						} else {
+							return defaultColor(feature);
+						}
+					});
 				layer.on("show", style);
-				layer.on("load", style);
-				console.log(layer);
+
+				function loadScenario() {
+					var url = "/data/scenarios/2005/time/" + [config.time, "from", SELECTED].join("/") + ".csv";
+					stat.attr("class", "loading").text("Loading scenario data...");
+					$.ajax(url, {
+						dataType: "text",
+						success: function(text) {
+							var rows = parseCSV(text),
+									len = rows.length;
+							for (var i = 0; i < len; i++) {
+								var row = rows[i];
+								if (!isNaN(row.dest) && row.dest in featuresById) {
+									featuresById[row.dest].properties.travel = row;
+								}
+							}
+							layer.reshow();
+							stat.attr("class", "loaded").text("Loaded!");
+						},
+						error: function(xhr, err, text) {
+							console.log("ERROR:", err);
+							stat.attr("class", "error").text("Error loading scenario: " + text);
+						}
+					});
+				}
+
+				layer.on("load", function(e) {
+					var features = e.features,
+							len = features.length;
+					for (var i = 0; i < len; i++) {
+						var feature = e.features[i].data;
+						feature.id = tazID(feature);
+						featuresById[feature.id] = feature;
+						if (feature.id == SELECTED) {
+							var el = e.features[i].element;
+							el.parentNode.appendChild(el);
+						}
+					}
+					console.log(featuresById);
+
+					NULL_STYLE(e);
+					style(e);
+
+					stat.attr("class", "loaded").text("Loaded " + len + " TAZs");
+					stat.attr("class", "loading").text("Loading travel times...");
+
+					loadScenario();
+				});
 			}
 
 		</script>
@@ -58,33 +175,63 @@
 
 			<h1><a href="/">Move</a> / <a href="./">Maps</a> / Travel Time</h1>
 
-			<h2>You've selected:
-				<acronym title="Transportation Analysis Zone">TAZ</acronym> #<span id="selected-taz">???</span>
-			</h2>
-
 			<form class="autofill" action="time.html" method="GET">
-				<input type="hidden" name="taz"/>
+				<div id="info">
+					<h2>Travel times for
+						<label><acronym title="Transportation Analysis Zone">TAZ</acronym>
+							<input id="selected-taz" name="taz"/></label>
+						(<a href="./">Select Another</a>)
+					</h2>
+					<p id="travel-options">
+						<label title="select a mode of transit">Traveling by: <select id="mode" name="mode">
+							<option value="da" selected="selected">car (alone)</option>
+							<option value="s2">car (2 people)</option>
+							<option value="s3">car (3+ people)</option>
+							<option value="wTrnW">public transit</option>
+							<!--
+							<option value="wTrnW">public transit (walk/walk)</option>
+							<option value="wTrnD">public transit (walk/drive)</option>
+							<option value="dTrnW">public transit (drive/walk)</option>
+							-->
+							<option value="walk">foot</option>
+							<option value="bike">bicycle</option>
+						</select></label>
+						<label title="select a time of day">in the: <select id="time" name="time">
+							<option value="EA">early AM</option>
+							<option value="AM" selected="selected">AM</option>
+							<option value="MD">mid-day</option>
+							<option value="PM">PM</option>
+							<option value="EV">evening</option>
+						</select></label>
+					</p>
+					<p id="status"></p>
+				</div>
 
-				<div class="map drag" id="travel-time" data-zoomRange="7,16">
+				<div class="map drag" id="travel-time" data-zoomRange="8,14">
 					<input type="hidden" name="center" value="37.7639,-122.4130"/>
 					<input type="hidden" name="zoom" value="9"/>
 					<div class="layer" data-type="image"
 						data-url="http://a.acetate.geoiq.com/tiles/acetate-base/{Z}/{X}/{Y}.png"></div>
 					<div class="layer" id="taz-shapes" data-type="geoJson"
-						data-scale="fixed" data-zoom="10" data-url="/data/taz1454.json"></div>
+						data-scale="fixed" data-zoom="11" data-url="/data/taz1454.json"></div>
 					<div class="layer" id="acetate-roads" data-type="image"
 						data-url="http://a.acetate.geoiq.com/tiles/acetate-roads/{Z}/{X}/{Y}.png"></div>
 					<div class="layer" id="acetate-labels" data-type="image"
 						data-url="http://a.acetate.geoiq.com/tiles/acetate-labels/{Z}/{X}/{Y}.png"></div>
+
 					<!--
 					<div class="layer" data-type="image"
 						data-url="http://c.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{Z}/{X}/{Y}.png"></div>
 					-->
-					<div class="crosshairs"></div>
+
+					<a class="crosshairs" href="#target"></a>
+
 					<div class="controls">
 						<label>Zoom:</label> <a class="zoom-in" href="#location-map"><img alt="in" src="../style/images/zoom-plus.png"/></a>
 						<a class="zoom-out" href="#location-map"><img alt="out" src="../style/images/zoom-minus.png"/></a>
 					</div>
+
+					<div id="legend">Travel time: <span class="notches"></span> minutes</div>
 
 					<div id="geocoder">
 						<p>

@@ -244,3 +244,24 @@ function sum(a) {
 function average(a) {
 	return sum(a) / a.length;
 }
+
+function parseCSV(text, delim, newline) {
+  if (typeof delim != "string") delim = ",";
+  if (typeof newline != "string") newline = "\n";
+  
+  var rows = text.split(newline),
+			headers = rows.shift().split(delim),
+			hlen = headers.length,
+			len = rows.length;
+
+	for (var i  = 0; i < len; i++) {
+		var row = {},
+				parts = rows[i].split(delim);
+		for (var j = 0; j < hlen; j++) {
+			row[headers[j]] = parseFloat(parts[j]);
+		}
+		rows[i] = row;
+	}
+
+	return rows;
+}
