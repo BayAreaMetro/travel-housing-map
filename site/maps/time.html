@@ -141,7 +141,7 @@
 							stat.attr("class", "loaded").text("Loaded!");
 						},
 						error: function(xhr, err, text) {
-							console.log("ERROR:", err);
+							// console.log("ERROR:", err);
 							stat.attr("class", "error").text("Error loading scenario: " + text);
 						}
 					});
@@ -159,7 +159,7 @@
 							el.parentNode.appendChild(el);
 						}
 					}
-					console.log(featuresById);
+					// console.log(featuresById);
 
 					NULL_STYLE(e);
 					style(e);
