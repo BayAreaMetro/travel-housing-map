@@ -210,3 +210,8 @@ ol.steps li.complete .step {
 #legend .item {
 	padding: .25em .5em;
 }
+
+input[disabled] {
+	background: #888;
+	color: #fff;
+}

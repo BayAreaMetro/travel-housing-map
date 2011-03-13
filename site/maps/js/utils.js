@@ -245,6 +245,25 @@ function average(a) {
 	return sum(a) / a.length;
 }
 
+function zoomPrecision(z) {
+  return Math.ceil(Math.log(z) / Math.LN2);
+}
+
+function formatLocation(loc, zoom) {
+  var pn = isNaN(zoom) ? 6 : zoomPrecision(zoom);
+  return loc.lat.toFixed(pn) + "," + loc.lon.toFixed(pn);
+}
+
+function formatZYX(z, xy, y) {
+  var pn = zoomPrecision(z);
+  var x = xy;
+  if (arguments.length == 2) {
+    x = xy.lon;
+    y = xy.lat;
+  }
+  return [z.toFixed(2), y.toFixed(pn), x.toFixed(pn)].join("/");
+}
+
 function parseCSV(text, delim, newline) {
   if (typeof delim != "string") delim = ",";
   if (typeof newline != "string") newline = "\n";

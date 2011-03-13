@@ -725,11 +725,6 @@
 			}
 		}
 
-		// hash stashing
-		if (engine.hash && root.hasClass("hash")) {
-			map.add(engine.hash());
-		}
-
 		root.find(".layer").each(function(j, subel) {
 			var source = $(subel),
 					layer,
@@ -856,6 +851,11 @@
 		}
 
 		initControls(root, map);
+
+		// hash stashing
+		if (engine.hash && root.hasClass("hash")) {
+			map.add(engine.hash());
+		}
 
 		// force a move
 		map.center(map.center());

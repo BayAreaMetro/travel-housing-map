@@ -42,16 +42,17 @@
 						// And the map has been initialized via HTMAPL in travel-time.js
 						map = $.fn.htmapl.getMap("travel-time");
 
-				var stat = $("#status").attr("class", "loading").text("Loading...");
-
-				var NULL_STYLE = po.stylist()
-					.attr("fill", "none")
-					.attr("stroke", function(feature) {
-						return feature.id == SELECTED ? "#ff0" : "none";
-					})
-					.attr("stroke-width", function(feature) {
-						return feature.id == SELECTED ? 2 : .1;
+				var permalinks = $("a.permalink");
+				if (permalinks.length) {
+					map.on("move", function() {
+						var loc = formatZYX(map.zoom(), map.center());
+						permalinks.attr("href", function() {
+							return this.href.replace(/(#.*)?$/, "#" + loc);
+						});
 					});
+				}
+
+				var stat = $("#status").attr("class", "loading").text("Loading...");
 
 				var layer = $.fn.htmapl.getLayer("taz-shapes");
 
@@ -109,6 +110,8 @@
 					.title(function(feature) {
 						return "TAZ #" + feature.id + ": " + Math.ceil(travelTime(feature)) + " minutes";
 					})
+					.attr("stroke", function(feature) { return feature.id == SELECTED ? "#ff0" : "none"; })
+					.attr("stroke-width", function(feature) { return feature.id == SELECTED ? 2 : .1; })
 					.attr("fill", function(feature) {
 						if (typeof feature.properties.travel == "object") {
 							var value = travelTime(feature);
@@ -147,6 +150,24 @@
 					});
 				}
 
+				function selectTAZ(tazID) {
+					SELECTED = tazID;
+					form.find("input[name=taz]").val(SELECTED);
+					var loc = formatZYX(map.zoom(), map.center());
+					permalinks.attr("href", function() {
+						var href = this.href,
+								i = href.indexOf("?"),
+								qs = {};
+						if (i > -1) {
+							qs = parseQueryString(this.href.substr(i + 1))
+							href = href.substr(0, i);
+						}
+						qs.taz = tazID;
+						return href + "?" + makeQueryString(qs) + "#" + loc;
+					});
+					loadScenario();
+				}
+
 				layer.on("load", function(e) {
 					var features = e.features,
 							len = features.length;
@@ -161,7 +182,6 @@
 					}
 					// console.log(featuresById);
 
-					NULL_STYLE(e);
 					style(e);
 
 					stat.attr("class", "loaded").text("Loaded " + len + " TAZs");
@@ -169,6 +189,42 @@
 
 					loadScenario();
 				});
+
+				var lookup = $("#lookup-taz");
+				lookup.data("default", lookup.val());
+				lookup.click(selectCenter);
+
+				$("a.crosshairs").click(selectCenter);
+
+				/**
+				 * TODO:
+				 * Provide an address field instead of TAZ.
+				 * Use default address, geocode w/google, lookup TAZ, go!
+				 * time.html?location=242+Capp+St
+				 * time.html?location=37.7639,-122.4130
+				 * etc.
+				 */
+
+				function selectCenter() {
+					// stat.attr("class", "loading").text("Looking up location...");
+					lookup.val("Finding...").attr("disabled", true);
+					location2taz(map.center(), {
+						success: function(taz) {
+							lookup.val(lookup.data("default")).attr("disabled", false);
+							// console.log(taz);
+							selectTAZ(taz);
+						},
+						error: function(req, err, status) {
+							lookup.val(lookup.data("default")).attr("disabled", false);
+							stat.attr("class", "error").text("ERROR: " + err);
+						}
+					});
+					return false;
+				}
+
+				if (!SELECTED) {
+					selectCenter();
+				}
 			}
 
 		</script>
@@ -183,7 +239,9 @@
 					<h2>Travel times for
 						<label><acronym title="Transportation Analysis Zone">TAZ</acronym>
 							<input id="selected-taz" name="taz"/></label>
-						(<a href="./">Select Another</a>)
+						<!-- (<a href="./">Select Another</a>) -->
+						<input type="submit" id="lookup-taz" value="Find"/>
+						<a class="permalink" href="?">&infin; Permalink</a>
 					</h2>
 					<p id="travel-options">
 						<label title="select a mode of transit">Traveling by: <select id="mode" name="mode">
@@ -210,7 +268,7 @@
 					<p id="status"></p>
 				</div>
 
-				<div class="map drag" id="travel-time" data-zoomRange="8,14">
+				<div class="map drag hash" id="travel-time" data-zoomRange="9,14">
 					<input type="hidden" name="center" value="37.7639,-122.4130"/>
 					<input type="hidden" name="zoom" value="9"/>
 					<div class="layer" data-type="image"
@@ -227,7 +285,7 @@
 						data-url="http://c.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{Z}/{X}/{Y}.png"></div>
 					-->
 
-					<a class="crosshairs" href="#target"></a>
+					<a class="crosshairs" title="show travel times from this location" href="#select-center"></a>
 
 					<div class="controls">
 						<label>Zoom:</label> <a class="zoom-in" href="#location-map"><img alt="in" src="../style/images/zoom-plus.png"/></a>

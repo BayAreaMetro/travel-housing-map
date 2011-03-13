@@ -36,10 +36,12 @@
 				$("#map-submit").click(function() {
 					var container = $("#submit-location"),
 							form = $("#taz-submit");
+					container.find(".status").text("Looking up location...");
+					var z = map.zoom();
 					var data = {
 						taz: "",
-						center: [map.center().lat, map.center().lon].join(","),
-						zoom: map.zoom()
+						zoom: z,
+						center: formatLocation(map.center())
 					};
 					function submit() {
 						for (var key in data) {
@@ -53,14 +55,16 @@
 					try {
 						location2taz(map.center(), {
 							success: function(taz) {
-								console.log(taz);
+								container.find(".status").text("Mapping, please wait...");
 								container.removeClass("loading");
+								container.addClass("submitting");
 								data.taz = taz;
 								submit();
 							},
 							error: function(req, err, status) {
 								container.removeClass("loading");
-								container.addClass("error").find(".status").text(err);
+								container.addClass("error")
+								container.find(".status").text("ERROR: " + err);
 							}
 						});
 					} catch (e) {
@@ -116,7 +120,7 @@
 					</li>
 
 					<li id="submit-location">
-						<h2><input id="map-submit" type="submit" value="Map It!"/></h2>
+						<h2><input id="map-submit" type="submit" value="Map It!"/> <span class="status"></span></h2>
 					</li>
 
 				</ol>
