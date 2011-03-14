@@ -1,4 +1,5 @@
 # these are used to clean up after shapefile zip archives (see: "clean")
+TAZ_SHAPEFILE = taz1454_clipurb2002
 SHAPEFILE_EXTS = shp shx prj sbn sbx dbf
 LAST_BLKID = 060/971/543/024/999
 
@@ -9,10 +10,10 @@ all: output/taz1454.json output/blk2taz/$(LAST_BLKID).txt output-html
 
 # Unzip the TAZ boundaries and overwrite the SHP and SHX components with
 # simplified geometries.
-input/taz1454.shp:
-	unzip -d input $(basename $@).zip
-	cp $(basename $@)-simplified.shp $(basename $@).shp
-	cp $(basename $@)-simplified.shx $(basename $@).shx
+input/$(TAZ_SHAPEFILE).shp:
+	unzip -d input input/$(TAZ_SHAPEFILE).zip
+	cd input && cp $(TAZ_SHAPEFILE)-simplified.shp $(TAZ_SHAPEFILE).shp
+	cd input && cp $(TAZ_SHAPEFILE)-simplified.shx $(TAZ_SHAPEFILE).shx
 
 # Strip out unnecessary fields from the buildings.csv and remove ":i4" suffix
 # from column names.
@@ -21,7 +22,7 @@ input/buildings_min.csv: input/buildings.csv
 	perl -pi -e 's/:i4//g' $@
 
 # Convert the shapefile to GeoJSON
-input/taz1454.json: input/taz1454.shp
+input/taz1454.json: input/$(TAZ_SHAPEFILE).shp
 	ogr2ogr -f GeoJSON -t_srs EPSG:4326 $@ $<
 
 output:
