@@ -1,0 +1,3 @@
+The GeoJSON files in this directory contain geometries for MTC's Transportation
+Analysis Zones (TAZs). TAZ lookups for Census blocks (and other types of
+"locations" are available in ../blk2taz.
