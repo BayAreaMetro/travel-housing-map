@@ -38,7 +38,9 @@ $(function() {
 		container.data("center", input_center.val());
 		container.data("zoom", input_zoom.val());
 
-		map = $(this).htmapl().data("map");
+		$(this).htmapl();
+		map = $.fn.htmapl.getMap(this.id);
+
 		map.on("move", function() {
 			var c = map.center(),
 					z = map.zoom();
@@ -153,11 +155,14 @@ $(function() {
 		return (feature.id == SELECTED_TAZ) ? "#ff0" : "none";
 	}
 
+	function getTitle(feature) {
+		return "TAZ #" + feature.id + ": " + formatTime(travelTime(feature));
+	}
+
 	var style = po.stylist()
 		.attr("id", function(feature) { return "taz" + feature.id; })
-		.title(function(feature) {
-			return "TAZ #" + feature.id + ": " + Math.ceil(travelTime(feature)) + " minutes";
-		})
+		.title(getTitle)
+		.attr("title", getTitle)
 		.attr("stroke", function(feature) { return feature.id == SELECTED_TAZ ? "#ff0" : "#333"; })
 		.attr("stroke-width", function(feature) { return feature.id == SELECTED_TAZ ? 2 : .1; })
 		.attr("fill", function(feature) {

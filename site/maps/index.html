@@ -58,7 +58,7 @@
 								container.find(".status").text("Mapping, please wait...");
 								container.removeClass("loading");
 								container.addClass("submitting");
-								data.taz = taz;
+								data.location = "TAZ:" + taz;
 								submit();
 							},
 							error: function(req, err, status) {
@@ -128,9 +128,7 @@
 			</form>
 
 			<form id="taz-submit" action="time.html" method="GET">
-				<input type="hidden" name="taz"/>
-				<input type="hidden" name="center"/>
-				<input type="hidden" name="zoom"/>
+				<input type="hidden" name="location"/>
 			</form>
 		</div>
 	</body>

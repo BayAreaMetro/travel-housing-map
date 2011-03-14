@@ -11,6 +11,7 @@
 			#info {
 				position: relative;
 			}
+
 			#permalink {
 				position: absolute;
 				top: 0;
@@ -24,6 +25,10 @@
 
 			#selected-taz {
 				width: 6ex !important;
+			}
+
+			image {
+				pointer-events: none;
 			}
 
 		</style>
@@ -66,13 +71,11 @@
 							<option value="s2">car (2 people)</option>
 							<option value="s3">car (3+ people)</option>
 							<option value="wTrnW">public transit</option>
-							<!--
-							<option value="wTrnW">public transit (walk/walk)</option>
-							<option value="wTrnD">public transit (walk/drive)</option>
-							<option value="dTrnW">public transit (drive/walk)</option>
-							-->
-							<option value="walk">foot</option>
+							<option value="wTrnW">public transit (walk to and from)</option>
+							<option value="wTrnD">public transit (walk to, drive from)</option>
+							<option value="dTrnW">public transit (drive to, walk from)</option>
 							<option value="bike">bicycle</option>
+							<option value="walk">foot</option>
 						</select></label>
 						<label title="select a time of day">in the: <select id="time" name="time">
 							<option value="EA">early AM</option>
@@ -91,7 +94,7 @@
 					<div class="layer" data-type="image"
 						data-url="http://a.acetate.geoiq.com/tiles/acetate-base/{Z}/{X}/{Y}.png"></div>
 					<div class="layer" id="taz-shapes" data-type="geoJson"
-						data-scale="fixed" data-zoom="11" data-url="/data/taz1454.json"></div>
+						data-scale="fixed" data-zoom="11" data-url="/data/areas/taz1454-clipurb.json"></div>
 					<div class="layer" id="acetate-roads" data-type="image"
 						data-url="http://a.acetate.geoiq.com/tiles/acetate-roads/{Z}/{X}/{Y}.png"></div>
 					<div class="layer" id="acetate-labels" data-type="image"

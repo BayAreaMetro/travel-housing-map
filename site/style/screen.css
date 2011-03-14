@@ -123,7 +123,7 @@ ol.steps li .step {
 
 #geocoder {
 	position: absolute;
-	top: 10px;
+	bottom: 10px;
 	right: 10px;
 	z-index: 1000;
 	padding: 0;
@@ -216,7 +216,7 @@ ol.steps li.complete .step {
 	bottom: 0;
 	left: 0;
 	background: #fff;
-	padding: .5em;
+	padding: 10px;
 	z-index: 1002;
 }
 

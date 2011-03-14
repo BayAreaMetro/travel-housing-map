@@ -317,3 +317,14 @@ function parseCSV(text, delim, newline) {
 
 	return rows;
 }
+
+function formatTime(minutes) {
+  var min = Number(minutes) >>> 0,
+      str = String(min);
+  if (min > 60) {
+    var hours = (min / 60) >>> 0;
+    min %= 60;
+    str = hours + " hours, " + min;
+  }
+  return str + " minutes";
+}
