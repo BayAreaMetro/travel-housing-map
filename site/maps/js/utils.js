@@ -134,16 +134,23 @@ function parseQueryString(str) {
 			parts = str.split("&");
 	for (var i = 0; i < parts.length; i++) {
 		var part = parts[i].split('=');
-    q[part[0]] = part[1];
+    q[part[0]] = decodeURIComponent(part[1]).replace(/\+/g, " ");
 	}
 	return q;
+}
+
+function prettyEscape(str) {
+  return encodeURIComponent(str)
+    .replace(/%20/g, "+")
+    .replace(/%2C/g, ",")
+    .replace(/%3A/g, ":");
 }
 
 function makeQueryString(q, sorted) {
 	var parts = [];
 	for (var k in q) {
 		if (!k.match(/^[a-z]+$/)) continue; // FIXME: this shouldn't happen
-		parts.push(k + '=' + encodeURIComponent(q[k]));
+		parts.push(k + '=' + prettyEscape(q[k]));
 	}
 	if (sorted) {
 		parts = parts.sort();
@@ -261,7 +268,33 @@ function formatZYX(z, xy, y) {
     x = xy.lon;
     y = xy.lat;
   }
-  return [z.toFixed(2), y.toFixed(pn), x.toFixed(pn)].join("/");
+  return [(z % 1 == 0) ? z : z.toFixed(2), y.toFixed(pn), x.toFixed(pn)].join("/");
+}
+
+function updateHrefs(links, vars, hash) {
+  var suffix = hash
+    ? (hash.charAt(0) == "#" ? hash : ("#" + hash))
+    : "";
+	if (vars) {
+		links.attr("href", function() {
+			var href = this.href.split("#")[0],
+					i = href.indexOf("?"),
+					qs = {};
+			if (i > -1) {
+				qs = parseQueryString(href.substr(i + 1))
+				href = href.substr(0, i);
+			}
+			qs = $.extend(qs, vars);
+      return href + "?" + makeQueryString(qs) + suffix;
+		});
+		return true;
+	} else if (hash) {
+		links.attr("href", function() {
+			return this.href.replace(/(#.*)?$/, suffix);
+		});
+		return true;
+	}
+	return false;
 }
 
 function parseCSV(text, delim, newline) {

@@ -8,6 +8,20 @@
 				height: 500px !important;
 			}
 
+			#info {
+				position: relative;
+			}
+			#permalink {
+				position: absolute;
+				top: 0;
+				right: 0;
+				margin: .5em 0 0 0;
+			}
+
+			#location {
+				width: 32ex;
+			}
+
 			#selected-taz {
 				width: 6ex !important;
 			}
@@ -29,203 +43,7 @@
 			.script("js/autofill.js")
 			.script("js/geocode.js")
 			.script("/data/blk2taz/convert.js")
-			.script("js/travel-time.js").wait(function() {
-				$(initialize);
-			});
-
-			function initialize() {
-				var po = org.polymaps;
-
-				var form = $("form").first(),
-						// NOTE: this gets autopopulated from the query string in autofill.js
-						SELECTED = form.find("input[name=taz]").val(),
-						// And the map has been initialized via HTMAPL in travel-time.js
-						map = $.fn.htmapl.getMap("travel-time");
-
-				var permalinks = $("a.permalink");
-				if (permalinks.length) {
-					map.on("move", function() {
-						var loc = formatZYX(map.zoom(), map.center());
-						permalinks.attr("href", function() {
-							return this.href.replace(/(#.*)?$/, "#" + loc);
-						});
-					});
-				}
-
-				var stat = $("#status").attr("class", "loading").text("Loading...");
-
-				var layer = $.fn.htmapl.getLayer("taz-shapes");
-
-				var config = {};
-				config.mode = form.find("select[name=mode]").change(function() {
-					config.mode = $(this).val();
-					layer.reshow();
-				}).val();
-				config.time = form.find("select[name=time]").change(function() {
-					config.time = $(this).val();
-					loadScenario();
-				}).val();
-				// console.log(config);
-
-				var featuresById = {};
-				function tazID(feature) {
-					return feature.properties["TAZ1454"];
-				}
-
-				function travelTime(feature) {
-					return (typeof feature.properties.travel == "object")
-						? feature.properties.travel[config.mode]
-						: -999;
-				}
-
-				var filters = [];
-
-				var colorScale = pv.Scale.linear()
-					.domain(-999, 	0,			15, 		30, 		60)
-					// .range("#000", "#063", "#063", "#8c7", "#ffc");
-					.range("#000", "#009DDC", "#009DDC", "#d87", "#ffe");
-				var legend = $("#legend .notches"),
-						steps = colorScale.domain().slice(1),
-						last = steps.length - 1;
-				for (var i = 1; i < steps.length; i++) {
-					var current = steps[i],
-							prev = steps[i - 1],
-							text = (prev == 0)
-								? ("<" + current)
-								: (i == last) ? (current + "+") : current;
-					var step = $("<a/>")
-						.text(text)
-						.attr("class", "item")
-						.data("minutes", current)
-						.css("background", colorScale(current).color);
-					step.appendTo(legend);
-				}
-
-				function defaultColor(feature) {
-					return (feature.id == SELECTED) ? "#ff0" : "none";
-				}
-
-				var style = po.stylist()
-					.attr("id", function(feature) { return "taz" + feature.id; })
-					.title(function(feature) {
-						return "TAZ #" + feature.id + ": " + Math.ceil(travelTime(feature)) + " minutes";
-					})
-					.attr("stroke", function(feature) { return feature.id == SELECTED ? "#ff0" : "none"; })
-					.attr("stroke-width", function(feature) { return feature.id == SELECTED ? 2 : .1; })
-					.attr("fill", function(feature) {
-						if (typeof feature.properties.travel == "object") {
-							var value = travelTime(feature);
-							if (value == -999) {
-								return defaultColor(feature);
-							} else {
-								return colorScale(value).color;
-							}
-						} else {
-							return defaultColor(feature);
-						}
-					});
-				layer.on("show", style);
-
-				function loadScenario() {
-					var url = "/data/scenarios/2005/time/" + [config.time, "from", SELECTED].join("/") + ".csv";
-					stat.attr("class", "loading").text("Loading scenario data...");
-					$.ajax(url, {
-						dataType: "text",
-						success: function(text) {
-							var rows = parseCSV(text),
-									len = rows.length;
-							for (var i = 0; i < len; i++) {
-								var row = rows[i];
-								if (!isNaN(row.dest) && row.dest in featuresById) {
-									featuresById[row.dest].properties.travel = row;
-								}
-							}
-							layer.reshow();
-							stat.attr("class", "loaded").text("Loaded!");
-						},
-						error: function(xhr, err, text) {
-							// console.log("ERROR:", err);
-							stat.attr("class", "error").text("Error loading scenario: " + text);
-						}
-					});
-				}
-
-				function selectTAZ(tazID) {
-					SELECTED = tazID;
-					form.find("input[name=taz]").val(SELECTED);
-					var loc = formatZYX(map.zoom(), map.center());
-					permalinks.attr("href", function() {
-						var href = this.href,
-								i = href.indexOf("?"),
-								qs = {};
-						if (i > -1) {
-							qs = parseQueryString(this.href.substr(i + 1))
-							href = href.substr(0, i);
-						}
-						qs.taz = tazID;
-						return href + "?" + makeQueryString(qs) + "#" + loc;
-					});
-					loadScenario();
-				}
-
-				layer.on("load", function(e) {
-					var features = e.features,
-							len = features.length;
-					for (var i = 0; i < len; i++) {
-						var feature = e.features[i].data;
-						feature.id = tazID(feature);
-						featuresById[feature.id] = feature;
-						if (feature.id == SELECTED) {
-							var el = e.features[i].element;
-							el.parentNode.appendChild(el);
-						}
-					}
-					// console.log(featuresById);
-
-					style(e);
-
-					stat.attr("class", "loaded").text("Loaded " + len + " TAZs");
-					stat.attr("class", "loading").text("Loading travel times...");
-
-					loadScenario();
-				});
-
-				var lookup = $("#lookup-taz");
-				lookup.data("default", lookup.val());
-				lookup.click(selectCenter);
-
-				$("a.crosshairs").click(selectCenter);
-
-				/**
-				 * TODO:
-				 * Provide an address field instead of TAZ.
-				 * Use default address, geocode w/google, lookup TAZ, go!
-				 * time.html?location=242+Capp+St
-				 * time.html?location=37.7639,-122.4130
-				 * etc.
-				 */
-
-				function selectCenter() {
-					// stat.attr("class", "loading").text("Looking up location...");
-					lookup.val("Finding...").attr("disabled", true);
-					location2taz(map.center(), {
-						success: function(taz) {
-							lookup.val(lookup.data("default")).attr("disabled", false);
-							// console.log(taz);
-							selectTAZ(taz);
-						},
-						error: function(req, err, status) {
-							lookup.val(lookup.data("default")).attr("disabled", false);
-							stat.attr("class", "error").text("ERROR: " + err);
-						}
-					});
-					return false;
-				}
-
-				if (!SELECTED) {
-					selectCenter();
-				}
-			}
+			.script("js/travel-time.js");
 
 		</script>
 	</head>
@@ -235,14 +53,13 @@
 			<h1><a href="/">Move</a> / <a href="./">Maps</a> / Travel Time</h1>
 
 			<form class="autofill" action="time.html" method="GET">
+				<!-- <input type="hidden" name="taz" value=""/> -->
+
 				<div id="info">
-					<h2>Travel times for
-						<label><acronym title="Transportation Analysis Zone">TAZ</acronym>
-							<input id="selected-taz" name="taz"/></label>
-						<!-- (<a href="./">Select Another</a>) -->
-						<input type="submit" id="lookup-taz" value="Find"/>
-						<a class="permalink" href="?">&infin; Permalink</a>
-					</h2>
+					<p id="permalink"><a class="permalink" href="?">&infin; link to this page</a></p>
+					<p>Enter an <label>address: <input type="text" id="location" name="location" value=""/></label>
+						<input type="submit" id="lookup-taz" value="Show travel times"/>
+					</p>
 					<p id="travel-options">
 						<label title="select a mode of transit">Traveling by: <select id="mode" name="mode">
 							<option value="da" selected="selected">car (alone)</option>
@@ -268,7 +85,7 @@
 					<p id="status"></p>
 				</div>
 
-				<div class="map drag hash" id="travel-time" data-zoomRange="9,14">
+				<div class="map drag" id="travel-time" data-zoomRange="9,14">
 					<input type="hidden" name="center" value="37.7639,-122.4130"/>
 					<input type="hidden" name="zoom" value="9"/>
 					<div class="layer" data-type="image"
@@ -285,7 +102,8 @@
 						data-url="http://c.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{Z}/{X}/{Y}.png"></div>
 					-->
 
-					<a class="crosshairs" title="show travel times from this location" href="#select-center"></a>
+					<a class="crosshairs"
+						title="show travel times from the location under the crosshairs" href="#select-center"></a>
 
 					<div class="controls">
 						<label>Zoom:</label> <a class="zoom-in" href="#location-map"><img alt="in" src="../style/images/zoom-plus.png"/></a>
@@ -298,7 +116,7 @@
 						<p>
 							<label for="address">Find an address:</label>
 							<input accesskey="a" type="search" results="5" name="address" value="" data-default="enter an address"/>
-							<input type="submit" name="geocode" value="Search"/>
+							<input type="submit" name="geocode" value="Find on the map"/>
 						</p>
 						<p class="status error">Unable to geocode: <tt>foo</tt></p>
 					</div>

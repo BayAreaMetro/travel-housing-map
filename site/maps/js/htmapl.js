@@ -29,7 +29,9 @@
 			var parts = str.split(/\s*,\s*/),
 					lat = parseFloat(parts[0]),
 					lon = parseFloat(parts[1]);
-			return {lon: lon, lat: lat};
+			if (!isNaN(lat) && !isNaN(lon)) {
+				return {lon: lon, lat: lat};
+			}
 		}
 		return null;
 	}
