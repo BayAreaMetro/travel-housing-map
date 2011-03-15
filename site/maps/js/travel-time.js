@@ -98,13 +98,15 @@ var gov = {ca: {mtc: {}}};
 		 */
 		function loadScenario() {
 			if (scenarioReq) {
-				stdout.attr("class", "aborting").text("Aborting previous load...");
+				stdout.attr("class", "aborting").text("Aborting previous request...");
 				scenarioReq.abort();
 				scenarioReq = null;
 			}
+
 			stdout.attr("class", "loading").text("Loading scenario data...");
+
 			var url = "/data/scenarios/2005/time/" + [state.time, "from", state.origin].join("/") + ".csv";
-			scenarioReq = $.ajax(url, {
+			return scenarioReq = $.ajax(url, {
 				dataType: "text",
 				success: function(text) {
 					var rows = parseCSV(text),
@@ -122,7 +124,6 @@ var gov = {ca: {mtc: {}}};
 					stdout.attr("class", "error").text("Error loading scenario: " + text);
 				}
 			});
-			return false;
 		}
 
 		// update permalinks on map move
