@@ -43,7 +43,7 @@ var gov = {ca: {mtc: {}}};
 				});
 			}
 
-			var stat = form.find("#status").attr("class", "loading").text("Loading...");
+			var stat = form.find("#status");
 
 			var layer = $.fn.htmapl.getLayer("taz-shapes");
 
