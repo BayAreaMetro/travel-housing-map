@@ -346,7 +346,7 @@ var NIL = -999;
 			}
 		};
 
-		// get/set the travel mode (instantaneous)
+		// get/set the time of day (async)
 		controller.time = function(x) {
 			if (arguments.length) {
 				state.time = x;
