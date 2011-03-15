@@ -482,6 +482,7 @@ $(function() {
 		step: 1,
 		value: maxTime
 	});
+	
 
 	// convert a time to a percent (used for the widths of individual chips)
 	function pct(t) {
@@ -526,6 +527,51 @@ $(function() {
 	chips.click(function(e) {
 		slider.click(e);
 	});
+	
+	// Time of Day slider (tod)
+	var tod_array = ['early AM','AM','mid-day','PM','evening'];
+	
+	
+	var tod_slider = $( "#time-mode-slider" ).slider({
+				value:1,
+				min: 0,
+				max: 4,
+				step: 1,
+				slide: function( event, ui ) {
+					//$( "#amount" ).val( "$" + ui.value );
+					console.log(tod_array[ui.value]);
+				}
+			});
+	
+	
+	function todLabelPos(n){
+		return (100/last) * n;
+	}
+			
+	var todlabels = $("#tod-legend .labels"),
+			steps = pv.range(0, 5),
+			last = steps.length - 1,
+			todPos = tod_slider.width() / last;
+
+	for (var i = 0; i <= last; i++) {
+		var current = steps[i];
+		var label = $("<a/>")
+			.text(tod_array[current])
+			.attr("href", "#")
+			.attr("class", "label")
+			.data("tod_pos", current)
+			.css("left", todLabelPos(current) + "%")
+			.appendTo(todlabels);
+	}
+	
+	todlabels.find("a").click(function() {
+		var t = $(this).data("tod_pos");
+		console.log(t);
+		tod_slider.slider("option", "value", t);
+		//updateMaxTime(t);
+	});
+			
+			
 
 	} catch (e) {
 		if (typeof console != "undefined" && console.log) console.log(e);

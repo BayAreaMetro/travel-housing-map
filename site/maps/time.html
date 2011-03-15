@@ -15,17 +15,6 @@
 				height: 500px !important;
 			}
 
-			#info {
-				position: relative;
-			}
-
-			#permalink {
-				position: absolute;
-				top: 0;
-				right: 0;
-				margin: .5em 0 0 0;
-			}
-
 			/* FIXME: These styles are fucked up. Help me! */
 			#bottom-bar {
 				position: absolute;
@@ -141,10 +130,29 @@
 				<!-- <input type="hidden" name="taz" value=""/> -->
 
 				<div id="info">
-					<p id="permalink"><a class="permalink" href="?">&infin; link to this page</a></p>
-					<p><label>Start address: <input type="text" id="location" name="origin" value="San Francisco, CA"/></label>
-						<input type="submit" name="submit-origin" value="Search" />
-					</p>
+					<div id="info-geo" class="clearfix">
+						<p><span class="dest-circle">A</span><label>Start address: <input type="text" id="location" name="origin" value="San Francisco, CA"/></label>
+							<input type="submit" name="submit-origin" value="Search" />
+						</p>
+						<p><span class="dest-circle">B</span><label>Destination address: <input type="text" id="location_dest" name="destination" value=""/></label>
+							<input type="submit" name="submit-destination" value="Search" />
+						</p>
+					</div>
+					
+					<div id="info-extras" class="clearfix">
+						<p id="travel-optionss">
+							<a href="#mode=da" id="mode_da" title="by car alone"><img src="../style/images/modes/auto.png"/></a>
+							<a href="#mode=wTrnW" id="mode_wTrnW" title="by public transit"><img src="../style/images/modes/transit.png"/></a>
+							<a href="#mode=bike" id="mode_bike" title="by bicycle"><img src="../style/images/modes/bike.png"/></a>
+							<a href="#mode=walk" id="mode_walk" title="by foot"><img src="../style/images/modes/walk.png"/></a>
+						</p>
+						<div id="time-of-day">
+							<h5 id='tod-label'>Time of Travel</h5>
+							<div id="time-mode-slider"></div>
+							<div id="tod-legend"><span class="labels"></span></div>
+						</div>
+					</div>
+					
 					<p id="travel-options">
 						<label title="select a mode of transit">Traveling by <select id="mode" name="mode">
 							<option value="da" selected="selected">car (alone)</option>
@@ -167,9 +175,12 @@
 							<option value="EV">evening</option>
 						</select></label>
 					</p>
-					<p id="stdout"></p>
+					<div id="info-meta">
+						<p id="permalink"><a class="permalink" href="?">&infin; link to this page</a></p>
+						<p id="stdout"></p>
+					</div>
 				</div>
-
+				
 				<div class="map drag" id="travel-time" data-zoomRange="9,14">
 					<input type="hidden" name="center" value="37.7639,-122.4130"/>
 					<input type="hidden" name="zoom" value="9"/>
