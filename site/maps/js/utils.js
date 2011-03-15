@@ -149,8 +149,9 @@ function prettyEscape(str) {
 function makeQueryString(q, sorted) {
 	var parts = [];
 	for (var k in q) {
-		if (!k.match(/^[a-z]+$/)) continue; // FIXME: this shouldn't happen
-		parts.push(k + '=' + prettyEscape(q[k]));
+		if (k.match(/^[a-z]+$/) && q[k] != null) {
+      parts.push(k + '=' + prettyEscape(q[k]));
+    }
 	}
 	if (sorted) {
 		parts = parts.sort();
