@@ -1,9 +1,8 @@
 var gov = {ca: {mtc: {}}};
+var NIL = -999;
 
 (function(mtc) {
 	var po = org.polymaps;
-
-	var NIL = -999;
 
 	mtc.travelTimeMap = function(selector) {
 		var controller = {};
@@ -15,7 +14,7 @@ var gov = {ca: {mtc: {}}};
 				// The Google Maps Geocoder
 				geocoder,
 				// The TAZ GeoJSON layer
-				shapes;
+				shapes, filters;
 
 		var state = {};
 		// these variables go into the scenario request URI
@@ -29,10 +28,14 @@ var gov = {ca: {mtc: {}}};
 		state.mode = "da"; // drive alone
 
 		// The color scale
-		var colorScale = pv.Scale.linear()
+		var colorScale = controller.colorScale = pv.Scale.linear()
 			.domain(NIL, 	0,			15, 		30, 		60)
 			// .range("#000", "#063", "#063", "#8c7", "#ffc");
 			.range("#000", "#009DDC", "#009DDC", "#d87", "#ffe");
+
+		var timeScale = controller.timeScale = pv.Scale.linear()
+			.domain(0, 90)
+			.range(0, 1);
 
 		// keep features around by ID, for cross-referencing from CSV data
 		var featuresById = {};
@@ -65,10 +68,21 @@ var gov = {ca: {mtc: {}}};
 			return "TAZ #" + feature.id + ": " + formatTime(travelTime(feature));
 		}
 
+		function displayFilter(feature) {
+			if (filters && filters.length) {
+				return filters.every(function(filter) {
+					return filter.call(null, feature);
+				}) ? "" : "none";
+			} else {
+				return "";
+			}
+		}
+
 		var style = po.stylist()
-			.attr("id", function(feature) { return "taz" + feature.id; })
 			.title(getTitle)
 			.attr("title", getTitle)
+			.attr("id", function(feature) { return "taz" + feature.id; })
+			.attr("display", displayFilter)
 			.attr("stroke", function(feature) { return selected(feature) ? "#ff0" : "#333"; })
 			.attr("stroke-width", function(feature) { return selected(feature) ? 2 : .1; })
 			.attr("fill", function(feature) {
@@ -86,6 +100,13 @@ var gov = {ca: {mtc: {}}};
 
 		// re-show the layer
 		function applyStyle() {
+			shapes.reshow();
+		}
+
+		function clearStyle() {
+			for (var id in featuresById) {
+				delete featuresById[id].properties.travel;
+			}
 			shapes.reshow();
 		}
 
@@ -155,7 +176,7 @@ var gov = {ca: {mtc: {}}};
 			style(e);
 		}
 
-		function lookupTAZ(str, success, failure) {
+		function lookupTAZ(str, success, failure, centerOnSuccess) {
 			// if it's in the form "TAZ:id", return the id portion
 			if (str.match(/^TAZ:(\d+)$/i)) {
 				success.call(null, str.split(":")[1]);
@@ -179,8 +200,25 @@ var gov = {ca: {mtc: {}}};
 				}
 			}
 
+			var data = {"address": str, "region": "us"},
+					extent = map.extent();
+
+			var LatLng = google.maps.LatLng;
+			data.bounds = new google.maps.LatLngBounds(
+					new LatLng(extent[0].lat, extent[0].lon),
+					new LatLng(extent[1].lat, extent[1].lon));
+
 			// otherwise, treat it as an address for geocoding
-			return geocode({"address": str}, function(result) {
+			return geocode(geocoder, data, function(result) {
+				if (centerOnSuccess !== false) {
+					/*
+					if (result.extent) {
+						map.extent(result.extent);
+						map.zoom(map.zoom() >>> 0);
+					}
+					*/
+					map.center(result.location);
+				}
 				return location2taz(result.location, {
 					success: success,
 					error: failure
@@ -192,6 +230,7 @@ var gov = {ca: {mtc: {}}};
 			stdout.attr("class", "loading").html("Looking up &ldquo;" + loc + "&rdquo;...");
 			updateHrefs(permalinks, {"origin": loc}, window.location.hash);
 			state.origin = null;
+			clearStyle();
 			return lookupTAZ(loc, function(taz) {
 				stdout.attr("class", "loaded").text("Found TAZ: " + taz);
 				applyOrigin(taz);
@@ -252,10 +291,33 @@ var gov = {ca: {mtc: {}}};
 			}
 		};
 
+		controller.filters = function(x) {
+			if (arguments.length) {
+				filters = x;
+				// applyStyle();
+				return controller;
+			} else {
+				return filters;
+			}
+		};
+
+		controller.updateFilters = function(x) {
+			shapes.off("show", onShapesShow);
+			var display = po.stylist().attr("display", x || displayFilter);
+			shapes.on("show", display);
+			shapes.reshow();
+			shapes.off("show", display);
+			shapes.on("show", onShapesShow);
+		};
+
+		// export this for use outside
+		controller.travelTime = travelTime;
+
 		// get/set the input form
 		controller.form = function(x) {
 			if (arguments.length) {
 				form = x;
+				// TODO: get this out of here
 				permalinks = form.find("a.permalink");
 				return controller;
 			} else {
@@ -348,23 +410,6 @@ var gov = {ca: {mtc: {}}};
 				return false;
 			});
 
-			var legend = container.find("#legend .notches"),
-					steps = colorScale.domain().slice(1),
-					last = steps.length - 1;
-			for (var i = 1; i < steps.length; i++) {
-				var current = steps[i],
-						prev = steps[i - 1],
-						text = (prev == 0)
-							? ("<" + current)
-							: (i == last) ? (current + "+") : current;
-				var step = $("<a/>")
-					.text(text)
-					.attr("class", "item")
-					.data("minutes", current)
-					.css("background", colorScale(current).color);
-				step.appendTo(legend);
-			}
-
 			container.find("a.crosshairs").click(function() {
 				var loc = formatLocation(map.center());
 				inputs.origin.val(loc);
@@ -395,6 +440,79 @@ try {
 	controller.form(container.parent("form").first());
 	controller.stdout("#stdout");
 	controller.init();
+
+	var maxTime = 60;
+	controller.filters([
+		function(feature) {
+			var time = controller.travelTime(feature);
+			return time > NIL && time <= maxTime;
+		}
+	]);
+	function updateMaxTime(t) {
+		if (maxTime != t) {
+			maxTime = t;
+			controller.updateFilters();
+		}
+	}
+
+	var timeScale = controller.timeScale,
+			colorScale = controller.colorScale,
+			bounds = timeScale.domain();
+
+	var slider = $("#time-slider").slider({
+		slide: function(e, ui) {
+			updateMaxTime(ui.value);
+		},
+		min: bounds[0],
+		max: bounds[bounds.length - 1],
+		step: 1,
+		value: maxTime
+	});
+
+	function pct(t) {
+		return timeScale(t) * 100;
+	}
+
+	var labels = container.find("#legend .labels"),
+			steps = [0, 15, 30, 45, 60, 75, 90],
+			last = steps.length - 1;
+	for (var i = 1; i < steps.length; i++) {
+		var current = steps[i],
+				prev = steps[i - 1],
+				text = (prev == 0)
+					? ("<" + current)
+					: (i == last) ? (current + "+") : current;
+		var label = $("<a/>")
+			.text(text)
+			.attr("href", "#")
+			.attr("class", "label")
+			.data("minutes", current)
+			.css("left", pct(current) + "%")
+			.css("background", colorScale(current).color)
+			.appendTo(labels);
+	}
+
+	labels.find("a").click(function() {
+		var t = $(this).data("minutes");
+		slider.slider("option", "value", t);
+		updateMaxTime(t);
+	});
+
+	var range = pv.range(0, steps[last]),
+			left = pct(range[0]),
+			right = pct(range[range.length - 1]),
+			width = right - left,
+			per = width / range.length;
+	console.log(left, right, width, per);
+	var chips = $("#legend .chips");
+	for (var i = 0; i < range.length; i++) {
+		var chip = $("<span/>")
+			.attr("class", "chip")
+			.css("left", pct(range[i]) + "%")
+			.css("width", per + "%")
+			.css("background", colorScale(range[i]).color)
+			.appendTo(chips);
+	}
 
 } catch (e) {
 	if (typeof console != "undefined" && console.log) console.log(e);

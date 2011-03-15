@@ -4,7 +4,12 @@
 		
 		<link rel="stylesheet/less" type="text/css" href="../style/screen.css">
 		<style type="text/css">
-		/*	@import url(../style/screen.css);*/
+			@import url("http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/themes/smoothness/jquery-ui.css");
+
+			.ui-slider-handle {
+				background: #000 !important;
+				border-color: #000 !important;
+			}
 
 			#travel-time {
 				height: 500px !important;
@@ -21,12 +26,79 @@
 				margin: .5em 0 0 0;
 			}
 
-			#location {
-				width: 32ex;
+			#bottom-bar {
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				width: 100%;
+				z-index: 1004;
+				background: #eee;
+				height: 3em;
 			}
 
-			#selected-taz {
-				width: 6ex !important;
+			#time-slider {
+				font-size: inherit !important;
+				margin: 1em 0 0 0;
+				z-index: 1006;
+			}
+
+			#legend {
+				margin: -2em 0 1em 0;
+				height: 100%;
+				position: relative;
+				z-index: 1004;
+			}
+
+			#time-slider, #legend {
+				position: relative;
+				margin-left: 200px;
+				margin-right: 1em;
+			}
+
+			#legend .title,
+			#legend .label,
+			#legend .chip {
+				position: absolute;
+				display: block;
+				text-align: center;
+				top: 0;
+				padding: .75em 0;
+				width: 2em;
+				height: 1.5em;
+			}
+
+			#legend .label {
+				padding-top: .25em;
+				padding-left: .5em;
+				padding-right: .5em;
+				margin-top: -1em;
+				margin-left: -1.5em !important;
+			}
+
+			#legend .title {
+				position: absolute;
+				right: 100%;
+				bottom: 0;
+				width: 160px;
+				height: 1.5em;
+				text-align: right;
+				padding-right: 2em;
+				vertical-align: middle;
+			}
+
+			#legend .chip {
+				padding-right: 1px;
+			}
+
+			#legend .chip:first-child { padding-left: 1em; margin-left: -1em; }
+			#legend .chip:last-child { padding-right: 1em; border-right: 1px solid #fff; }
+
+			#legend .label {
+				color: #000 !important;
+				text-decoration: none;
+				font-weight: bold;
+				width: 2em;
+				margin-left: -1em;
 			}
 
 			image {
@@ -44,6 +116,7 @@
 				AlwaysPreserveOrder: true
 			})
 			.script("js/jquery-1.5.min.js")
+			.script("http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/jquery-ui.min.js")
 			.script("js/polymaps.min.js")
 			.script("js/protovis-r3.2.js")
 			.script("js/htmapl.js")
@@ -65,11 +138,11 @@
 
 				<div id="info">
 					<p id="permalink"><a class="permalink" href="?">&infin; link to this page</a></p>
-					<p>Enter a <label>start address: <input type="text" id="location" name="origin" value=""/></label>
+					<p><label>Start address: <input type="text" id="location" name="origin" value=""/></label>
 						<input type="submit" name="submit-origin" value="Lookup" />
 					</p>
 					<p id="travel-options">
-						<label title="select a mode of transit">Traveling by: <select id="mode" name="mode">
+						<label title="select a mode of transit">Traveling by <select id="mode" name="mode">
 							<option value="da" selected="selected">car (alone)</option>
 							<option value="s2">car (2 people)</option>
 							<option value="s3">car (3+ people)</option>
@@ -82,7 +155,7 @@
 							<option value="bike">bicycle</option>
 							<option value="walk">foot</option>
 						</select></label>
-						<label title="select a time of day">in the: <select id="time" name="time">
+						<label title="select a time of day">in the <select id="time" name="time">
 							<option value="EA">early AM</option>
 							<option value="AM" selected="selected">AM</option>
 							<option value="MD">mid-day</option>
@@ -118,7 +191,12 @@
 						<a class="zoom-out" href="#location-map"><img alt="out" src="../style/images/zoom-minus.png"/></a>
 					</div>
 
-					<div id="legend">Travel time: <span class="notches"></span> minutes</div>
+					<div id="bottom-bar">
+						<div id="time-slider"></div>
+						<div id="legend"><strong class="title">Travel time (minutes):</strong>
+							<span class="chips"></span><span class="labels"></span></div>
+					</div>
+
 
 			</form>
 

@@ -14,7 +14,7 @@ body {
 	font-family: "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
 
 	text-align: left;
-	width: 99%;
+	width: 95%;
 	min-width: 600px;
 	margin: 0 auto;
 }
@@ -194,7 +194,7 @@ ol.steps li.complete .step {
 	border-bottom: 1px solid transparent;
 }
 
-#info #status {
+#stdout {
 	position: absolute;
 	text-align: right;
 	right: 0;
@@ -204,26 +204,13 @@ ol.steps li.complete .step {
 	padding: .25em .5em;
 }
 
-	#info #status.loading {
+	#stdout.loading {
 		color: #fff;
 		font-weight: bold;
 		background-color: #999;
 		background-image: url(images/loading_stripe-light.png);
 		background-repeat: repeat-x repeat-y;
 	}
-
-#legend {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	background: #fff;
-	padding: 10px;
-	z-index: 1002;
-}
-
-#legend .item {
-	padding: .25em .5em;
-}
 
 input[disabled] {
 	background: #888;
