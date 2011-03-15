@@ -1,3 +1,7 @@
+@linkColor: #009DDC;
+@textColor:#000;
+@bodyBackgroundColor:#fff;
+
 html, body {
 	margin: 0;
 	padding: 0;
@@ -5,20 +9,19 @@ html, body {
 }
 
 body {
-	color: #000;
-	background: #fff;
+	color: @textColor;
+	background: @bodyBackgroundColor;
 	font-family: "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
 
 	text-align: left;
-	width: 80%;
+	width: 99%;
 	min-width: 600px;
 	margin: 0 auto;
-	border-left: 24px solid #666;
 }
 
 a:link,
 a:visited {
-	color: #009DDC;
+	color: @linkColor;
 }
 
 a:visited {
@@ -26,9 +29,7 @@ a:visited {
 	border-bottom: 1px dotted;
 }
 
-#page {
-	padding: 10px;
-}
+#page {}
 
 h1, h2 {
 	font: bold 64px "Stymie Lt BT", "Helvetica Neue", Helvetica, Arial, sans-serif;
