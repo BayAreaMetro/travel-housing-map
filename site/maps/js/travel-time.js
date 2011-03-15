@@ -25,7 +25,6 @@ $(function() {
 
 	var form = $("form").first(),
 			// NOTE: this gets autopopulated from the query string in autofill.js
-			SELECTED_TAZ = form.find("input[name=taz]").val();
 
 	// initialize the map
 	var container = $("#travel-time"),
@@ -49,52 +48,6 @@ $(function() {
 		});
 	});
 
-	var geocontainer = $("#geocoder"),
-			addr = geocontainer.find("input[name=address]"),
-			prompt = addr.data("default"),
-			stat = geocontainer.find(".status");
-
-	stat.click(function() { stat.css("display", "none"); });
-	stat.css("cursor", "pointer");
-
-	if (prompt) {
-		// clear on focus if prompt
-		addr.focus(function() { if (addr.val() == prompt) addr.val(""); });
-		// reset to prompt on blur if empty
-		addr.blur(function() { if (addr.val() == "") addr.val(prompt); });
-		addr.blur();
-	}
-
-	var geosubmit = geocontainer.find("input[type=submit]").first();
-
-	addr.keydown(function(e) {
-		if (e.keyCode == 13) {
-			e.preventDefault();
-			geosubmit.click();
-			return false;
-		}
-	});
-
-	geosubmit.click(function(e) {
-		stat.removeClass("success");
-		stat.removeClass("error");
-
-		geocode(geocoder, {"address": addr.val()}, function(result) {
-			if (result.extent) {
-				map.extent(result.extent);
-				map.zoom(Math.floor(map.zoom()));
-			} else {
-				map.center(result.location);
-			}
-		},
-		function(error) {
-			// TODO
-		});
-		if (e) e.preventDefault();
-		// don't submit the form!
-		return false;
-	});
-
 	var permalinks = $("a.permalink");
 	if (permalinks.length) {
 		map.on("move", function() {
@@ -106,16 +59,21 @@ $(function() {
 
 	var layer = $.fn.htmapl.getLayer("taz-shapes");
 
-	var config = {};
-	config.mode = form.find("select[name=mode]").change(function() {
-		config.mode = $(this).val();
+	var state = {};
+	// TODO: implement switching?
+	state.direction = "from";
+	state.mode = form.find("select[name=mode]").change(function() {
+		state.mode = $(this).val();
 		layer.reshow();
 	}).val();
-	config.time = form.find("select[name=time]").change(function() {
-		config.time = $(this).val();
+	state.time = form.find("select[name=time]").change(function() {
+		state.time = $(this).val();
 		loadScenario();
 	}).val();
-	// console.log(config);
+	state.origin = form.find("input[name=origin]").val();
+	state.dest = form.find("input[name=dest]").val();
+
+	// console.log(state);
 
 	var featuresById = {};
 	function tazID(feature) {
@@ -124,11 +82,9 @@ $(function() {
 
 	function travelTime(feature) {
 		return (typeof feature.properties.travel == "object")
-			? feature.properties.travel[config.mode]
+			? feature.properties.travel[state.mode]
 			: -999;
 	}
-
-	var filters = [];
 
 	var colorScale = pv.Scale.linear()
 		.domain(-999, 	0,			15, 		30, 		60)
@@ -151,8 +107,12 @@ $(function() {
 		step.appendTo(legend);
 	}
 
+	function selected(feature) {
+		return feature.id == state.origin || feature.id == state.dest;
+	}
+
 	function defaultColor(feature) {
-		return (feature.id == SELECTED_TAZ) ? "#ff0" : "none";
+		return selected(feature) ? "#ff0" : "none";
 	}
 
 	function getTitle(feature) {
@@ -163,8 +123,8 @@ $(function() {
 		.attr("id", function(feature) { return "taz" + feature.id; })
 		.title(getTitle)
 		.attr("title", getTitle)
-		.attr("stroke", function(feature) { return feature.id == SELECTED_TAZ ? "#ff0" : "#333"; })
-		.attr("stroke-width", function(feature) { return feature.id == SELECTED_TAZ ? 2 : .1; })
+		.attr("stroke", function(feature) { return selected(feature) ? "#ff0" : "#333"; })
+		.attr("stroke-width", function(feature) { return selected(feature) ? 2 : .1; })
 		.attr("fill", function(feature) {
 			if (typeof feature.properties.travel == "object") {
 				var value = travelTime(feature);
@@ -180,7 +140,7 @@ $(function() {
 	layer.on("show", style);
 
 	function loadScenario() {
-		var url = "/data/scenarios/2005/time/" + [config.time, "from", SELECTED_TAZ].join("/") + ".csv";
+		var url = "/data/scenarios/2005/time/" + [state.time, state.direction, state.origin].join("/") + ".csv";
 		stat.attr("class", "loading").text("Loading scenario data...");
 		$.ajax(url, {
 			dataType: "text",
@@ -203,11 +163,21 @@ $(function() {
 		});
 	}
 
-	function selectTAZ(tazID) {
-		SELECTED_TAZ = tazID;
-		form.find("input[name=taz]").val(SELECTED_TAZ);
-		if (SELECTED_TAZ) {
-			loadScenario();
+	function selectOrigin(tazID) {
+		if (state.origin != tazID) {
+			state.origin = tazID;
+			if (state.origin) {
+				loadScenario();
+			}
+		}
+	}
+
+	function selectDest(tazID) {
+		if (state.dest != tazID) {
+			state.dest = tazID;
+			if (state.dest) {
+				// TODO: something here
+			}
 		}
 	}
 
@@ -218,7 +188,7 @@ $(function() {
 			var feature = e.features[i].data;
 			feature.id = tazID(feature);
 			featuresById[feature.id] = feature;
-			if (feature.id == SELECTED_TAZ) {
+			if (selected(feature)) {
 				var el = e.features[i].element;
 				el.parentNode.appendChild(el);
 			}
@@ -229,7 +199,7 @@ $(function() {
 
 		stat.attr("class", "loaded").text("Loaded " + len + " TAZs");
 
-		if (SELECTED_TAZ) {
+		if (state.origin) {
 			stat.attr("class", "loading").text("Loading travel times...");
 			loadScenario();
 		}
@@ -237,16 +207,6 @@ $(function() {
 
 	var lookup = $("#lookup-taz");
 	lookup.data("default", lookup.val());
-
-	/**
-	 * TODO:
-	 * Provide an address field instead of TAZ.
-	 * Use default address, geocode w/google, lookup TAZ, go!
-	 * time.html?location=242+Capp+St
-	 * time.html?location=37.7639,-122.4130
-	 * etc.
-	 */
-	
 
 	form.find("input[type=text], select").change(function() {
 		var vars = {};
@@ -263,7 +223,7 @@ $(function() {
 		updateHrefs(permalinks, {location: address}, window.location.hash);
 
 		if (address.match(/^TAZ:(\d+)$/)) {
-			return selectTAZ(address.split(":")[1]);
+			return selectOrigin(address.split(":")[1]);
 		}
 
 		lookup.val("Looking up...").attr("disabled", true);
@@ -274,7 +234,7 @@ $(function() {
 				success: function(taz) {
 					lookup.val(lookup.data("default")).attr("disabled", false);
 					stat.text("Found TAZ: " + taz);
-					selectTAZ(taz);
+					selectOrigin(taz);
 					if (_success) _success.call();
 				},
 				error: function(error) {
@@ -322,7 +282,7 @@ $(function() {
 	$("a.crosshairs").click(selectCenter);
 	lookup.click(selectUserLocation);
 
-	if (!SELECTED_TAZ) {
+	if (!state.origin) {
 		selectUserLocation();
 	}
 
