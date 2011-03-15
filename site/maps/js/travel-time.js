@@ -235,8 +235,8 @@ var NIL = -999;
 				stdout.attr("class", "loaded").text("Found TAZ: " + taz);
 				applyOrigin(taz);
 				if (success) success.call(null, taz);
-			}, function(error) {
-				stdout.attr("class", "error").text(error);
+			}, function(req, error, message) {
+				stdout.attr("class", "error").text("ERROR: " + message);
 				if (failure) failure.call(null, error);
 			});
 		}

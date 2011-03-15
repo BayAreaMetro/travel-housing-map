@@ -25,7 +25,7 @@
 	 * string does not contain a single comma.
 	 */
  	function getLatLon(str) {
-		if (typeof str === "string" && str.indexOf(",") > -1) {
+		if (typeof str === "string" && str.match(/^(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)$/)) {
 			var parts = str.split(/\s*,\s*/),
 					lat = parseFloat(parts[0]),
 					lon = parseFloat(parts[1]);
