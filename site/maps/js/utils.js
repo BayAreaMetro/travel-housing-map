@@ -319,13 +319,29 @@ function parseCSV(text, delim, newline) {
 	return rows;
 }
 
+function pluralize(n, str, plural) {
+  return (n == 1) ? str : (plural || (str + "s"));
+}
+
 function formatTime(minutes) {
   var min = Number(minutes) >>> 0,
       str = String(min);
-  if (min > 60) {
+  if (min >= 60) {
     var hours = (min / 60) >>> 0;
     min %= 60;
-    str = hours + " hours, " + min;
+    if (min == 30) {
+      return hours + "&frac12; hours";
+    }
+    str = hours + " " + pluralize(hours, "hour");
+    if (min > 0) str += ", " + min;
+    else return str;
   }
   return str + " minutes";
+}
+
+function defer(ms, fn) {
+  return function() {
+    if (fn.timeout) clearTimeout(fn.timeout);
+    return fn.timeout = setTimeout(fn, ms);
+  };
 }

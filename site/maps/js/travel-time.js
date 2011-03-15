@@ -1,8 +1,8 @@
-var gov = {ca: {mtc: {}}};
+var gov = {ca: {mtc: {}}},
+		po = org.polymaps;
 var NIL = -999;
 
 (function(mtc) {
-	var po = org.polymaps;
 
 	mtc.travelTimeMap = function(selector) {
 		var controller = {};
@@ -33,10 +33,6 @@ var NIL = -999;
 			// .range("#000", "#063", "#063", "#8c7", "#ffc");
 			.range("#000", "#009DDC", "#009DDC", "#d87", "#ffe");
 
-		var timeScale = controller.timeScale = pv.Scale.linear()
-			.domain(0, 90)
-			.range(0, 1);
-
 		// keep features around by ID, for cross-referencing from CSV data
 		var featuresById = {};
 		// get the ID of a TAZ feature from its properties
@@ -56,7 +52,7 @@ var NIL = -999;
 
 		// determine if a feature is selected (either the origin or dest TAZ)
 		function selected(feature) {
-			return feature.id == state.origin || feature.id == state.dest;
+			return feature.id == state.origin_taz || feature.id == state.dest_taz;
 		}
 
 		// get the "default" color of a feature (this
@@ -130,7 +126,7 @@ var NIL = -999;
 
 			stdout.attr("class", "loading").text("Loading scenario data...");
 
-			var url = "/data/scenarios/2005/time/" + [state.time, "from", state.origin].join("/") + ".csv";
+			var url = "/data/scenarios/2005/time/" + [state.time, "from", state.origin_taz].join("/") + ".csv";
 			return scenarioReq = $.ajax(url, {
 				dataType: "text",
 				success: function(text) {
@@ -171,7 +167,7 @@ var NIL = -999;
 			}
 			// apply the current style
 			style(e);
-			if (state.origin) {
+			if (state.origin_taz) {
 				loadScenario();
 			}
 		}
@@ -233,7 +229,7 @@ var NIL = -999;
 		function lookupOrigin(loc, success, failure) {
 			stdout.attr("class", "loading").html("Looking up &ldquo;" + loc + "&rdquo;...");
 			updateHrefs(permalinks, {"origin": loc}, window.location.hash);
-			state.origin = null;
+			state.origin = loc;
 			clearStyle();
 			return lookupTAZ(loc, function(taz) {
 				stdout.attr("class", "loaded").text("Found TAZ: " + taz);
@@ -246,8 +242,8 @@ var NIL = -999;
 		}
 
 		function applyOrigin(taz) {
-			state.origin = taz;
-			if (state.origin) {
+			state.origin_taz = taz;
+			if (state.origin_taz) {
 				loadScenario();
 			}
 			return false;
@@ -305,9 +301,9 @@ var NIL = -999;
 			}
 		};
 
-		controller.updateFilters = function(x) {
+		controller.updateFilters = function() {
 			shapes.off("show", onShapesShow);
-			var display = po.stylist().attr("display", x || displayFilter);
+			var display = po.stylist().attr("display", displayFilter);
 			shapes.on("show", display);
 			shapes.reshow();
 			shapes.off("show", display);
@@ -355,7 +351,7 @@ var NIL = -999;
 			if (arguments.length) {
 				state.time = x;
 				updateHrefs(permalinks, {"time": state.time}, window.location.hash);
-				if (state.origin) {
+				if (state.origin_taz) {
 					loadScenario();
 				}
 			} else {
@@ -366,6 +362,7 @@ var NIL = -999;
 		// get/set the origin string (asynchronous)
 		controller.origin = function(loc, success, failure) {
 			if (arguments.length) {
+				state.origin_taz = null;
 				lookupOrigin(loc, success, failure);
 				return controller;
 			} else {
@@ -383,113 +380,121 @@ var NIL = -999;
 			}
 		};
 
-		// initialize!
-		controller.init = function() {
-
-			var inputs = {};
-			// update mode on <select name="mode"/> change
-			inputs.mode = form.find("select[name=mode]").change(function() {
-				controller.mode($(this).val());
-			});
-			// update time on <select name="time"/> change
-			inputs.time = form.find("select[name=time]").change(function() {
-				controller.time($(this).val());
-			});
-			// lookup origin in <input name="origin"/>
-			inputs.origin = form.find("input[name=origin]");
-			// autofill should have populated these
-			for (var name in inputs) {
-				var val = inputs[name].val();
-				state[name] = val;
-			}
-
-			var submits = {};
-			// submit the origin on <input name="submit-origin"/> click
-			submits.origin = form.find("input[name=submit-origin]").click(function() {
-				var submit = $(this),
-						label = submit.val();
-				submit.val("Looking up...").attr("disabled", true);
-				function revert() {
-					submit.val(label).attr("disabled", false);
-				}
-				controller.origin(inputs.origin.val(), revert, revert);
-				return false;
-			});
-
-			container.find("a.crosshairs").click(function() {
-				var loc = formatLocation(map.center());
-				inputs.origin.val(loc);
-				submits.origin.click();
-				return false;
-			});
-
-			map.add(po.hash());
-
-			// submit the origin if there is one
-			if (inputs.origin.val()) {
-				submits.origin.click();
-			}
-		};
-
 		return controller;
 	};
 
 })(gov.ca.mtc);
 
-try {
+$(function() {
+	try {
 
-	var controller = gov.ca.mtc.travelTimeMap();
-	var container = $("#travel-time").htmapl();
-	controller.container(container);
-	controller.map($.fn.htmapl.getMap(container[0].id));
-	controller.shapes($.fn.htmapl.getLayer("taz-shapes"));
-	controller.form(container.parent("form").first());
-	controller.stdout("#stdout");
-	controller.init();
+	var container = $("#travel-time").htmapl(),
+			form = container.parent("form").first(),
+			map = $.fn.htmapl.getMap(container[0].id),
+			shapes = $.fn.htmapl.getLayer("taz-shapes");
+
+	var controller = gov.ca.mtc.travelTimeMap()
+		.container(container)
+		.map(map)
+		.shapes(shapes)
+		.form(form)
+		.stdout("#stdout");
+
+	var inputs = {};
+	// update mode on <select name="mode"/> change
+	inputs.mode = form.find("select[name=mode]").change(function() {
+		controller.mode($(this).val());
+	}).change();
+	// update time on <select name="time"/> change
+	inputs.time = form.find("select[name=time]").change(function() {
+		controller.time($(this).val());
+	}).change();
+	// lookup origin in <input name="origin"/>
+	inputs.origin = form.find("input[name=origin]");
+
+	var submits = {};
+	// submit the origin on <input name="submit-origin"/> click
+	submits.origin = form.find("input[name=submit-origin]").click(function() {
+		var submit = $(this),
+				label = submit.val();
+		submit.val("Searching...").attr("disabled", true);
+		function revert() {
+			submit.val(label).attr("disabled", false);
+		}
+		controller.origin(inputs.origin.val(), revert, revert);
+		return false;
+	});
+
+	// when the crosshairs is clicked, populate the origin input with the
+	// formatted "lat,lon" and submit
+	/*
+	container.find("a.crosshairs").click(function() {
+		var loc = formatLocation(map.center());
+		inputs.origin.val(loc);
+		submits.origin.click();
+		return false;
+	});
+	*/
+
+	// TODO: formatting functions?
+	map.add(po.hash());
+
+	// submit the origin if there is one
+	if (inputs.origin.val()) {
+		submits.origin.click();
+	}
 
 	var maxTime = 60;
+	var minutes = $("#minutes").html(formatTime(maxTime));
+
 	controller.filters([
 		function(feature) {
 			var time = controller.travelTime(feature);
 			return time > NIL && time <= maxTime;
 		}
 	]);
+	// defer calling updateFilters() for 10ms each time
+	var reallyUpdate = defer(10, controller.updateFilters);
 	function updateMaxTime(t) {
 		if (maxTime != t) {
 			maxTime = t;
-			controller.updateFilters();
+			minutes.html(formatTime(t));
+			reallyUpdate();
 		}
 	}
 
-	var timeScale = controller.timeScale,
-			colorScale = controller.colorScale,
-			bounds = timeScale.domain();
+	// our time scale maps the slider min/max to 0-1
+	var timeScale = pv.Scale.linear()
+		.domain(5, 90)
+		.range(0, 1),
+			bounds = timeScale.domain(),
+			boundMin = bounds[0],
+			boundMax = bounds[bounds.length - 1];
+	var colorScale = controller.colorScale;
 
+	// create the time slider
 	var slider = $("#time-slider").slider({
 		slide: function(e, ui) {
 			updateMaxTime(ui.value);
 		},
-		min: bounds[0],
-		max: bounds[bounds.length - 1],
+		min: boundMin,
+		max: boundMax,
 		step: 1,
 		value: maxTime
 	});
 
+	// convert a time to a percent (used for the widths of individual chips)
 	function pct(t) {
 		return timeScale(t) * 100;
 	}
 
 	var labels = container.find("#legend .labels"),
-			steps = [0, 15, 30, 45, 60, 75, 90],
+			steps = pv.range(0, boundMax + 1, 15),
 			last = steps.length - 1;
-	for (var i = 1; i < steps.length; i++) {
-		var current = steps[i],
-				prev = steps[i - 1],
-				text = (prev == 0)
-					? ("<" + current)
-					: (i == last) ? (current + "+") : current;
+	for (var i = 1; i <= last; i++) {
+		var current = steps[i];
 		var label = $("<a/>")
-			.text(text)
+			.text(current)
 			.attr("href", "#")
 			.attr("class", "label")
 			.data("minutes", current)
@@ -504,9 +509,9 @@ try {
 		updateMaxTime(t);
 	});
 
-	var range = pv.range(0, steps[last]),
-			left = pct(range[0]),
-			right = pct(range[range.length - 1]),
+	var range = pv.range(boundMin, boundMax, 1),
+			left = pct(boundMin),
+			right = pct(boundMax),
 			width = right - left,
 			per = width / range.length;
 	var chips = $("#legend .chips");
@@ -518,8 +523,12 @@ try {
 			.css("background", colorScale(range[i]).color)
 			.appendTo(chips);
 	}
+	chips.click(function(e) {
+		slider.click(e);
+	});
 
-} catch (e) {
-	if (typeof console != "undefined" && console.log) console.log(e);
-	alert("Whoops: " + e);
-}
+	} catch (e) {
+		if (typeof console != "undefined" && console.log) console.log(e);
+		alert("Whoops: " + e);
+	}
+});

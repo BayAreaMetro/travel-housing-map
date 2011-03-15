@@ -26,36 +26,34 @@
 				margin: .5em 0 0 0;
 			}
 
+			/* FIXME: These styles are fucked up. Help me! */
 			#bottom-bar {
 				position: absolute;
 				left: 0;
-				bottom: 0;
+				bottom: -1em;
 				width: 100%;
 				z-index: 1004;
-				background: #eee;
 				height: 3em;
+			}
+
+			#time-slider, #legend {
+				position: relative;
+				margin: 0 1em;
 			}
 
 			#time-slider {
 				font-size: inherit !important;
-				margin: 1em 0 0 0;
-				z-index: 1006;
+				margin-top: 1em;
+				z-index: 1005;
 			}
 
 			#legend {
-				margin: -2em 0 1em 0;
+				margin-top: -2em;
 				height: 100%;
 				position: relative;
 				z-index: 1004;
 			}
 
-			#time-slider, #legend {
-				position: relative;
-				margin-left: 200px;
-				margin-right: 1em;
-			}
-
-			#legend .title,
 			#legend .label,
 			#legend .chip {
 				position: absolute;
@@ -75,15 +73,20 @@
 				margin-left: -1.5em !important;
 			}
 
-			#legend .title {
+			#bottom-bar .title {
+				color: #000;
 				position: absolute;
-				right: 100%;
-				bottom: 0;
-				width: 160px;
-				height: 1.5em;
-				text-align: right;
-				padding-right: 2em;
-				vertical-align: middle;
+				font-weight: normal;
+				left: .5em;
+				top: 0;
+				margin: -2em 0 0 0;
+				text-align: left;
+				width: 90%;
+			}
+
+			#legend .label,
+			#bottom-bar .title {
+				text-shadow: #fff 1px 1px 1px;
 			}
 
 			#legend .chip {
@@ -115,7 +118,8 @@
 			.setOptions({
 				AlwaysPreserveOrder: true
 			})
-			.script("js/jquery-1.5.min.js")
+			// hosted jQuery and jQuery UI
+			.script("http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.5.1.min.js")
 			.script("http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/jquery-ui.min.js")
 			.script("js/polymaps.min.js")
 			.script("js/protovis-r3.2.js")
@@ -139,7 +143,7 @@
 				<div id="info">
 					<p id="permalink"><a class="permalink" href="?">&infin; link to this page</a></p>
 					<p><label>Start address: <input type="text" id="location" name="origin" value=""/></label>
-						<input type="submit" name="submit-origin" value="Lookup" />
+						<input type="submit" name="submit-origin" value="Search" />
 					</p>
 					<p id="travel-options">
 						<label title="select a mode of transit">Traveling by <select id="mode" name="mode">
@@ -183,8 +187,10 @@
 						data-url="http://c.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{Z}/{X}/{Y}.png"></div>
 					-->
 
+					<!--
 					<a class="crosshairs"
 						title="show travel times from the location under the crosshairs" href="#select-center"></a>
+					-->
 
 					<div class="controls">
 						<label>Zoom:</label> <a class="zoom-in" href="#location-map"><img alt="in" src="../style/images/zoom-plus.png"/></a>
@@ -192,9 +198,9 @@
 					</div>
 
 					<div id="bottom-bar">
+						<h2 class="title">Places accessible in <strong>&le;<span id="minutes">30 minutes</span></strong></h2>
 						<div id="time-slider"></div>
-						<div id="legend"><strong class="title">Travel time (minutes):</strong>
-							<span class="chips"></span><span class="labels"></span></div>
+						<div id="legend"><span class="chips"></span><span class="labels"></span></div>
 					</div>
 
 

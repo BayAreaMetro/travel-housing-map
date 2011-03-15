@@ -32,7 +32,7 @@ a:visited {
 #page {}
 
 h1, h2 {
-	font: bold 64px "Stymie Lt BT", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 64px;
 	margin: 0;
 	line-height: 1.1em;
 	margin: 0 0 10px 0;
