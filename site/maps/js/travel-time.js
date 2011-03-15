@@ -69,12 +69,16 @@ var NIL = -999;
 		}
 
 		function displayFilter(feature) {
-			if (filters && filters.length) {
-				return filters.every(function(filter) {
-					return filter.call(null, feature);
-				}) ? "" : "none";
-			} else {
+			if (selected(feature)) {
 				return "";
+			} else {
+				if (filters && filters.length) {
+					return filters.every(function(filter) {
+						return filter.call(null, feature);
+					}) ? "" : "none";
+				} else {
+					return "";
+				}
 			}
 		}
 
@@ -340,6 +344,7 @@ var NIL = -999;
 			if (arguments.length) {
 				state.mode = x;
 				applyStyle();
+				updateHrefs(permalinks, {"mode": state.mode}, window.location.hash);
 			} else {
 				return state.mode;
 			}
@@ -349,6 +354,7 @@ var NIL = -999;
 		controller.time = function(x) {
 			if (arguments.length) {
 				state.time = x;
+				updateHrefs(permalinks, {"time": state.time}, window.location.hash);
 				if (state.origin) {
 					loadScenario();
 				}
@@ -418,10 +424,10 @@ var NIL = -999;
 			});
 
 			map.add(po.hash());
-			updateHrefs(permalinks, state, window.location.hash);
 
-			if (state.origin) {
-				controller.origin(state.origin);
+			// submit the origin if there is one
+			if (inputs.origin.val()) {
+				submits.origin.click();
 			}
 		};
 
@@ -503,7 +509,6 @@ try {
 			right = pct(range[range.length - 1]),
 			width = right - left,
 			per = width / range.length;
-	console.log(left, right, width, per);
 	var chips = $("#legend .chips");
 	for (var i = 0; i < range.length; i++) {
 		var chip = $("<span/>")
