@@ -15,7 +15,7 @@ body {
 
 	text-align: left;
 	width: 95%;
-	min-width: 1150px;
+	min-width: 500px;
 	margin: 0 auto;
 }
 
@@ -54,48 +54,57 @@ img{border:none;}
 	border-radius:@radius;
 	width: @radius * 2;
 }
+
 #info {
 	position: relative;
 	border-bottom: 1px solid transparent;
 }
 
-#info #info-geo{
-	display:block;
-	padding:1.2em 0;
+#info-geo {
+	display: block;
+	padding: 1em 0;
 }
-#info #info-geo p,#info #travel-optionss,#info #time-of-day{
-	margin:0;
-	padding:0;
-	float:left;
-	width: 480px;
+
+#info-geo p,
+#travel-optionss,
+#time-of-day {
+	margin: 0;
+	padding: 0;
+	float: left;
+	width: 28em;
+	min-height: 1.5em;
 }
+
+#travel-optionss, #time-of-day { min-height: 4em; }
+#travel-optionss { margin-right: -1.5em; }
+#time-of-day { margin-left: 1.5em; }
 
 #info #info-geo p label{
-	padding-left:.5em;
+	padding-left: .5em;
 }
 
-#info #info-extras{
-	display:block;
-	padding:1.4em 0;
-	border-top:2px dashed #CCC;
+#info-extras {
+	display: block;
+	padding: 1em 0;
+	border-top: 1px dashed #ccc;
 }
 
-#tod-legend{
-	position:relative;
+#tod-legend {
+	position: relative;
 }
-#tod-legend .label{
-	position:absolute;
-	display:block;
+#tod-legend .label {
+	position: absolute;
+	display: block;
 	width: 5em;
-	text-align:center;
+	text-align: center;
 	padding: .2em;
 
 	margin-top: .7em;
 	margin-left: -2.5em !important;
-	font-size:12px;
-	color:#000;
-	font-weight:500;
-	text-decoration:none;
+	font-size: 12px;
+	color: #000;
+	font-weight: bold;
+	text-decoration: none;
 }
 
 #info h5{
@@ -113,22 +122,30 @@ img{border:none;}
 	.ieInlineBlockFix;
 	text-align:center;
 }
-#info #travel-optionss a.selected, #info #travel-optionss a:hover{
-	background-color:#555;
-}
-#info #travel-optionss img{
-	height:42px;
-	vertical-alignment:middle;
-}
-#time-mode-slider{
-	width:100%;
-	height:.3em !important;
-	background:#000 !important;
+
+#info #travel-optionss a:hover {
+	background-color: #555;
 }
 
-#time-mode-slider .ui-slider-handle {
-	width:.6em !important;
-	height:1em !important;
+#info #travel-optionss a.selected {
+	background-color: @linkColor;
+}
+
+#info #travel-optionss img {
+	height: 42px;
+	vertical-align: middle;
+}
+
+#tod-slider {
+	width: 100%;
+	height: .3em !important;
+	background: #000 !important;
+	border-width: 0 !important;
+}
+
+#tod-slider .ui-slider-handle {
+	width: .6em !important;
+	height: 1em !important;
 	top: -.4em !important;
 	margin-left: -.3em !important;
 }
@@ -141,17 +158,17 @@ img{border:none;}
 	height:30px;
 	color:#fff;
 	line-height: 30px;
-	font-weight:600;
+	font-weight: 600;
 	text-align: center;
 	.ieInlineBlockFix;
 	.full-circle(15px);/*radius*/
 }
 
-#info #info-meta{
-	position:absolute;
-	right:0;
-	margin-top:-19px;
-	z-index:100;
+#info #info-meta {
+	position: absolute;
+	right: 0;
+	top: 100%;
+	z-index: 100;
 }
 
 #stdout {
@@ -175,23 +192,29 @@ img{border:none;}
 	}
 
 input[disabled] {
-	background: #888;
+	background: #888 !important;
 	color: #fff;
 }
-#permalink {
-	position: relative;
-	top: 0;
-	right: 0;
-	margin: 0 5px 0 0;
-	text-align:right;
-	text-transform:uppercase;
-	font-size:11px;
-	font-weight:600;
-	line-height:20px;
-}
-#page {}
 
-#travel-options{display:none;}
+#title {
+	position: relative;
+}
+
+#permalink {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	margin: 0 .25em 0 0;
+	text-align: right;
+	text-transform: uppercase;
+	font-size: 1.5em;
+	font-weight: bold;
+	line-height: 1.2em;
+}
+
+#travel-options{
+	display: none;
+}
 
 
 #data-progress-bar{
@@ -205,7 +228,7 @@ h1, h2 {
 	font-size: 54px;
 	margin: 0;
 	line-height: 1.1em;
-	margin: 0 0 10px 0;
+	margin: 0;
 }
 
 h2 {

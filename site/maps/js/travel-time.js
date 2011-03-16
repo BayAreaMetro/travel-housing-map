@@ -317,13 +317,21 @@ var NIL = -999;
 		controller.form = function(x) {
 			if (arguments.length) {
 				form = x;
-				// TODO: get this out of here
-				permalinks = form.find("a.permalink");
+				if (!permalinks) permalinks = form.find("a.permalink");
 				return controller;
 			} else {
 				return form;
 			}
 		};
+
+		controller.permalinks = function(x) {
+			if (arguments.length) {
+				permalinks = x;
+				return controller;
+			} else {
+				return permalinks;
+			}
+		}
 
 		// get/set the stdout element
 		controller.stdout = function(x) {
@@ -355,7 +363,7 @@ var NIL = -999;
 					loadScenario();
 				}
 			} else {
-				return state.mode;
+				return state.time;
 			}
 		};
 
@@ -374,6 +382,7 @@ var NIL = -999;
 		controller.dest = function(loc, success, failure) {
 			if (arguments.length) {
 				alert("Not yet implemented");
+				failure.call(null, "Not yet implemented");
 				return controller;
 			} else {
 				return state.dest;
@@ -395,6 +404,7 @@ $(function() {
 
 	var controller = gov.ca.mtc.travelTimeMap()
 		.container(container)
+		.permalinks($("#permalink a"))
 		.map(map)
 		.shapes(shapes)
 		.form(form)
@@ -411,6 +421,8 @@ $(function() {
 	}).change();
 	// lookup origin in <input name="origin"/>
 	inputs.origin = form.find("input[name=origin]");
+	// lookup destination in <input name="dest"/>
+	inputs.dest = form.find("input[name=dest]");
 
 	var submits = {};
 	// submit the origin on <input name="submit-origin"/> click
@@ -422,6 +434,17 @@ $(function() {
 			submit.val(label).attr("disabled", false);
 		}
 		controller.origin(inputs.origin.val(), revert, revert);
+		return false;
+	});
+	// submit the destination on <input name="submit-dest"/> click
+	submits.dest = form.find("input[name=submit-dest]").click(function() {
+		var submit = $(this),
+				label = submit.val();
+		submit.val("Searching...").attr("disabled", true);
+		function revert() {
+			submit.val(label).attr("disabled", false);
+		}
+		controller.dest(inputs.dest.val(), revert, revert);
 		return false;
 	});
 
@@ -524,54 +547,69 @@ $(function() {
 			.css("background", colorScale(range[i]).color)
 			.appendTo(chips);
 	}
-	chips.click(function(e) {
-		slider.click(e);
-	});
-	
-	// Time of Day slider (tod)
-	var tod_array = ['early AM','AM','mid-day','PM','evening'];
-	
-	
-	var tod_slider = $( "#time-mode-slider" ).slider({
-				value:1,
-				min: 0,
-				max: 4,
-				step: 1,
-				slide: function( event, ui ) {
-					//$( "#amount" ).val( "$" + ui.value );
-					console.log(tod_array[ui.value]);
-				}
-			});
-	
-	
-	function todLabelPos(n){
-		return (100/last) * n;
-	}
-			
-	var todlabels = $("#tod-legend .labels"),
-			steps = pv.range(0, 5),
-			last = steps.length - 1,
-			todPos = tod_slider.width() / last;
 
+	// Time of Day slider (tod)
+	var times = [
+		{time: "EA", label: "early AM"},
+		{time: "AM", label: "AM"},
+		{time: "MD", label: "mid-day"},
+		{time: "PM", label: "PM"},
+		{time: "EV", label: "evening"}
+	];
+	function timeIndex(time) {
+		for (var i = 0; i < times.length; i++) {
+			if (times[i].time == time) return i;
+		}
+		return 0;
+	}
+	var tod_slider = $( "#tod-slider" ).slider({
+		min: 		0,
+		max: 		times.length - 1,
+		value: 	timeIndex(controller.time()),
+		step: 	1,
+		slide: function(e, ui) {
+			controller.time(times[ui.value].time);
+		}
+	});
+
+	var todlabels = $("#tod-legend .labels"),
+			last = times.length - 1,
+			todPos = tod_slider.width() / last;
 	for (var i = 0; i <= last; i++) {
-		var current = steps[i];
+		var current = times[i];
 		var label = $("<a/>")
-			.text(tod_array[current])
+			.text(current.label)
 			.attr("href", "#")
 			.attr("class", "label")
-			.data("tod_pos", current)
-			.css("left", todLabelPos(current) + "%")
+			.data("time", current.time)
+			.data("index", i)
+			.css("left", (i / last * 100) + "%")
 			.appendTo(todlabels);
 	}
-	
 	todlabels.find("a").click(function() {
-		var t = $(this).data("tod_pos");
-		console.log(t);
-		tod_slider.slider("option", "value", t);
-		//updateMaxTime(t);
+		var period = $(this).data();
+		console.log(period);
+		tod_slider.slider("option", "value", period.index);
+		controller.time(period.time);
 	});
-			
-			
+
+	function setMode(mode) {
+		console.log("setMode()", mode);
+		controller.mode(mode);
+		modeLinks.attr("class", function() {
+			return $(this).data("mode") == mode ? "selected" : "";
+		});
+	}
+	var modeLinks = $("#travel-optionss a")
+		.each(function() {
+			var link = $(this);
+			link.data("mode", link.attr("id").split("_")[1]);
+		}).click(function() {
+			var mode = $(this).data("mode");
+			setMode(mode);
+			return false;
+		});
+	setMode(controller.mode());
 
 	} catch (e) {
 		if (typeof console != "undefined" && console.log) console.log(e);
