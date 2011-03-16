@@ -588,13 +588,11 @@ $(function() {
 	}
 	todlabels.find("a").click(function() {
 		var period = $(this).data();
-		console.log(period);
 		tod_slider.slider("option", "value", period.index);
 		controller.time(period.time);
 	});
 
 	function setMode(mode) {
-		console.log("setMode()", mode);
 		controller.mode(mode);
 		modeLinks.attr("class", function() {
 			return $(this).data("mode") == mode ? "selected" : "";

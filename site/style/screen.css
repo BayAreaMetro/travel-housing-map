@@ -60,9 +60,14 @@ img{border:none;}
 	border-bottom: 1px solid transparent;
 }
 
-#info-geo {
+#info-geo, 
+#info-extras {
 	display: block;
-	padding: 1em 0;
+	padding: .75em 0;
+}
+
+#info-extras {
+	border-top: 1px dashed #ccc;
 }
 
 #info-geo p,
@@ -83,15 +88,10 @@ img{border:none;}
 	padding-left: .5em;
 }
 
-#info-extras {
-	display: block;
-	padding: 1em 0;
-	border-top: 1px dashed #ccc;
-}
-
 #tod-legend {
 	position: relative;
 }
+
 #tod-legend .label {
 	position: absolute;
 	display: block;
@@ -107,10 +107,10 @@ img{border:none;}
 	text-decoration: none;
 }
 
-#info h5{
-	margin:0 0 .5em;
-	font-size:1em;
-	text-align:center;
+#info h5 {
+	margin: 0 0 .5em;
+	font-size: 1em;
+	text-align: center;
 }
 
 #info #travel-optionss a{
@@ -179,8 +179,8 @@ img{border:none;}
 	color: #ccc;
 	width: 32ex;
 	padding: .25em .5em;
-	margin:0;
-	background:rgba(0,0,0,.4);
+	margin: 0;
+	background: rgba(0,0,0,.4);
 }
 
 	#stdout.loading {
@@ -218,21 +218,20 @@ input[disabled] {
 
 
 #data-progress-bar{
-	position:absolute;
-	top:50%;
-	left:50%;
+	position: absolute;
+	top: 50%;
+	left: 50%;
 }
 
 
 h1, h2 {
-	font-size: 54px;
+	font-size: 300%;
 	margin: 0;
-	line-height: 1.1em;
-	margin: 0;
+	line-height: 1.2em;
 }
 
 h2 {
-	font-size: 32px;
+	font-size: 250%;
 }
 
 ol {
@@ -261,10 +260,11 @@ ol li p {
 
 .map {
 	width: 100%;
-	height: 300px;
+	height: 280px;
 	position: relative;
 }
 
+/*
 .crosshairs {
 	position: absolute;
 	z-index: 1000;
@@ -275,6 +275,7 @@ ol li p {
 	margin: -7px 0 0 -7px;
 	background-image: url(images/crosshair.png);
 }
+*/
 
 .controls {
 	position: absolute;
