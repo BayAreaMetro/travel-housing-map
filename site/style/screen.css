@@ -22,6 +22,7 @@ body {
 a:link,
 a:visited {
 	color: @linkColor;
+	cursor:pointer;
 }
 
 a:visited {
@@ -178,15 +179,16 @@ img{border:none;}
 	bottom: 0;
 	color: #ccc;
 	width: 32ex;
+	height:22px;
 	padding: .25em .5em;
 	margin: 0;
-	background: rgba(0,0,0,.4);
+	background: rgba(0,0,0,.5);
 }
 
 	#stdout.loading {
-		color: #fff;
+		color: #000;
 		font-weight: bold;
-		background-color: #999;
+		background-color: rgba(0,0,0,.5);
 		background-image: url(images/loading_stripe-light.png);
 		background-repeat: repeat-x repeat-y;
 	}
