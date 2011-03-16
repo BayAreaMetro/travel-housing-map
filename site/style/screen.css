@@ -243,9 +243,9 @@ input[disabled] {
 }
 #tickbox .ticks{
 	position:absolute;
-	margin:-5px 0 0 -6px;
+	margin:-2px 0 0 -6px;
 	
-	.full-circle(7px);
+	.full-circle(5px);
 }
 
 

@@ -4,6 +4,40 @@ var NIL = -999;
 
 (function(mtc) {
 
+ 	mtc.scenarioLoader = function() {
+		var loader = {},
+				req = null;
+		loader.dispatch = po.dispatch(loader);
+
+		loader.load = function(url) {
+			if (req) {
+				req.abort();
+				req = null;
+			}
+			req = $.ajax(url, {
+				dataType: "text",
+				success: function(text) {
+					req = null;
+					var rows = parseCSV(text);
+					loader.dispatch({type: "load", data: rows});
+				},
+				error: function(xhr, error, message) {
+					req = null;
+					loader.dispatch({type: "error", req: xhr, text: message});
+				}
+			});
+			req.url = url;
+			loader.dispatch({type: "loading", request: req, url: url});
+			return req;
+		};
+
+		loader.loading = function() {
+			return req ? req.url || true : false;
+		};
+
+		return loader;
+	};
+
 	mtc.travelTimeMap = function(selector) {
 		var controller = {};
 		controller.dispatch = po.dispatch(controller);
@@ -23,8 +57,6 @@ var NIL = -999;
 						.attr("fill", "#000")
 						.attr("r", 15))
 					.on("load", onMarkersLoad);
-
-		var _progressTimer, _progressFlag;
 
 		var state = {};
 		// these variables go into the scenario request URI
@@ -150,7 +182,6 @@ var NIL = -999;
 					}
 					applyStyle();
 					stdout.attr("class", "loaded").text("Loaded " + commize(len) + " rows");
-					_progressFlag = "done";
 					controller.dispatch({
 						type: "load-scenario", 
 						url: url,
@@ -160,7 +191,6 @@ var NIL = -999;
 				},
 				error: function(xhr, err, text) {
 					stdout.attr("class", "error").text("Error loading scenario: " + text);
-					_progressFlag = "done";
 				}
 			});
 		}
