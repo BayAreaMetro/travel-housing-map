@@ -125,7 +125,7 @@ var NIL = -999;
 			.title(getTitle)
 			.attr("title", getTitle)
 			.attr("id", function(feature) { return "taz" + feature.id; })
-			.attr("class","tazact")
+			.attr("class","tazact") // sets class for tooltip to grab
 			.attr("display", displayFilter)
 			.attr("stroke", function(feature) { return selected(feature) ? "#ff0" : "#666"; })
 			.attr("stroke-width", function(feature) { return selected(feature) ? 1 : .15; })
@@ -260,6 +260,7 @@ var NIL = -999;
 		// being initiated from onShapesLoad
 		//
 		function theTip(){
+			this.closetimer = null;
 			this.tipRef = $("#taztip");
 			this.txtRef = $("#tazinfo");
 			this.tipState = false;
@@ -268,14 +269,16 @@ var NIL = -999;
 			this.tipHeight = null;
 			var self = this;
 			
-			this.setup = function(){
+			this.setTip = function(){
 
 				$('.tazact').unbind('mouseover');
 				$('.tazact').unbind('mouseout');
-				$(document).unbind('mousemove');
+				$('#travel-time').unbind('mousemove');
 				
 				$('.tazact').mouseover(function(e){
 					e.preventDefault();
+					clearTimeout(self.closetimer);
+					//console.log(featuresById[1453]);
 					
 					// set txt
 					self.txtRef.text( $(this).attr('title') );
@@ -286,36 +289,53 @@ var NIL = -999;
 					// remove title stuff
 					$(this).removeAttr('title');
 					$(this).find("title").remove();
-
-					// adjust width
-					self.tipRef.css("width","auto");
 					
+					// adjust width to size of txt
+					// TODO: still a bug when the tip get's next to edge of map
+					self.tipRef.css("width","auto");
+				
+					// set width and offset margin to center tip based on new width above
 					var _w = self.tipRef.width();
 					self.tipRef.css("width",_w+"px");
 					self.tipRef.css("margin-left","-"+(_w*.5)+"px");
 					
+					// set the height var
 					self.tipHeight = self.tipRef.height();
-
+					
+					// show tip and set state flag
 					self.tipRef.show();
 					self.tipState = true;
 				});
 				
 				$('.tazact').mouseout(function(e){
 					e.preventDefault();
-					self.tipRef.hide();
-					self.txtRef.text("");
+					
+					//replace title stuff
 					if(self.oldTitleAttr)$(this).attr('title',self.oldTitleAttr);
 					if(self.oldTitleElm)$(this).append(self.oldTitleElm);
 					self.tipState = false;
+					
+					// start close timer
+					self.closetimer = setTimeout(function(){
+						self.closeTip();
+					},100);
+
 				});
 				
-				$(document).mousemove(function(e){
+				$('#travel-time').mousemove(function(e){
 				    if (self.tipState){
 				      self.tipRef.css("left", e.offsetX).css("top", e.offsetY - (15+self.tipHeight));
 				    }
 				});
 				
 			}
+			
+			this.closeTip = function(){
+				self.tipRef.hide();
+				self.txtRef.text("");
+			}
+			
+			
 		}
 		var tipController = new theTip();
 		
@@ -330,13 +350,6 @@ var NIL = -999;
 				var feature = e.features[i].data;
 				feature.id = tazID(feature);
 				featuresById[feature.id] = feature;
-				////
-				/*
-				var el = e.features[i].element;
-				el.setAttribute('onmouseover', 'taz_over();return false;');
-				el.setAttribute('onmouseout', 'taz_out();return false;');
-				*/
-				//
 				if (selected(feature)) {
 					var el = e.features[i].element;
 					el.parentNode.appendChild(el);
@@ -347,7 +360,7 @@ var NIL = -999;
 			if (state.origin_taz) {
 				loadScenario();
 			}
-			tipController.setup(); // set tooltip events for TAZ's
+			tipController.setTip(); // set tooltip events for TAZ's
 		}
 
 		function onShapesShow(e) {
