@@ -119,11 +119,12 @@ var NIL = -999;
 				}
 			}
 		}
-
+	
 		var style = po.stylist()
 			.title(getTitle)
 			.attr("title", getTitle)
 			.attr("id", function(feature) { return "taz" + feature.id; })
+			.attr("class","tazact")
 			.attr("display", displayFilter)
 			.attr("stroke", function(feature) { return selected(feature) ? "#ff0" : "#666"; })
 			.attr("stroke-width", function(feature) { return selected(feature) ? 1 : .15; })
@@ -151,7 +152,7 @@ var NIL = -999;
 			}
 			shapes.reshow();
 		}
-
+		
 		var scenarioReq;
 		/**
 		 * Load the current scenario. This builds a URL from the state; sends an
@@ -245,7 +246,67 @@ var NIL = -999;
 				}
 			}
 		}
+		
+		////////// TOOLTIP //////////////
+		// being initiated from onShapesLoad
+		//
+		function theTip(){
+			this.tztip = $("#taztip");
+			this.tztxt = $("#tazinfo");
+			this.tzText = "tip text example";
+			this.tzover = false;
+			this.oldTitleElm = null;
+			this.oldTitleAttr = null;
+			this.tzHeight = null;
+			var self = this;
+			
+			this.setup = function(){
+				var _self = this;
+				$('.tazact').unbind('mouseover');
+				$('.tazact').unbind('mouseout');
+				$(document).unbind('mousemove');
+				
+				
+				$('.tazact').mouseover(function(e){
+					e.preventDefault();
 
+					_self.tztxt.text( $(this).attr('title') );
+					_self.oldTitleAttr = $(this).attr('title');
+					_self.oldTitleElm = $(this).find("title");
+					$(this).removeAttr('title');
+					$(this).find("title").remove();
+
+					_self.tztip.css("width","auto");
+					var _w = _self.tztip.width();
+					_self.tztip.css("margin-left","-"+(_w*.5)+"px");
+					
+					_self.tzHeight = _self.tztip.height();
+
+					_self.tztip.show();
+					_self.tzover = true;
+				});
+				
+				$('.tazact').mouseout(function(e){
+					e.preventDefault();
+					_self.tztip.hide();
+					_self.tztxt.text("");
+					if(_self.oldTitleAttr)$(this).attr('title',_self.oldTitleAttr);
+					if(_self.oldTitleElm)$(this).append(_self.oldTitleElm);
+					_self.tzover = false;
+				});
+				
+				$(document).mousemove(function(e){
+				    if (_self.tzover){
+				      _self.tztip.css("left", e.clientX).css("top", e.clientY - (15+_self.tzHeight));
+				    }
+				});
+				
+			}
+		}
+		var tipController = new theTip();
+		
+		////////// END TOOLTIP //////////////
+		
 		// when the shapes load, stash the features in the featuresById hash, apply
 		// the style, and load the scenario if there's an origin_taz
 		function onShapesLoad(e) {
@@ -255,6 +316,13 @@ var NIL = -999;
 				var feature = e.features[i].data;
 				feature.id = tazID(feature);
 				featuresById[feature.id] = feature;
+				////
+				/*
+				var el = e.features[i].element;
+				el.setAttribute('onmouseover', 'taz_over();return false;');
+				el.setAttribute('onmouseout', 'taz_out();return false;');
+				*/
+				//
 				if (selected(feature)) {
 					var el = e.features[i].element;
 					el.parentNode.appendChild(el);
@@ -265,6 +333,7 @@ var NIL = -999;
 			if (state.origin_taz) {
 				loadScenario();
 			}
+			tipController.setup(); // set tooltip events for TAZ's
 		}
 
 		function onShapesShow(e) {
@@ -864,7 +933,7 @@ $(function() {
 
 	/* listen for window resize then adjust map size */
 	$(window).resize(defer(5, setMapHeight));
-
+	
 	/////////////////////////////////////////////////////// end
 	} catch (e) {
 		if (typeof console != "undefined" && console.log) console.log(e);
