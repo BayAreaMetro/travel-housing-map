@@ -203,7 +203,7 @@ img{border:none;}
 		color: #000;
 		font-weight: bold;
 		background: rgba(0,0,0,.7);
-		background-image: url(images/loading_ani.gif);
+		background-image: url(images/loading_stripe-light.png);
 		background-repeat: no-repeat;
 		background-position: 0 center;
 	}
