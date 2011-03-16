@@ -468,6 +468,7 @@ $(function() {
 	}
 
 	var maxTime = parseInt($("input[name=max_time]").val());
+	if (isNaN(maxTime)) maxTime = 60;
 	var minutes = $("#minutes").html(formatTime(maxTime));
 
 	controller.filters([
@@ -476,6 +477,7 @@ $(function() {
 			return time > NIL && time <= maxTime;
 		}
 	]);
+
 	// defer calling updateFilters() for 10ms each time
 	var deferredUpdate = defer(10, controller.updateFilters);
 	function setMaxTime(t) {
