@@ -14,8 +14,16 @@ var NIL = -999;
 				// The Google Maps Geocoder
 				geocoder,
 				// The TAZ GeoJSON layer
-				shapes, filters;
-		var _progressTimer,_progressFlag;
+				shapes, filters,
+				markers = po.geoJson()
+					.id("markers")
+					.tile(false)
+					.on("load", po.stylist()
+						.attr("fill", "#000")
+						.attr("r", 15))
+					.on("load", onMarkersLoad);
+
+		var _progressTimer, _progressFlag;
 
 		var state = {};
 		// these variables go into the scenario request URI
@@ -140,7 +148,7 @@ var NIL = -999;
 						}
 					}
 					applyStyle();
-					stdout.attr("class", "loaded").text("Loaded!");
+					stdout.attr("class", "loaded").text("Loaded " + commize(len) + " rows");
 					_progressFlag = "done";
 				},
 				error: function(xhr, err, text) {
@@ -155,7 +163,54 @@ var NIL = -999;
 			updateHrefs(permalinks, null, window.location.hash);
 		}
 
-		// when the shapes load, stash the features in the featuresById hash, apply the style, and
+		var svg = {
+			element: function(name, attrs) {
+				var el = po.svg(name);
+				if (attrs) {
+					for (var a in attrs) {
+						el.setAttribute(a, attrs[a]);
+					}
+				}
+				return el;
+		 	},
+			label: function(text, attrs) {
+				var label = svg.element("text", $.extend({
+					"fill": "#fff",
+					"font-weight": "bold",
+					"text-anchor": "middle",
+					"alignment-baseline": "middle"
+				}, attrs || {}));
+				label.appendChild(document.createTextNode(text));
+				return label;
+		  },
+			title: function(el, title) {
+				var t = el.appendChild(po.svg("title"));
+				t.appendChild(document.createTextNode(title));
+				el.setAttribute("title", title);
+				return t;
+		 	}
+		};
+
+		function onMarkersLoad(e) {
+			var features = e.features,
+					len = features.length;
+			for (var i = 0; i < len; i++) {
+				var feature = e.features[i].data,
+						el = e.features[i].element;
+				if (feature.properties.label) {
+					var label = svg.label(feature.properties.label, {
+						"x": el.getAttribute("cx"),
+						"y": el.getAttribute("cy"),
+						"font-size": el.getAttribute("r"),
+						"baseline-shift": "-10%"
+					});
+					el.parentNode.appendChild(label);
+				}
+			}
+		}
+
+		// when the shapes load, stash the features in the featuresById hash, apply
+		// the style, and load the scenario if there's an origin_taz
 		function onShapesLoad(e) {
 			var features = e.features,
 					len = features.length;
@@ -179,7 +234,7 @@ var NIL = -999;
 			style(e);
 		}
 
-		function lookupTAZ(str, success, failure, centerOnSuccess) {
+		function lookupTAZ(str, success, failure, locate) {
 			// if it's in the form "TAZ:id", return the id portion
 			if (str.match(/^TAZ:(\d+)$/i)) {
 				success.call(null, str.split(":")[1]);
@@ -205,23 +260,13 @@ var NIL = -999;
 
 			var data = {"address": str, "region": "us"},
 					extent = map.extent();
-
 			var LatLng = google.maps.LatLng;
 			data.bounds = new google.maps.LatLngBounds(
 					new LatLng(extent[0].lat, extent[0].lon),
 					new LatLng(extent[1].lat, extent[1].lon));
-
 			// otherwise, treat it as an address for geocoding
 			return geocode(geocoder, data, function(result) {
-				if (centerOnSuccess !== false) {
-					/*
-					if (result.extent) {
-						map.extent(result.extent);
-						map.zoom(map.zoom() >>> 0);
-					}
-					*/
-					map.center(result.location);
-				}
+				if (locate) locate.call(null, result.location);
 				return location2taz(result.location, {
 					success: success,
 					error: failure
@@ -233,14 +278,20 @@ var NIL = -999;
 			stdout.attr("class", "loading").html("Looking up &ldquo;" + loc + "&rdquo;...");
 			updateHrefs(permalinks, {"origin": loc}, window.location.hash);
 			state.origin = loc;
+			state.origin_location = null;
 			clearStyle();
+			updateMarkers();
 			return lookupTAZ(loc, function(taz) {
-				stdout.attr("class", "loaded").text("Found TAZ: " + taz);
+				stdout.attr("class", "loaded").text("Found origin TAZ: " + taz);
 				applyOrigin(taz);
-				if (success) success.call(null, taz);
+				if (success) success.call(null, featuresById[taz]);
 			}, function(req, error, message) {
 				stdout.attr("class", "error").text("ERROR: " + message);
 				if (failure) failure.call(null, error);
+			}, function(loc) {
+				state.origin_location = loc;
+				updateMarkers();
+				map.center(loc);
 			});
 		}
 
@@ -250,6 +301,63 @@ var NIL = -999;
 				loadScenario();
 			}
 			return false;
+		}
+
+		function lookupDest(loc, success, failure) {
+			stdout.attr("class", "loading").html("Looking up &ldquo;" + loc + "&rdquo;...");
+			updateHrefs(permalinks, {"dest": loc}, window.location.hash);
+			state.dest = loc;
+			state.dest_location = null;
+			updateMarkers();
+			return lookupTAZ(loc, function(taz) {
+				stdout.attr("class", "loaded").text("Found dest. TAZ: " + taz);
+				applyDest(taz);
+				if (success) success.call(null, featuresById[taz]);
+			}, function(req, error, message) {
+				stdout.attr("class", "error").text("ERROR: " + message);
+				if (failure) failure.call(null, error);
+			}, function(loc) {
+				state.dest_location = loc;
+				updateMarkers();
+				map.center(loc);
+			});
+		}
+
+		function applyDest(taz) {
+			state.dest_taz = taz;
+			// TODO: something here?
+			/*
+			if (features.length == 2) {
+				stdout.text("Travel time between " + state.origin + " and " + state.dest + ": " + formatTime(travelTime(features[1])));
+			}
+			*/
+			return false;
+		}
+
+		function updateMarkers() {
+			var features = [];
+			if (state.origin && state.origin_location) {
+				var origin = makePoint(state.origin_location);
+				origin.properties = {id: "origin", label: "A", name: state.origin};
+				features.push(origin);
+			}
+			if (state.dest && state.dest_location) {
+				var dest = makePoint(state.dest_location);
+				dest.properties = {id: "dest", label: "B", name: state.dest};
+				features.push(dest);
+			}
+			markers.features(features);
+		}
+
+		function makePoint(loc, props) {
+			return {
+				type: "Feature",
+				properties: props || {},
+				geometry: {
+					type: "Point",
+					coordinates: [loc.lon, loc.lat]
+				}
+			};
 		}
 
 		// get/set the container element
@@ -265,10 +373,12 @@ var NIL = -999;
 			if (arguments.length) {
 				if (map) {
 					map.off("move", onMapMove);
+					map.remove(markers);
 				}
 				map = x;
 				if (map) {
 					map.on("move", onMapMove);
+					map.add(markers);
 				}
 				return controller;
 			} else {
@@ -374,7 +484,15 @@ var NIL = -999;
 		controller.origin = function(loc, success, failure) {
 			if (arguments.length) {
 				state.origin_taz = null;
-				lookupOrigin(loc, success, failure);
+				if (loc) {
+					lookupOrigin(loc, success, failure);
+				} else {
+					state.origin = state.origin_location = null;
+					updateMarkers();
+					clearStyle();
+					stdout.text("Cleared origin");
+					success.call();
+				}
 				return controller;
 			} else {
 				return state.origin;
@@ -384,11 +502,19 @@ var NIL = -999;
 		// get/set the destination string (asynchronous)
 		controller.dest = function(loc, success, failure) {
 			if (arguments.length) {
-				alert("Not yet implemented");
-				failure.call(null, "Not yet implemented");
+				state.dest_taz = null;
+				if (loc) {
+					lookupDest(loc, success, failure);
+				} else {
+					state.dest = state.dest_location = null;
+					updateMarkers();
+					applyStyle();
+					stdout.text("Cleared destination");
+					success.call();
+				}
 				return controller;
 			} else {
-				return state.dest;
+				return state.origin;
 			}
 		};
 
@@ -413,7 +539,22 @@ $(function() {
 		.form(form)
 		.stdout("#stdout");
 
-	var inputs = {};
+	// this keyup handler clicks the related submit ("input[name=submit-{name}]")
+	// when the user hits enter
+	function keyupfix(e) {
+		if (e.keyCode == 13 || e.keyCode == 27) {
+			if (e.keyCode == 27) $(this).val("").blur();
+			var submit = form.find("input[name=submit-" + this.name + "]");
+			if (submit.length) {
+				submit.click();
+			}
+			e.preventDefault();
+			return false;
+		}
+	}
+
+	var inputs = {},
+			submits = {};
 	// update mode on <select name="mode"/> change
 	inputs.mode = form.find("select[name=mode]").change(function() {
 		controller.mode($(this).val());
@@ -422,32 +563,41 @@ $(function() {
 	inputs.time = form.find("select[name=time]").change(function() {
 		controller.time($(this).val());
 	}).change();
-	// lookup origin in <input name="origin"/>
-	inputs.origin = form.find("input[name=origin]");
-	// lookup destination in <input name="dest"/>
-	inputs.dest = form.find("input[name=dest]");
 
-	var submits = {};
+	// lookup origin in <input name="origin"/>
+	inputs.origin = form.find("input[name=origin]").keydown(keyupfix);
 	// submit the origin on <input name="submit-origin"/> click
 	submits.origin = form.find("input[name=submit-origin]").click(function() {
 		var submit = $(this),
 				label = submit.val();
-		submit.val("Searching...").attr("disabled", true);
+		submit.val("Locating...").attr("disabled", true);
 		function revert() {
 			submit.val(label).attr("disabled", false);
 		}
 		controller.origin(inputs.origin.val(), revert, revert);
 		return false;
 	});
+
+	// lookup destination in <input name="dest"/>
+	inputs.dest = form.find("input[name=dest]").keydown(keyupfix);
 	// submit the destination on <input name="submit-dest"/> click
 	submits.dest = form.find("input[name=submit-dest]").click(function() {
 		var submit = $(this),
 				label = submit.val();
-		submit.val("Searching...").attr("disabled", true);
+		submit.val("Locating...").attr("disabled", true);
 		function revert() {
 			submit.val(label).attr("disabled", false);
 		}
-		controller.dest(inputs.dest.val(), revert, revert);
+		controller.dest(inputs.dest.val(), function(feature) {
+			/*
+			// TODO: implement
+			if (controller.origin()) {
+				var time = controller.travelTime(feature);
+				$("#origin-dest").css("left", pct(time));
+			}
+			*/
+			revert();
+		}, revert);
 		return false;
 	});
 
@@ -468,6 +618,11 @@ $(function() {
 	// submit the origin if there is one
 	if (inputs.origin.val()) {
 		submits.origin.click();
+	} else {
+		inputs.origin.focus();
+	}
+	if (inputs.dest.val()) {
+		submits.dest.click();
 	}
 
 	var maxTime = parseInt($("input[name=max_time]").val());
@@ -511,7 +666,6 @@ $(function() {
 		step: 1,
 		value: maxTime
 	});
-	
 
 	// convert a time to a percent (used for the widths of individual chips)
 	function pct(t) {
@@ -561,6 +715,8 @@ $(function() {
 	var periods = inputs.time.find("option").map(function(i, el) {
 		return {index: i, time: el.value, label: $(el).text()};
 	});
+	// get the index of a period time ("AM" -> 1) in the array, for setting the
+	// slider value
 	function periodIndex(time) {
 		for (var i = 0; i < periods.length; i++) {
 			if (periods[i].time == time) return i;
@@ -579,41 +735,42 @@ $(function() {
 	});
 
 	var todlabels = $("#tod-legend .labels"),
-                     last = periods.length - 1;
-        for (var i = 0; i <= last; i++) {
-                var period = periods[i];
-                var label = $("<a/>")
-                        .text(period.label)
-                        .attr("href", "#")
-                        .attr("class", "label")
-                        .data("time", period.time)
-                        .data("index", i)
-                        .css("left", (i / last * 100) + "%")
-                        .appendTo(todlabels);
+			last = periods.length - 1;
+	for (var i = 0; i <= last; i++) {
+		var period = periods[i];
+		var label = $("<a/>")
+			.text(period.label)
+			.attr("href", "#")
+			.attr("class", "label")
+			.data("time", period.time)
+			.data("index", i)
+			.css("left", (i / last * 100) + "%")
+			.appendTo(todlabels);
 	}
-     todlabels.find("a").click(function() {
-             var period = $(this).data();
-             tod_slider.slider("option", "value", period.index);
-             controller.time(period.time);
-     });
+	todlabels.find("a").click(function() {
+		var period = $(this).data();
+		tod_slider.slider("option", "value", period.index);
+		controller.time(period.time);
+	});
 
-     function setMode(mode) {
-             controller.mode(mode);
-             modeLinks.attr("class", function() {
-                     return $(this).data("mode") == mode ? "selected" : "";
-             });
-     }
-     var modeLinks = $("#travel-optionss a")
-             .each(function() {
-                     var link = $(this);
-                     link.data("mode", link.attr("id").split("_")[1]);
-             }).click(function() {
-                     var mode = $(this).data("mode");
-                     setMode(mode);
-                     return false;
-             });
-     setMode(controller.mode());
-	
+	function setMode(mode) {
+		controller.mode(mode);
+		modeLinks.attr("class", function() {
+			return $(this).data("mode") == mode ? "selected" : "";
+		});
+	}
+
+	var modeLinks = $("#travel-optionss a")
+		 .each(function() {
+			 var link = $(this);
+			 link.data("mode", link.attr("id").split("_")[1]);
+		 }).click(function() {
+			 var mode = $(this).data("mode");
+			 setMode(mode);
+			 return false;
+		 });
+	setMode(controller.mode());
+
 	/* adjust map size based on viewport */
 	function setMapHeight(){
 		var _mapHeight = $("#travel-time").height();
@@ -622,22 +779,17 @@ $(function() {
 		var _viewport = $(window).height();
 		if(!_mapHeight && !_viewport)return;
 		
-		var _newSize = _viewport - (_mapTop + 18);
-		if(_newSize < 200)return;
+		var _newSize = _viewport - (_mapTop + 24);
+		if(_newSize < 200) return;
 		
 		$("#travel-time").css('cssText', 'height: '+_newSize+'px !important');
-		map.size({x:_mapWidth,y:_mapHeight});
+		map.size({x: _mapWidth, y: _mapHeight});
 	}
 	setMapHeight();
-	
+
 	/* listen for window resize then adjust map size */
-	var _resizeTimer;
-	$(window).resize(function() {
-		clearTimeout(_resizeTimer);
-		_resizeTimer = setTimeout(function(){
-			setMapHeight();
-		},100);
-	});
+	$(window).resize(defer(5, setMapHeight));
+
 	/////////////////////////////////////////////////////// end
 	} catch (e) {
 		if (typeof console != "undefined" && console.log) console.log(e);
