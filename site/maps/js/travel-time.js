@@ -552,39 +552,34 @@ $(function() {
 	}
 
 	// Time of Day slider (tod)
-	var times = [
-		{time: "EA", label: "early AM"},
-		{time: "AM", label: "AM"},
-		{time: "MD", label: "mid-day"},
-		{time: "PM", label: "PM"},
-		{time: "EV", label: "evening"}
-	];
-	function timeIndex(time) {
-		for (var i = 0; i < times.length; i++) {
-			if (times[i].time == time) return i;
+	var periods = inputs.time.find("option").map(function(i, el) {
+		return {index: i, time: el.value, label: $(el).text()};
+	});
+	function periodIndex(time) {
+		for (var i = 0; i < periods.length; i++) {
+			if (periods[i].time == time) return i;
 		}
 		return 0;
 	}
 	var tod_slider = $( "#tod-slider" ).slider({
 		min: 		0,
-		max: 		times.length - 1,
-		value: 	timeIndex(controller.time()),
+		max: 		periods.length - 1,
+		value: 	periodIndex(controller.time()),
 		step: 	1,
 		slide: function(e, ui) {
-			controller.time(times[ui.value].time);
+			controller.time(periods[ui.value].time);
 		}
 	});
 
 	var todlabels = $("#tod-legend .labels"),
-			last = times.length - 1,
-			todPos = tod_slider.width() / last;
+			last = periods.length - 1;
 	for (var i = 0; i <= last; i++) {
-		var current = times[i];
+		var period = periods[i];
 		var label = $("<a/>")
-			.text(current.label)
+			.text(period.label)
 			.attr("href", "#")
 			.attr("class", "label")
-			.data("time", current.time)
+			.data("time", period.time)
 			.data("index", i)
 			.css("left", (i / last * 100) + "%")
 			.appendTo(todlabels);
