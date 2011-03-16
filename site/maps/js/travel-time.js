@@ -467,7 +467,7 @@ $(function() {
 		submits.origin.click();
 	}
 
-	var maxTime = 60;
+	var maxTime = parseInt($("input[name=max_time]").val());
 	var minutes = $("#minutes").html(formatTime(maxTime));
 
 	controller.filters([
@@ -477,12 +477,13 @@ $(function() {
 		}
 	]);
 	// defer calling updateFilters() for 10ms each time
-	var reallyUpdate = defer(10, controller.updateFilters);
-	function updateMaxTime(t) {
+	var deferredUpdate = defer(10, controller.updateFilters);
+	function setMaxTime(t) {
 		if (maxTime != t) {
 			maxTime = t;
 			minutes.html(formatTime(t));
-			reallyUpdate();
+			deferredUpdate();
+			updateHrefs(controller.permalinks(), {"max_time": t}, window.location.hash);
 		}
 	}
 
@@ -498,7 +499,7 @@ $(function() {
 	// create the time slider
 	var slider = $("#time-slider").slider({
 		slide: function(e, ui) {
-			updateMaxTime(ui.value);
+			setMaxTime(ui.value);
 		},
 		min: boundMin,
 		max: boundMax,
@@ -530,7 +531,7 @@ $(function() {
 	labels.find("a").click(function() {
 		var t = $(this).data("minutes");
 		slider.slider("option", "value", t);
-		updateMaxTime(t);
+		setMaxTime(t);
 	});
 
 	var range = pv.range(boundMin, boundMax, 1),
