@@ -45,7 +45,6 @@ img{border:none;}
 }
 
 .full-circle(@radius:75px) {
-	
 	background-color: #000;
 	border:none;
 	height: @radius * 2;
@@ -169,6 +168,7 @@ img{border:none;}
 	right: 0;
 	top: 100%;
 	z-index: 100;
+	margin-top:1px;
 }
 
 #stdout {
@@ -218,10 +218,24 @@ input[disabled] {
 
 
 #data-progress-bar{
-	position: absolute;
-	top: 50%;
-	left: 50%;
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	z-index: 2000;
+	background:rgba(0,0,0,.6);
+	padding-bottom:14px;
 }
+#progressbar{
+	position:relative;
+	width:400px;
+	height:24px;
+	top:45%;
+	left:40%;
+}
+
+.ui-progressbar-value { background-image: url(images/loading_stripe-light.png); }
 
 
 h1, h2 {

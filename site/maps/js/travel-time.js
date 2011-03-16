@@ -15,6 +15,7 @@ var NIL = -999;
 				geocoder,
 				// The TAZ GeoJSON layer
 				shapes, filters;
+		var _progressTimer,_progressFlag;
 
 		var state = {};
 		// these variables go into the scenario request URI
@@ -123,9 +124,9 @@ var NIL = -999;
 				scenarioReq.abort();
 				scenarioReq = null;
 			}
-
+			
 			stdout.attr("class", "loading").text("Loading scenario data...");
-
+			
 			var url = "/data/scenarios/2005/time/" + [state.time, "from", state.origin_taz].join("/") + ".csv";
 			return scenarioReq = $.ajax(url, {
 				dataType: "text",
@@ -140,9 +141,11 @@ var NIL = -999;
 					}
 					applyStyle();
 					stdout.attr("class", "loaded").text("Loaded!");
+					_progressFlag = "done";
 				},
 				error: function(xhr, err, text) {
 					stdout.attr("class", "error").text("Error loading scenario: " + text);
+					_progressFlag = "done";
 				}
 			});
 		}
@@ -550,6 +553,9 @@ $(function() {
 			.css("background", colorScale(range[i]).color)
 			.appendTo(chips);
 	}
+	
+	// show title now that everything is rendered
+	$('#bottom-bar .title').show();
 
 	// Time of Day slider (tod)
 	var periods = inputs.time.find("option").map(function(i, el) {
@@ -561,6 +567,7 @@ $(function() {
 		}
 		return 0;
 	}
+
 	var tod_slider = $( "#tod-slider" ).slider({
 		min: 		0,
 		max: 		periods.length - 1,
@@ -572,41 +579,66 @@ $(function() {
 	});
 
 	var todlabels = $("#tod-legend .labels"),
-			last = periods.length - 1;
-	for (var i = 0; i <= last; i++) {
-		var period = periods[i];
-		var label = $("<a/>")
-			.text(period.label)
-			.attr("href", "#")
-			.attr("class", "label")
-			.data("time", period.time)
-			.data("index", i)
-			.css("left", (i / last * 100) + "%")
-			.appendTo(todlabels);
+                     last = periods.length - 1;
+        for (var i = 0; i <= last; i++) {
+                var period = periods[i];
+                var label = $("<a/>")
+                        .text(period.label)
+                        .attr("href", "#")
+                        .attr("class", "label")
+                        .data("time", period.time)
+                        .data("index", i)
+                        .css("left", (i / last * 100) + "%")
+                        .appendTo(todlabels);
 	}
-	todlabels.find("a").click(function() {
-		var period = $(this).data();
-		tod_slider.slider("option", "value", period.index);
-		controller.time(period.time);
+     todlabels.find("a").click(function() {
+             var period = $(this).data();
+             tod_slider.slider("option", "value", period.index);
+             controller.time(period.time);
+     });
+
+     function setMode(mode) {
+             controller.mode(mode);
+             modeLinks.attr("class", function() {
+                     return $(this).data("mode") == mode ? "selected" : "";
+             });
+     }
+     var modeLinks = $("#travel-optionss a")
+             .each(function() {
+                     var link = $(this);
+                     link.data("mode", link.attr("id").split("_")[1]);
+             }).click(function() {
+                     var mode = $(this).data("mode");
+                     setMode(mode);
+                     return false;
+             });
+     setMode(controller.mode());
+	
+	/* adjust map size based on viewport */
+	function setMapHeight(){
+		var _mapHeight = $("#travel-time").height();
+		var _mapWidth = $("#travel-time").width();
+		var _mapTop = $("#travel-time").offset().top;
+		var _viewport = $(window).height();
+		if(!_mapHeight && !_viewport)return;
+		
+		var _newSize = _viewport - (_mapTop + 18);
+		if(_newSize < 200)return;
+		
+		$("#travel-time").css('cssText', 'height: '+_newSize+'px !important');
+		map.size({x:_mapWidth,y:_mapHeight});
+	}
+	setMapHeight();
+	
+	/* listen for window resize then adjust map size */
+	var _resizeTimer;
+	$(window).resize(function() {
+		clearTimeout(_resizeTimer);
+		_resizeTimer = setTimeout(function(){
+			setMapHeight();
+		},100);
 	});
-
-	function setMode(mode) {
-		controller.mode(mode);
-		modeLinks.attr("class", function() {
-			return $(this).data("mode") == mode ? "selected" : "";
-		});
-	}
-	var modeLinks = $("#travel-optionss a")
-		.each(function() {
-			var link = $(this);
-			link.data("mode", link.attr("id").split("_")[1]);
-		}).click(function() {
-			var mode = $(this).data("mode");
-			setMode(mode);
-			return false;
-		});
-	setMode(controller.mode());
-
+	/////////////////////////////////////////////////////// end
 	} catch (e) {
 		if (typeof console != "undefined" && console.log) console.log(e);
 		alert("Whoops: " + e);
