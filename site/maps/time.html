@@ -72,7 +72,8 @@
 				margin: -2em 0 0 0;
 				text-align: left;
 				width: 90%;
-				display:none;
+				display: none;
+				pointer-events: none;
 			}
 
 			#legend .label,
@@ -213,7 +214,7 @@
 					</div>
 
 					<div id="bottom-bar">
-						<h2 class="title">Places accessible in <strong>&le;<span id="minutes">30 minutes</span></strong></h2>
+						<h2 class="title"><span class="prefix"></span> <strong id="minutes"></strong></h2>
 						<div id="time-slider"></div>
 						<div id="legend"><span class="chips"></span><span class="labels"></span></div>
 					</div>

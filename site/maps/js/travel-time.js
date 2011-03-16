@@ -11,6 +11,7 @@ var NIL = -999;
 
 		loader.load = function(url) {
 			if (req) {
+				loader.dispatch({type: "abort", request: req});
 				req.abort();
 				req = null;
 			}
@@ -32,7 +33,7 @@ var NIL = -999;
 		};
 
 		loader.loading = function() {
-			return req ? req.url || true : false;
+			return req;
 		};
 
 		return loader;
@@ -103,7 +104,7 @@ var NIL = -999;
 		}
 
 		function getTitle(feature) {
-			return "TAZ #" + feature.id + ": " + formatTime(travelTime(feature));
+			return formatTime(travelTime(feature));
 		}
 
 		function displayFilter(feature) {
@@ -144,15 +145,29 @@ var NIL = -999;
 		// re-show the layer
 		function applyStyle() {
 			shapes.reshow();
+			dispatchInfo();
 		}
 
+		// clear the shapes
 		function clearStyle() {
 			for (var id in featuresById) {
 				delete featuresById[id].properties.travel;
 			}
 			shapes.reshow();
+			dispatchInfo();
 		}
-		
+
+		function dispatchInfo() {
+			var origin = featuresById[state.origin_taz],
+					dest = featuresById[state.dest_taz];
+			var e = {type: "travel-time", origin: origin, dest: dest};
+			if (origin && dest) {
+				e.time = travelTime(dest);
+			}
+			console.log("INFO", e);
+			controller.dispatch(e);
+		}
+
 		var scenarioReq;
 		/**
 		 * Load the current scenario. This builds a URL from the state; sends an
@@ -183,12 +198,6 @@ var NIL = -999;
 					}
 					applyStyle();
 					stdout.attr("class", "loaded").text("Loaded " + commize(len) + " rows");
-					controller.dispatch({
-						type: "load-scenario", 
-						url: url,
-						scenario: rows,
-						taz: state.origin_taz,
-					});
 				},
 				error: function(xhr, err, text) {
 					stdout.attr("class", "error").text("Error loading scenario: " + text);
@@ -447,6 +456,7 @@ var NIL = -999;
 
 		function applyDest(taz) {
 			state.dest_taz = taz;
+			dispatchInfo();
 			return false;
 		}
 
@@ -663,12 +673,34 @@ $(function() {
 		.form(form)
 		.stdout("#stdout");
 	
-	var origin, dest;
 	controller.on("locate-origin", function(e) {
 		// TODO
 	});
 	controller.on("locate-dest", function(e) {
 		// TODO
+	});
+
+	var showMax = true;
+	controller.on("travel-time", function(e) {
+		var origin = e.origin,
+				dest = e.dest,
+				time = e.time;
+
+		var title = $("#bottom-bar .title"),
+				prefix = title.find(".prefix");
+		if (origin && dest) {
+			prefix.html('Travel time from <span class="dest-circle">A</span> to <span class="dest-circle">B</span>:');
+			if (time != NIL) {
+				updateTimeText(time);
+			} else {
+				updateTimeText("???");
+			}
+			showMax = false;
+		} else if (origin) {
+			prefix.text("Places accessible in");
+			updateTimeText(maxTime);
+			showMax = true;
+		}
 	});
 
 	var inputs = {},
@@ -765,6 +797,9 @@ $(function() {
 	var maxTime = parseInt($("input[name=max_time]").val());
 	if (isNaN(maxTime)) maxTime = 60;
 	var minutes = $("#minutes").html(formatTime(maxTime));
+	function updateTimeText(t) {
+		minutes.html(formatTime(t));
+	}
 
 	controller.filters([
 		function(feature) {
@@ -778,7 +813,7 @@ $(function() {
 	function setMaxTime(t) {
 		if (maxTime != t) {
 			maxTime = t;
-			minutes.html(formatTime(t));
+			if (showMax) updateTimeText(t);
 			deferredUpdate();
 			updateHrefs(controller.permalinks(), {"max_time": t}, window.location.hash);
 		}
