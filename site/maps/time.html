@@ -13,13 +13,14 @@
 
 			#travel-time {
 				height: 500px !important;
+				overflow:hidden;
 			}
 
 			/* FIXME: These styles are fucked up. Help me! */
 			#bottom-bar {
 				position: absolute;
 				left: 0;
-				bottom: -1em;
+				bottom: -.2em;
 				width: 100%;
 				z-index: 1004;
 				height: 3em;
@@ -185,8 +186,6 @@
 					</div>
 				</div>
 				
-				<div id="taztip"><span class="nub"></span><p id="tazinfo"></p></div>
-				
 				<div class="map drag" id="travel-time"
 					data-zoomRange="9,14" data-center="37.7639,-122.4130" data-zoom="9">
 					<div class="layer" data-type="image"
@@ -218,7 +217,10 @@
 						<div id="time-slider"></div>
 						<div id="legend"><span class="chips"></span><span class="labels"></span></div>
 					</div>
-
+				
+					<div id="taztip"><span class="nub"></span><p id="tazinfo"></p></div>
+				</div>
+			
 			</form>
 
 		</div>

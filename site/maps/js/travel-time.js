@@ -251,53 +251,58 @@ var NIL = -999;
 		// being initiated from onShapesLoad
 		//
 		function theTip(){
-			this.tztip = $("#taztip");
-			this.tztxt = $("#tazinfo");
-			this.tzText = "tip text example";
-			this.tzover = false;
+			this.tipRef = $("#taztip");
+			this.txtRef = $("#tazinfo");
+			this.tipState = false;
 			this.oldTitleElm = null;
 			this.oldTitleAttr = null;
-			this.tzHeight = null;
+			this.tipHeight = null;
 			var self = this;
 			
 			this.setup = function(){
-				var _self = this;
+
 				$('.tazact').unbind('mouseover');
 				$('.tazact').unbind('mouseout');
 				$(document).unbind('mousemove');
 				
-				
 				$('.tazact').mouseover(function(e){
 					e.preventDefault();
-
-					_self.tztxt.text( $(this).attr('title') );
-					_self.oldTitleAttr = $(this).attr('title');
-					_self.oldTitleElm = $(this).find("title");
+					
+					// set txt
+					self.txtRef.text( $(this).attr('title') );
+					
+					// store old title stuff
+					self.oldTitleAttr = $(this).attr('title');
+					self.oldTitleElm = $(this).find("title");
+					// remove title stuff
 					$(this).removeAttr('title');
 					$(this).find("title").remove();
 
-					_self.tztip.css("width","auto");
-					var _w = _self.tztip.width();
-					_self.tztip.css("margin-left","-"+(_w*.5)+"px");
+					// adjust width
+					self.tipRef.css("width","auto");
 					
-					_self.tzHeight = _self.tztip.height();
+					var _w = self.tipRef.width();
+					self.tipRef.css("width",_w+"px");
+					self.tipRef.css("margin-left","-"+(_w*.5)+"px");
+					
+					self.tipHeight = self.tipRef.height();
 
-					_self.tztip.show();
-					_self.tzover = true;
+					self.tipRef.show();
+					self.tipState = true;
 				});
 				
 				$('.tazact').mouseout(function(e){
 					e.preventDefault();
-					_self.tztip.hide();
-					_self.tztxt.text("");
-					if(_self.oldTitleAttr)$(this).attr('title',_self.oldTitleAttr);
-					if(_self.oldTitleElm)$(this).append(_self.oldTitleElm);
-					_self.tzover = false;
+					self.tipRef.hide();
+					self.txtRef.text("");
+					if(self.oldTitleAttr)$(this).attr('title',self.oldTitleAttr);
+					if(self.oldTitleElm)$(this).append(self.oldTitleElm);
+					self.tipState = false;
 				});
 				
 				$(document).mousemove(function(e){
-				    if (_self.tzover){
-				      _self.tztip.css("left", e.clientX).css("top", e.clientY - (15+_self.tzHeight));
+				    if (self.tipState){
+				      self.tipRef.css("left", e.offsetX).css("top", e.offsetY - (15+self.tipHeight));
 				    }
 				});
 				
@@ -923,7 +928,7 @@ $(function() {
 		var _viewport = $(window).height();
 		if (!_mapHeight && !_viewport) return;
 		
-		var _newSize = _viewport - (_mapTop + 24);
+		var _newSize = _viewport - (_mapTop + 20);
 		if (_newSize < 200) return;
 		
 		container.css('cssText', 'height: '+_newSize+'px !important');
