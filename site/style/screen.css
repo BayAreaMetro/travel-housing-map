@@ -70,21 +70,37 @@ img{border:none;}
 	border-top: 1px dashed #ccc;
 }
 
+#info-geo p input[type=submit] {
+	width: 12ex;
+}
+
 #info-geo p,
 #travel-optionss,
 #time-of-day {
-	margin: 0;
+	margin: 0 2em 0 0;
 	padding: 0;
 	float: left;
-	width: 32em;
 	min-height: 1.5em;
 }
 
-#travel-optionss, #time-of-day { min-height: 4em; }
-#travel-optionss { margin-right: -1.5em; }
-#time-of-day { margin-left: 1.5em; }
+#info-dest,
+#time-of-day {
+	margin-right: 0 !important;
+}
 
-#info #info-geo p label{
+#travel-optionss,
+#time-of-day {
+	min-height: 4em;
+}
+
+#travel-optionss {
+}
+
+#time-of-day {
+	width: 30em;
+}
+
+#info #info-geo p label {
 	padding-left: .5em;
 }
 
@@ -113,7 +129,7 @@ img{border:none;}
 	text-align: center;
 }
 
-#info #travel-optionss a{
+#info #travel-optionss a {
 	display:inline-block;
 	width:69px;
 	height:42px;
