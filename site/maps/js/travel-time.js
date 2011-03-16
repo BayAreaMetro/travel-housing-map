@@ -708,7 +708,7 @@ $(function() {
 			.appendTo(chips);
 	}
 	
-	// show title now that everything is rendered
+	// show title now that bottom bar is rendered
 	$('#bottom-bar .title').show();
 
 	// Time of Day slider (tod)
@@ -752,6 +752,18 @@ $(function() {
 		tod_slider.slider("option", "value", period.index);
 		controller.time(period.time);
 	});
+	
+	// create ticks for tod slider ... skipping ends
+	var tickBox = $('<div/>').attr("id","tickbox");
+	for (var i = 1; i <= (last-1); i++) {
+		var label = $("<p/>")
+			.attr("class", "ticks")
+			.css("left", (i / last * 100) + "%")
+			.appendTo(tickBox);
+	}
+	$("#tod-slider").append(tickBox);
+	// end create ticks for tod slider
+	
 
 	function setMode(mode) {
 		controller.mode(mode);

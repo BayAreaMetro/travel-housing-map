@@ -202,9 +202,10 @@ img{border:none;}
 	#stdout.loading {
 		color: #000;
 		font-weight: bold;
-		background-color: rgba(0,0,0,.5);
-		background-image: url(images/loading_stripe-light.png);
-		background-repeat: repeat-x repeat-y;
+		background: rgba(0,0,0,.7);
+		background-image: url(images/loading_ani.gif);
+		background-repeat: no-repeat;
+		background-position: 0 center;
 	}
 
 input[disabled] {
@@ -228,11 +229,27 @@ input[disabled] {
 	line-height: 1.2em;
 }
 
+/* hiding at first, shown once page is rendered */
 #travel-options{
 	display: none;
 }
 
+/* ticks for time of day slider */
+#tod-slider #tickbox{
+	position:absolute;
+	width:100%;
+	top:0;
+	left:0;
+}
+#tickbox .ticks{
+	position:absolute;
+	margin:-5px 0 0 -6px;
+	
+	.full-circle(7px);
+}
 
+
+/* not being used
 #data-progress-bar{
 	position:absolute;
 	top:0;
@@ -252,7 +269,7 @@ input[disabled] {
 }
 
 .ui-progressbar-value { background-image: url(images/loading_stripe-light.png); }
-
+*/
 
 h1, h2 {
 	font-size: 300%;
