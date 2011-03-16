@@ -399,24 +399,17 @@ input, select {
 	line-height: inherit;
 }
 
-input[type=search] {
-	font-size: 120%;
-	min-width: 24ex;
-}
-
+input[type=search],
 input[type=submit] {
 	cursor: pointer;
+	display: inline-block;
+	text-align: center;
 	background: #009DDC;
 	color: #fff;
 	padding: .25em .5em;
 	border: none;
 	outline-width: 0;
 	font-weight: bold;
-}
-
-h2 input[type=submit] {
-	display: inline-block;
-	padding: .1em .5em;
 }
 
 ol.steps li.complete {
