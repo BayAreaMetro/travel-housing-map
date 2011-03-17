@@ -167,6 +167,13 @@ var NIL = -999;
 			console.log("INFO", e);
 			controller.dispatch(e);
 		}
+		
+		function dispatchStdout(_class,_msg){
+			// bin classes
+			if(_class == "loaded" || _class == "")_class = "good";
+			if(_class && _class.length)stdout.attr("class", _class)
+			if(_msg && _msg.length)stdout.attr("title",_msg);
+		}
 
 		var scenarioReq;
 		/**
@@ -177,12 +184,14 @@ var NIL = -999;
 		 */
 		function loadScenario() {
 			if (scenarioReq) {
-				stdout.attr("class", "aborting").text("Aborting previous request...");
+				dispatchStdout( "aborting","Aborting previous request...");
+				//stdout.attr("class", "aborting").text("Aborting previous request...");
 				scenarioReq.abort();
 				scenarioReq = null;
 			}
 			
-			stdout.attr("class", "loading").text("Loading scenario data...");
+			dispatchStdout( "loading","Loading scenario data...");
+			//stdout.attr("class", "loading").text("Loading scenario data...");
 			
 			var url = "/data/scenarios/2005/time/" + [state.time, "from", state.origin_taz].join("/") + ".csv";
 			return scenarioReq = $.ajax(url, {
@@ -197,10 +206,13 @@ var NIL = -999;
 						}
 					}
 					applyStyle();
-					stdout.attr("class", "loaded").text("Loaded " + commize(len) + " rows");
+					
+					dispatchStdout( "loaded","Loaded " + commize(len) + " rows");
+					//stdout.attr("class", "loaded").text("Loaded " + commize(len) + " rows");
 				},
 				error: function(xhr, err, text) {
-					stdout.attr("class", "error").text("Error loading scenario: " + text);
+					dispatchStdout("error","Loaded " + "Error loading scenario: " + text);
+					//stdout.attr("class", "error").text("Error loading scenario: " + text);
 				}
 			});
 		}
@@ -411,14 +423,16 @@ var NIL = -999;
 		}
 
 		function lookupOrigin(loc, success, failure) {
-			stdout.attr("class", "loading").html("Looking up &ldquo;" + loc + "&rdquo;...");
+			dispatchStdout("loading","Loaded " + "Looking up &ldquo;" + loc + "&rdquo;...");
+			//stdout.attr("class", "loading").html("Looking up &ldquo;" + loc + "&rdquo;...");
 			updateHrefs(permalinks, {"origin": loc}, window.location.hash);
 			state.origin = loc;
 			state.origin_location = null;
 			clearStyle();
 			updateMarkers();
 			return lookupTAZ(loc, function(taz, latlon) {
-				stdout.attr("class", "loaded").text("Found origin TAZ: " + taz);
+				dispatchStdout("loaded","Found origin TAZ: " + taz);
+				//stdout.attr("class", "loaded").text("Found origin TAZ: " + taz);
 				state.origin_location = latlon;
 				updateMarkers();
 				applyOrigin(taz);
@@ -430,7 +444,9 @@ var NIL = -999;
 				});
 				if (success) success.call(null, latlon, taz, featuresById[taz]);
 			}, function(req, error, message) {
-				stdout.attr("class", "error").text("ERROR: " + message);
+				dispatchStdout("error","ERROR: " + message);
+				//stdout.attr("class", "error").text("ERROR: " + message);
+				
 				if (failure) failure.call(null, error);
 			});
 		}
@@ -444,13 +460,15 @@ var NIL = -999;
 		}
 
 		function lookupDest(loc, success, failure) {
-			stdout.attr("class", "loading").html("Looking up &ldquo;" + loc + "&rdquo;...");
+			dispatchStdout("loading","Looking up &ldquo;" + loc + "&rdquo;...");
+			//stdout.attr("class", "loading").html("Looking up &ldquo;" + loc + "&rdquo;...");
 			updateHrefs(permalinks, {"dest": loc}, window.location.hash);
 			state.dest = loc;
 			state.dest_location = null;
 			updateMarkers();
 			return lookupTAZ(loc, function(taz, latlon) {
-				stdout.attr("class", "loaded").text("Found dest. TAZ: " + taz);
+				dispatchStdout("loaded","Found dest. TAZ: " + taz);
+				//stdout.attr("class", "loaded").text("Found dest. TAZ: " + taz);
 				state.dest_location = latlon;
 				updateMarkers();
 				applyDest(taz);
@@ -462,7 +480,8 @@ var NIL = -999;
 				});
 				if (success) success.call(null, latlon, taz, featuresById[taz]);
 			}, function(req, error, message) {
-				stdout.attr("class", "error").text("ERROR: " + message);
+				dispatchStdout("error","ERROR: " + message);
+				//stdout.attr("class", "error").text("ERROR: " + message);
 				if (failure) failure.call(null, error);
 			});
 		}
@@ -637,7 +656,8 @@ var NIL = -999;
 					state.origin = state.origin_location = null;
 					updateMarkers();
 					clearStyle();
-					stdout.text("Cleared origin");
+					dispatchStdout("","Cleared origin");
+					//stdout.text("Cleared origin");
 					success.call();
 				}
 				return controller;
@@ -656,7 +676,8 @@ var NIL = -999;
 					state.dest = state.dest_location = null;
 					updateMarkers();
 					applyStyle();
-					stdout.text("Cleared destination");
+					dispatchStdout("","Cleared destination");
+					//stdout.text("Cleared destination");
 					success.call();
 				}
 				return controller;
