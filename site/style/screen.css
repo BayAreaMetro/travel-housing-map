@@ -123,6 +123,13 @@ img{border:none;}
 	text-decoration: none;
 }
 
+#tod-legend .labels a:first-child {
+	margin-left: -.5em !important;
+}
+#tod-legend .labels a:last-child {
+	margin-left: -4.5em !important;
+}
+
 #info h5 {
 	margin: 0 0 .5em;
 	font-size: 1em;
@@ -205,12 +212,13 @@ a.marker {
 	right: 0;
 	bottom: 0;
 	color: #000;
-	padding: .25em .5em .25em 22px;
+	height: 2em;
+	width: 2em;
 	margin: 0;
-	background: rgba(255,255,255,.6);
+	background: rgba(255,255,255,.4);
 	background-image: url(images/status-good.png);
 	background-repeat: no-repeat;
-	background-position: 3px center;
+	background-position: center center;
 	
 	-webkit-user-select: none;
 	-khtml-user-select: none;
@@ -218,26 +226,10 @@ a.marker {
 	-o-user-select: none;
 	user-select: none;
 }
-	#stdout.good{
-		color: #000;
-		background-image: url(images/status-good.png);
-		background-repeat: no-repeat;
-		background-position: 3px center;
-	}
 
-	#stdout.loading {
-		color: #000;
-		background-image: url(images/status-loading.gif);
-		background-repeat: no-repeat;
-		background-position: 3px center;
-	}
-	
-	#stdout.error {
-		color: #000;
-		background-image: url(images/status-bad.png);
-		background-repeat: no-repeat;
-		background-position: 0 center;
-	}
+	#stdout.good { background-image: url(images/status-good.png); }
+	#stdout.loading { background-image: url(images/status-loading.gif); }
+	#stdout.error { background-image: url(images/status-bad.png); }
 
 input[disabled] {
 	background: #888 !important;
