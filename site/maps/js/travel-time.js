@@ -288,13 +288,17 @@ var NIL = -999;
 			this.oldTitleElm = null;
 			this.oldTitleAttr = null;
 			this.tipHeight = null;
+			this.mapCoord = null;
 			var self = this;
 			
 			this.setTip = function(){
 
 				$('.tazact').unbind('mouseover');
 				$('.tazact').unbind('mouseout');
-				$('#travel-time').unbind('mousemove');
+				
+				
+				//$('#travel-time')
+				self.mapCoord = $('#travel-time').offset();
 				
 				$('.tazact').mouseover(function(e){
 					e.preventDefault();
@@ -326,6 +330,16 @@ var NIL = -999;
 					// show tip and set state flag
 					self.tipRef.show();
 					self.tipState = true;
+					
+					$('#travel-time').unbind('mousemove');
+					$('#travel-time').mousemove(function(e){
+					    if (self.tipState){
+							var _x = e.pageX - self.mapCoord.left;
+							var _y = (e.pageY - self.mapCoord.top) - (15+self.tipHeight);
+					      self.tipRef.css("left", _x).css("top", _y);
+					    }
+					});
+					
 				});
 				
 				$('.tazact').mouseout(function(e){
@@ -343,15 +357,12 @@ var NIL = -999;
 
 				});
 				
-				$('#travel-time').mousemove(function(e){
-				    if (self.tipState){
-				      self.tipRef.css("left", e.offsetX).css("top", e.offsetY - (15+self.tipHeight));
-				    }
-				});
+				
 				
 			}
 			
 			this.closeTip = function(){
+				$('#travel-time').unbind('mousemove');
 				self.tipRef.hide();
 				self.txtRef.text("");
 			}
