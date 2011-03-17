@@ -23,6 +23,7 @@ a:link,
 a:visited {
 	color: @linkColor;
 	cursor:pointer;
+	outline: 0;
 }
 
 a:visited {
