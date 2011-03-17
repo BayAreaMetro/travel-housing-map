@@ -210,7 +210,7 @@ img{border:none;}
 
 	#stdout.loading {
 		color: #000;
-		background-image: url(images/status-loading.png);
+		background-image: url(images/status-loading.gif);
 		background-repeat: no-repeat;
 		background-position: 3px center;
 	}
@@ -289,7 +289,7 @@ position: absolute;
 border-left: 20px solid transparent;
 border-right: 1px solid transparent;
 border-top: 10px solid black;
-left: 35%;
+left: 30%;
 bottom: -10px;
 }
 
