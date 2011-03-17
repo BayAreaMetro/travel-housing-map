@@ -19,21 +19,33 @@
 			/* FIXME: These styles are fucked up. Help me! */
 			#bottom-bar {
 				position: absolute;
-				background: rgba(255,255,255,.3);
 				left: 0;
 				bottom: 0;
 				width: 100%;
 				z-index: 1004;
 				height: 8em;
+				pointer-events: none;
+			}
+
+			#bottom-bar .bg {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				background: rgba(255,255,255,.3);
 			}
 
 			#bottom-bar.inactive {
-				height: 4em;
+				height: 3.5em;
+			}
+
+			#bottom-bar.inactive .title {
+				pointer-events: none;
 			}
 
 			#time-slider, #legend {
 				position: relative;
 				margin: 0 1em;
+				pointer-events: all;
 			}
 
 			#time-slider {
@@ -80,6 +92,7 @@
 				padding: .25em .5em 2em 0;
 				margin: 0;
 
+				pointer-events: all;
 				display: none;
 			}
 
@@ -228,6 +241,7 @@
 					</div>
 
 					<div id="bottom-bar">
+						<div class="bg"></div>
 						<h2 class="title"><span class="prefix"></span> <strong id="minutes"></strong></h2>
 						<div id="time-slider"></div>
 						<div id="legend"><span class="chips"></span><span class="labels"></span></div>

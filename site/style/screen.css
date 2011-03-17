@@ -124,6 +124,7 @@ img{border:none;}
 	text-decoration: none;
 }
 
+/* nudge outer labels inward */
 #tod-legend .labels a:first-child {
 	margin-left: -.5em !important;
 }

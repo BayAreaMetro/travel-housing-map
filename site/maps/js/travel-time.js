@@ -247,8 +247,7 @@ var NIL = -999;
 				var label = svg.element("text", $.extend({
 					"fill": "#fff",
 					"font-weight": "bold",
-					"text-anchor": "middle",
-					"alignment-baseline": "middle"
+					"text-anchor": "middle"
 				}, attrs || {}));
 				label.appendChild(document.createTextNode(text));
 				return label;
@@ -270,9 +269,9 @@ var NIL = -999;
 				if (feature.properties.label) {
 					var label = svg.label(feature.properties.label, {
 						"x": el.getAttribute("cx"),
-						"y": el.getAttribute("cy"),
-						"font-size": el.getAttribute("r"),
-						"baseline-shift": "-10%"
+						// HACK HACK HACK
+						"y": parseFloat(el.getAttribute("cy")) + parseInt(el.getAttribute("r") / 2.5),
+						"font-size": el.getAttribute("r")
 					});
 					el.parentNode.appendChild(label);
 				}
@@ -774,7 +773,7 @@ $(function() {
 
 		} else if (origin) {
 
-			prefix.html('Places accessible from <a name="dest" class="marker">A</a> in');
+			prefix.html('Places accessible from <a name="origin" class="marker">A</a> in');
 			updateTimeText(maxTime);
 			showMax = true;
 			timeEtc.show();
