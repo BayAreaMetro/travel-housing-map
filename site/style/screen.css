@@ -196,10 +196,16 @@ img{border:none;}
 	color: #000;
 	padding: .25em .5em .25em 22px;
 	margin: 0;
-	background: rgba(255,255,255,.5);
+	background: rgba(255,255,255,.6);
 	background-image: url(images/status-good.png);
 	background-repeat: no-repeat;
 	background-position: 3px center;
+	
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 }
 	#stdout.good{
 		color: #000;
