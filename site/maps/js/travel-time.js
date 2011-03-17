@@ -781,7 +781,7 @@ $(function() {
 
 		} else {
 
-			prefix.html('Select a start address to see travel times');
+			prefix.html('Enter a start address to see travel times');
 			minutes.text("");
 			showMax = false;
 			timeEtc.hide();
