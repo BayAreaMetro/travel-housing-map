@@ -70,7 +70,7 @@ img{border:none;}
 	border-top: 1px dashed #ccc;
 }
 
-#info-geo p input[type=submit] {
+#info-geo p input.locate {
 	width: 12ex;
 }
 
@@ -168,16 +168,27 @@ img{border:none;}
 
 
 
-#info span.dest-circle{
-	display:inline-block;
-	width:30px;
-	height:30px;
-	color:#fff;
-	line-height: 30px;
+.dest-circle, a.marker {
+	display: inline-block;
+	width: 2em;
+	height: 2em;
+	color: #fff;
+	line-height: 2em;
 	font-weight: 600;
 	text-align: center;
 	.ieInlineBlockFix;
-	.full-circle(15px);/*radius*/
+	.full-circle(1em);/*radius*/
+}
+
+#bottom-bar .title .marker {
+	.full-circle(.62em);/*radius*/
+	font-size: inherit;
+	line-height: inherit;
+	position: relative;
+}
+
+a.marker {
+	text-decoration: none;
 }
 
 #info #info-meta {
@@ -331,7 +342,7 @@ h1, h2 {
 }
 
 h2 {
-	font-size: 250%;
+	font-size: 200%;
 }
 
 ol {

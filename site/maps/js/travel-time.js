@@ -120,7 +120,7 @@ var NIL = -999;
 				}
 			}
 		}
-	
+
 		var style = po.stylist()
 			.title(getTitle)
 			.attr("title", getTitle)
@@ -160,11 +160,22 @@ var NIL = -999;
 		function dispatchInfo() {
 			var origin = featuresById[state.origin_taz],
 					dest = featuresById[state.dest_taz];
+
+			if (origin) origin.location = state.origin_location;
+			if (dest) dest.location = state.dest_location;
+
 			var e = {type: "travel-time", origin: origin, dest: dest};
+
 			if (origin && dest) {
 				e.time = travelTime(dest);
+				var coords = [state.origin_location, state.dest_location],
+						xmin = min(coords, prop("lon").get),
+						xmax = max(coords, prop("lon").get),
+						ymin = min(coords, prop("lat").get),
+						ymax = max(coords, prop("lat").get);
+				e.extent = [{lon: xmin, lat: ymin}, {lon: xmax, lat: ymax}];
 			}
-			console.log("INFO", e);
+
 			controller.dispatch(e);
 		}
 		
@@ -488,7 +499,7 @@ var NIL = -999;
 
 		function applyDest(taz) {
 			state.dest_taz = taz;
-			dispatchInfo();
+			applyStyle();
 			return false;
 		}
 
@@ -658,7 +669,7 @@ var NIL = -999;
 					clearStyle();
 					dispatchStdout("","Cleared origin");
 					//stdout.text("Cleared origin");
-					success.call();
+					if (success) success.call();
 				}
 				return controller;
 			} else {
@@ -678,7 +689,7 @@ var NIL = -999;
 					applyStyle();
 					dispatchStdout("","Cleared destination");
 					//stdout.text("Cleared destination");
-					success.call();
+					if (success) success.call();
 				}
 				return controller;
 			} else {
@@ -709,39 +720,75 @@ $(function() {
 	
 	controller.on("locate-origin", function(e) {
 		// TODO
+		// map.center(e.location);
 	});
 	controller.on("locate-dest", function(e) {
 		// TODO
+		// map.center(e.location);
 	});
 
-	var showMax = true;
+	var maxTime = parseInt($("input[name=max_time]").val());
+	if (isNaN(maxTime)) maxTime = 60;
+	var minutes = $("#minutes").html(formatTime(maxTime)),
+			showMax = true;
+	function updateTimeText(t) {
+		minutes.html((typeof t == "string") ? t : formatTime(t));
+	}
+
 	controller.on("travel-time", function(e) {
 		var origin = e.origin,
 				dest = e.dest,
 				time = e.time;
 
 		var title = $("#bottom-bar .title"),
-				prefix = title.find(".prefix");
+				prefix = title.find(".prefix"),
+				timeEtc = $("#time-slider, #legend");
+
 		if (origin && dest) {
-			prefix.html('Travel time from <span class="dest-circle">A</span> to <span class="dest-circle">B</span>:');
+
+			prefix.html('Travel time from <a name="origin" class="marker">A</a> to <a name="dest" class="marker">B</a>:');
 			if (time != NIL) {
 				updateTimeText(time);
 			} else {
-				updateTimeText("???");
+				updateTimeText("(unknown)");
+			}
+			if (e.extent) {
+				// TODO
+				// map.extent(e.extent);
+				// map.zoom(map.zoom() >>> 0);
 			}
 			showMax = false;
+			timeEtc.show();
+			$("#bottom-bar").attr("class", "active");
+
 		} else if (origin) {
-			prefix.text("Places accessible in");
+
+			prefix.html('Places accessible from <a name="dest" class="marker">A</a> in');
 			updateTimeText(maxTime);
 			showMax = true;
+			timeEtc.show();
+			$("#bottom-bar").attr("class", "active");
+
+		} else {
+
+			prefix.html('Select a start address to see travel times');
+			minutes.text("");
+			showMax = false;
+			timeEtc.hide();
+			$("#bottom-bar").attr("class", "inactive");
+
 		}
+
+		if (origin) prefix.find("a[name=origin]").attr("href", "#" + formatZYX(map.zoom(), origin.location));
+		if (dest) prefix.find("a[name=dest]").attr("href", "#" + formatZYX(map.zoom(), dest.location));
 	});
 
 	var inputs = {},
 			submits = {};
 	// update mode on <select name="mode"/> change
 	inputs.mode = form.find("select[name=mode]").change(function() {
-		controller.mode($(this).val());
+		var mode = $(this).val();
+		controller.mode(mode);
 	}).change();
 	// update time on <select name="time"/> change
 	inputs.time = form.find("select[name=time]").change(function() {
@@ -769,6 +816,14 @@ $(function() {
 			submit.val(label).attr("disabled", false);
 		}
 		controller.origin(inputs.origin.val(), revert, revert);
+		return false;
+	});
+
+	form.find("input[name=clear-origin], input[name=clear-dest]").click(function(e) {
+		var name = this.name.split("-")[1];
+		if (inputs[name]) inputs[name].val("");
+		if (submits[name]) submits[name].click();
+		e.preventDefault();
 		return false;
 	});
 
@@ -826,13 +881,6 @@ $(function() {
 	}
 	if (inputs.dest.val()) {
 		submits.dest.click();
-	}
-
-	var maxTime = parseInt($("input[name=max_time]").val());
-	if (isNaN(maxTime)) maxTime = 60;
-	var minutes = $("#minutes").html(formatTime(maxTime));
-	function updateTimeText(t) {
-		minutes.html(formatTime(t));
 	}
 
 	controller.filters([
@@ -973,6 +1021,11 @@ $(function() {
 
 	function setMode(mode) {
 		controller.mode(mode);
+		if (mode == "bike" || mode == "walk") {
+			$("#time-of-day").hide();
+		} else {
+			$("#time-of-day").show();
+		}
 		modeLinks.attr("class", function() {
 			return $(this).data("mode") == mode ? "selected" : "";
 		});

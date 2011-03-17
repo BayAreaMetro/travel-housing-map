@@ -19,11 +19,16 @@
 			/* FIXME: These styles are fucked up. Help me! */
 			#bottom-bar {
 				position: absolute;
+				background: rgba(255,255,255,.3);
 				left: 0;
-				bottom: -.2em;
+				bottom: 0;
 				width: 100%;
 				z-index: 1004;
-				height: 3em;
+				height: 8em;
+			}
+
+			#bottom-bar.inactive {
+				height: 4em;
 			}
 
 			#time-slider, #legend {
@@ -33,7 +38,7 @@
 
 			#time-slider {
 				font-size: inherit !important;
-				margin-top: 1em;
+				margin-top: 6em;
 				z-index: 1005;
 			}
 
@@ -65,24 +70,30 @@
 
 			#bottom-bar .title {
 				color: #000;
-				position: absolute;
 				font-weight: normal;
-				left: .5em;
-				top: 0;
-				margin: -2em 0 0 0;
 				text-align: left;
-				width: 90%;
+
+				position: absolute;
+				left: 0;
+				/* width: 100%; */
+				top: 0;
+				padding: .25em .5em 2em 0;
+				margin: 0;
+
 				display: none;
-				pointer-events: none;
 			}
 
-			#legend .label,
-			#bottom-bar .title {
+			#bottom-bar .title .prefix {
+				padding-left: .5em;
+			}
+
+			#legend .label {
 				text-shadow: #fff 1px 1px 1px;
 			}
 
 			#legend .chip {
 				padding-right: 1px;
+				border-top: 1px solid #fff;
 			}
 
 			#legend .chip:first-child { padding-left: 1em; margin-left: -1em; }
@@ -139,10 +150,12 @@
 				<div id="info">
 					<div id="info-geo" class="clearfix">
 						<p id="info-origin"><span class="dest-circle">A</span><label>Start address: <input type="text" id="location_origin" name="origin" value=""/></label>
-							<input type="submit" name="submit-origin" title="Locate your start address" value="Locate &rarr;" />
+							<input type="submit" class="locate" name="submit-origin" title="Locate your start address" value="Locate &rarr;" />
+							<input type="submit" name="clear-origin" value="X" />
 						</p>
 						<p id="info-dest"><span class="dest-circle">B</span><label>Destination address: <input type="text" id="location_dest" name="dest" value=""/></label>
-							<input type="submit" name="submit-dest" title="Locate your destination" value="Locate &rarr;" />
+							<input type="submit" class="locate" name="submit-dest" title="Locate your destination" value="Locate &rarr;" />
+							<input type="submit" name="clear-dest" value="X" />
 						</p>
 					</div>
 					
