@@ -7,8 +7,6 @@ function geocode(geocoder, data, success, error) {
 
 			if (result.geometry.bounds) {
 				result.extent = bbox(result.geometry.bounds);
-			} else if (result.viewport) {
-				result.extent = bbox(result.viewport);
 			} else {
 				// ???
 			}
@@ -23,7 +21,7 @@ function geocode(geocoder, data, success, error) {
 			// bounding box, and usually positioned on the label.)
 			if (result.geometry.location) {
 				var loc = result.geometry.location;
-				result.location = {lon: loc.Da, lat: loc.Ba};
+				result.location = {lon: loc.lng(), lat: loc.lat()};
 			}
 
 			success(result);
@@ -33,10 +31,10 @@ function geocode(geocoder, data, success, error) {
 	});
 
 	function bbox(o) {
-		var xx = coalesce(o, "P", "$"),
-				yy = coalesce(o, "W", "ma");
-		if (xx && yy) {
-			return [{lon: xx.d, lat: yy.b}, {lon: xx.b, lat: yy.d}];
+		var ne = o.getNorthEast(),
+				sw = o.getSouthWest();
+		if (ne && sw) {
+			return [{lon: ne.lng(), lat: sw.lat()}, {lon: sw.lng(), lat: ne.lat()}];
 		}
 		return null;
 	}
