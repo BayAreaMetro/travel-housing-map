@@ -126,6 +126,10 @@
 				pointer-events: none;
 			}
 
+			.has_origin {
+				display: none;
+			}
+
 		</style>
 		<script type="text/javascript" src="js/less-1.0.41.min.js"></script>
 		<script type="text/javascript" src="js/LAB.min.js"></script>
@@ -168,20 +172,20 @@
 							<input type="submit" class="locate" name="submit-origin" title="Locate your start address" value="Locate" />
 							<input type="submit" name="clear-origin" value="X" />
 						</p>
-						<p id="info-dest"><span class="dest-circle">B</span><label>Destination address: <input type="text" id="location_dest" name="dest" value=""/></label>
+						<p id="info-dest" class="has_origin"><span class="dest-circle">B</span><label>Destination address: <input type="text" id="location_dest" name="dest" value=""/></label>
 							<input type="submit" class="locate" name="submit-dest" title="Locate your destination" value="Locate" />
 							<input type="submit" name="clear-dest" value="X" />
 						</p>
 					</div>
 					
 					<div id="info-extras" class="clearfix">
-						<p id="travel-optionss">
+						<p id="travel-optionss" class="has_origin">
 							<a href="#mode=da" id="mode_da" title="by car alone"><img src="../style/images/modes/auto.png"/></a>
 							<a href="#mode=wTrnW" id="mode_wTrnW" title="by public transit"><img src="../style/images/modes/transit.png"/></a>
 							<a href="#mode=bike" id="mode_bike" title="by bicycle"><img src="../style/images/modes/bike.png"/></a>
 							<a href="#mode=walk" id="mode_walk" title="by foot"><img src="../style/images/modes/walk.png"/></a>
 						</p>
-						<div id="time-of-day">
+						<div id="time-of-day" class="has_origin">
 							<h5 id="tod-label">Time of Day</h5>
 							<div id="tod-slider"></div>
 							<div id="tod-legend"><span class="labels"></span></div>

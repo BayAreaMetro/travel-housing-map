@@ -770,6 +770,7 @@ $(function() {
 			showMax = false;
 			timeEtc.show();
 			$("#bottom-bar").attr("class", "active");
+			$(".has_origin").show();
 
 		} else if (origin) {
 
@@ -778,6 +779,7 @@ $(function() {
 			showMax = true;
 			timeEtc.show();
 			$("#bottom-bar").attr("class", "active");
+			$(".has_origin").show();
 
 		} else {
 
@@ -786,8 +788,10 @@ $(function() {
 			showMax = false;
 			timeEtc.hide();
 			$("#bottom-bar").attr("class", "inactive");
+			$(".has_origin").hide();
 
 		}
+		setMapHeight();
 
 		if (origin) prefix.find("a[name=origin]").attr("href", "#" + formatZYX(map.zoom(), origin.location));
 		if (dest) prefix.find("a[name=dest]").attr("href", "#" + formatZYX(map.zoom(), dest.location));
@@ -1032,9 +1036,9 @@ $(function() {
 	function setMode(mode) {
 		controller.mode(mode);
 		if (mode == "bike" || mode == "walk") {
-			$("#time-of-day").hide();
+			$("#time-of-day").css("visibility", "hidden");
 		} else {
-			$("#time-of-day").show();
+			$("#time-of-day").css("visibility", "visible");
 		}
 		modeLinks.attr("class", function() {
 			return $(this).data("mode") == mode ? "selected" : "";
