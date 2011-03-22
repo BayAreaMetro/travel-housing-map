@@ -67,10 +67,6 @@ img{border:none;}
 	padding: .75em 0;
 }
 
-#info-extras {
-	border-top: 1px dashed #ccc;
-}
-
 #info-geo p input.locate {
 	width: 12ex;
 }

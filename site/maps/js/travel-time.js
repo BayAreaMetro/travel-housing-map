@@ -716,6 +716,7 @@ $(function() {
 	try {
 
 	var container = $("#travel-time").htmapl(),
+			page = $("#page"),
 			form = container.parent("form").first(),
 			map = $.fn.htmapl.getMap(container[0].id),
 			shapes = $.fn.htmapl.getLayer("taz-shapes");
@@ -751,8 +752,7 @@ $(function() {
 				time = e.time;
 
 		var title = $("#bottom-bar .title"),
-				prefix = title.find(".prefix"),
-				timeEtc = $("#time-slider, #legend");
+				prefix = title.find(".prefix");
 
 		if (origin && dest) {
 
@@ -768,27 +768,24 @@ $(function() {
 				// map.zoom(map.zoom() >>> 0);
 			}
 			showMax = false;
-			timeEtc.show();
 			$("#bottom-bar").attr("class", "active");
-			$(".has_origin").show();
+			page.removeClass("no_origin").addClass("has_origin").addClass("has_dest");
 
 		} else if (origin) {
 
 			prefix.html('Places accessible from <a name="origin" class="marker">A</a> in');
 			updateTimeText(maxTime);
 			showMax = true;
-			timeEtc.show();
 			$("#bottom-bar").attr("class", "active");
-			$(".has_origin").show();
+			page.removeClass("no_origin").addClass("has_origin").removeClass("has_dest");
 
 		} else {
 
 			prefix.html('Enter a start address to see travel times');
 			minutes.text("");
 			showMax = false;
-			timeEtc.hide();
 			$("#bottom-bar").attr("class", "inactive");
-			$(".has_origin").hide();
+			page.addClass("no_origin").removeClass("has_origin").removeClass("has_dest");
 
 		}
 		setMapHeight();
