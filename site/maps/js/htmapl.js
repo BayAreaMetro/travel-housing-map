@@ -809,16 +809,7 @@
 			}
 		});
 
-		var markers = root.find(".marker").filter(function(i, m) {
-			var marker = $(this),
-					loc = getLatLon(marker.data("location"));
-			if (loc) {
-				marker.data("location", loc);
-				marker.css("position", "absolute");
-				return true;
-			}
-			return false;
-		});
+		var markers = root.find(".marker").css("position", "absolute");
 
 		if (markers.length) {
 			var markerLayer = $("<div/>")
@@ -831,15 +822,16 @@
 
 			markers.appendTo(markerLayer);
 
-			map.on("move", function() {
+			map.updateMarkers = function() {
 				var size = map.size();
 				markers.each(function() {
 					var marker = $(this),
 							loc = getLatLon(marker.data("location"));
 					if (loc) {
 						var pos = map.locationPoint(loc);
+						// console.log(marker[0], loc, pos);
+						marker.css("left", px(pos.x)).css("top", px(pos.y));
 						if (pos.x >= 0 && pos.x <= size.x && pos.y >= 0 && pos.y <= size.y) {
-							marker.css("left", px(pos.x)).css("top", px(pos.y));
 							marker.removeClass("out-of-bounds");
 						} else {
 							marker.addClass("out-of-bounds");
@@ -849,7 +841,9 @@
 						marker.addClass("invalid-location");
 					}
 				});
-			});
+			};
+
+			map.on("move", map.updateMarkers);
 		}
 
 		initControls(root, map);

@@ -51,13 +51,8 @@ var NIL = -999;
 				geocoder,
 				// The TAZ GeoJSON layer
 				shapes, filters,
-				markers = po.geoJson()
-					.id("markers")
-					.tile(false)
-					.on("load", po.stylist()
-						.attr("fill", "#000")
-						.attr("r", 15))
-					.on("load", onMarkersLoad);
+				originMarker,
+				destMarker;
 
 		var state = {};
 		// these variables go into the scenario request URI
@@ -125,7 +120,7 @@ var NIL = -999;
 			.title(getTitle)
 			.attr("title", getTitle)
 			.attr("id", function(feature) { return "taz" + feature.id; })
-			.attr("class","tazact") // sets class for tooltip to grab
+			.attr("class", "tazact") // sets class for tooltip to grab
 			.attr("display", displayFilter)
 			.attr("stroke", function(feature) { return selected(feature) ? "#ff0" : "#666"; })
 			.attr("stroke-width", function(feature) { return selected(feature) ? 1 : .15; })
@@ -165,25 +160,29 @@ var NIL = -999;
 			if (dest) dest.location = state.dest_location;
 
 			var e = {type: "travel-time", origin: origin, dest: dest};
-
-			if (origin && dest) {
+			if (state && dest) {
 				e.time = travelTime(dest);
-				var coords = [state.origin_location, state.dest_location],
-						xmin = min(coords, prop("lon").get),
-						xmax = max(coords, prop("lon").get),
-						ymin = min(coords, prop("lat").get),
-						ymax = max(coords, prop("lat").get);
-				e.extent = [{lon: xmin, lat: ymin}, {lon: xmax, lat: ymax}];
+				if (state.origin_location && state.dest_location) {
+					try {
+						var coords = [state.origin_location, state.dest_location],
+								xmin = min(coords, prop("lon").get),
+								xmax = max(coords, prop("lon").get),
+								ymin = min(coords, prop("lat").get),
+								ymax = max(coords, prop("lat").get);
+						e.extent = [{lon: xmin, lat: ymin}, {lon: xmax, lat: ymax}];
+					} catch (err) {
+						// console.log("ERROR calculating extent:", err);
+					}
+				}
 			}
-
 			controller.dispatch(e);
 		}
 		
 		function dispatchStdout(_class,_msg){
 			// bin classes
 			if(_class == "loaded" || _class == "")_class = "good";
-			if(_class && _class.length)stdout.attr("class", _class)
-			if(_msg && _msg.length)stdout.attr("title",_msg);
+			if(_class && _class.length) stdout.attr("class", _class)
+			if(_msg && _msg.length) stdout.attr("title",_msg);
 		}
 
 		var scenarioReq;
@@ -195,14 +194,12 @@ var NIL = -999;
 		 */
 		function loadScenario() {
 			if (scenarioReq) {
-				dispatchStdout( "aborting","Aborting previous request...");
-				//stdout.attr("class", "aborting").text("Aborting previous request...");
+				dispatchStdout( "aborting", "Aborting previous request...");
 				scenarioReq.abort();
 				scenarioReq = null;
 			}
 			
-			dispatchStdout( "loading","Loading scenario data...");
-			//stdout.attr("class", "loading").text("Loading scenario data...");
+			dispatchStdout( "loading", "Loading scenario data...");
 			
 			var url = "/data/scenarios/2005/time/" + [state.time, "from", state.origin_taz].join("/") + ".csv";
 			return scenarioReq = $.ajax(url, {
@@ -218,12 +215,10 @@ var NIL = -999;
 					}
 					applyStyle();
 					
-					dispatchStdout( "loaded","Loaded " + commize(len) + " rows");
-					//stdout.attr("class", "loaded").text("Loaded " + commize(len) + " rows");
+					dispatchStdout( "loaded", "Loaded " + commize(len) + " rows");
 				},
 				error: function(xhr, err, text) {
-					dispatchStdout("error","Loaded " + "Error loading scenario: " + text);
-					//stdout.attr("class", "error").text("Error loading scenario: " + text);
+					dispatchStdout("error", "Loaded " + "Error loading scenario: " + text);
 				}
 			});
 		}
@@ -260,24 +255,6 @@ var NIL = -999;
 		 	}
 		};
 
-		function onMarkersLoad(e) {
-			var features = e.features,
-					len = features.length;
-			for (var i = 0; i < len; i++) {
-				var feature = e.features[i].data,
-						el = e.features[i].element;
-				if (feature.properties.label) {
-					var label = svg.label(feature.properties.label, {
-						"x": el.getAttribute("cx"),
-						// HACK HACK HACK
-						"y": parseFloat(el.getAttribute("cy")) + parseInt(el.getAttribute("r") / 2.5),
-						"font-size": el.getAttribute("r")
-					});
-					el.parentNode.appendChild(label);
-				}
-			}
-		}
-		
 		////////// TOOLTIP //////////////
 		// being initiated from onShapesLoad
 		//
@@ -318,12 +295,12 @@ var NIL = -999;
 					
 					// adjust width to size of txt
 					// TODO: still a bug when the tip get's next to edge of map
-					self.tipRef.css("width","auto");
+					self.tipRef.css("width", "auto");
 				
 					// set width and offset margin to center tip based on new width above
 					var _w = self.tipRef.width();
 					self.tipRef.css("width",_w+"px");
-					self.tipRef.css("margin-left","-"+(_w*.5)+"px");
+					self.tipRef.css("margin-left", "-"+(_w*.5)+"px");
 					
 					// set the height var
 					self.tipHeight = self.tipRef.height();
@@ -394,6 +371,30 @@ var NIL = -999;
 				loadScenario();
 			}
 			tipController.setTip(); // set tooltip events for TAZ's
+
+			var down = null,
+					shps = shapes.container();
+			$(shps).mousedown(function(e) {
+				down = e.timeStamp;
+			});
+			$(shps).click(function(e) {
+				var delta = e.timeStamp - down;
+				if (delta > 500) {
+					console.log("not a click");
+					return false;
+				}
+				var match = e.target.id.match(/^taz(\d+)$/),
+						pos = {x: e.offsetX, y: e.offsetY};
+				if (match) {
+					var id = match[1],
+							feature = featuresById[id];
+					if (feature) {
+						controller.dispatch({type: "select-taz", id: id, feature: feature, location: map.pointLocation(pos)});
+					}
+				}
+				e.preventDefault();
+				return false;
+			});
 		}
 
 		function onShapesShow(e) {
@@ -402,8 +403,9 @@ var NIL = -999;
 
 		function lookupTAZ(str, success, failure, locate) {
 			// if it's in the form "TAZ:id", return the id portion
-			if (str.match(/^TAZ:(\d+)$/i)) {
-				success.call(null, str.split(":")[1]);
+			var taz = getTAZ(str);
+			if (taz) {
+				if (success) success.call(null, taz);
 				return false;
 			}
 			// if it's a "lat,lon" string, lookup the location
@@ -444,16 +446,14 @@ var NIL = -999;
 		}
 
 		function lookupOrigin(loc, success, failure) {
-			dispatchStdout("loading","Loaded " + "Looking up &ldquo;" + loc + "&rdquo;...");
-			//stdout.attr("class", "loading").html("Looking up &ldquo;" + loc + "&rdquo;...");
+			dispatchStdout("loading", "Looking up &ldquo;" + loc + "&rdquo;...");
 			updateHrefs(permalinks, {"origin": loc}, window.location.hash);
 			state.origin = loc;
 			state.origin_location = null;
 			clearStyle();
 			updateMarkers();
 			return lookupTAZ(loc, function(taz, latlon) {
-				dispatchStdout("loaded","Found origin TAZ: " + taz);
-				//stdout.attr("class", "loaded").text("Found origin TAZ: " + taz);
+				dispatchStdout("loaded", "Found origin TAZ: " + taz);
 				state.origin_location = latlon;
 				updateMarkers();
 				applyOrigin(taz);
@@ -465,8 +465,7 @@ var NIL = -999;
 				});
 				if (success) success.call(null, latlon, taz, featuresById[taz]);
 			}, function(req, error, message) {
-				dispatchStdout("error","ERROR: " + message);
-				//stdout.attr("class", "error").text("ERROR: " + message);
+				dispatchStdout("error", "ERROR: " + message);
 				
 				if (failure) failure.call(null, error);
 			});
@@ -481,15 +480,13 @@ var NIL = -999;
 		}
 
 		function lookupDest(loc, success, failure) {
-			dispatchStdout("loading","Looking up &ldquo;" + loc + "&rdquo;...");
-			//stdout.attr("class", "loading").html("Looking up &ldquo;" + loc + "&rdquo;...");
+			dispatchStdout("loading", "Looking up &ldquo;" + loc + "&rdquo;...");
 			updateHrefs(permalinks, {"dest": loc}, window.location.hash);
 			state.dest = loc;
 			state.dest_location = null;
 			updateMarkers();
 			return lookupTAZ(loc, function(taz, latlon) {
-				dispatchStdout("loaded","Found dest. TAZ: " + taz);
-				//stdout.attr("class", "loaded").text("Found dest. TAZ: " + taz);
+				dispatchStdout("loaded", "Found dest. TAZ: " + taz);
 				state.dest_location = latlon;
 				updateMarkers();
 				applyDest(taz);
@@ -501,8 +498,7 @@ var NIL = -999;
 				});
 				if (success) success.call(null, latlon, taz, featuresById[taz]);
 			}, function(req, error, message) {
-				dispatchStdout("error","ERROR: " + message);
-				//stdout.attr("class", "error").text("ERROR: " + message);
+				dispatchStdout("error", "ERROR: " + message);
 				if (failure) failure.call(null, error);
 			});
 		}
@@ -516,23 +512,27 @@ var NIL = -999;
 		function updateMarkers() {
 			var features = [],
 					origin, dest;
+
 			if (state.origin && state.origin_location) {
-				origin = makePoint(state.origin_location, {
-					label: "A",
-					taz: state.origin_taz,
-					address: state.origin
-				}, "origin");
-				features.push(origin);
+				originMarker.attr("title", "Origin: " + state.origin);
+				originMarker.data("location", formatLocation(state.origin_location));
+				originMarker.show();
+			} else {
+				originMarker.attr("title", null).data("location", null).hide();
 			}
+
 			if (state.dest && state.dest_location) {
-				dest = makePoint(state.dest_location, {
-					label: "B",
-					taz: state.dest_taz,
-					address: state.dest
-				}, "dest");
-				features.push(dest);
+				destMarker.attr("title", "Origin: " + state.origin);
+				destMarker.data("location", formatLocation(state.dest_location));
+				destMarker.show();
+			} else {
+				destMarker.attr("title", null).data("location", null).hide();
+				destMarker.hide();
 			}
-			markers.features(features);
+
+			if (typeof map.updateMarkers == "function") {
+				map.updateMarkers();
+			}
 		}
 
 		function makePoint(loc, props, id) {
@@ -550,7 +550,10 @@ var NIL = -999;
 		// get/set the container element
 		controller.container = function(x) {
 			if (arguments.length) {
+				originMarker = destMarker = null;
 				container = x;
+				originMarker = container.find("#origin-marker");
+				destMarker = container.find("#dest-marker");
 				return controller;
 			}
 		};
@@ -560,12 +563,10 @@ var NIL = -999;
 			if (arguments.length) {
 				if (map) {
 					map.off("move", onMapMove);
-					map.remove(markers);
 				}
 				map = x;
 				if (map) {
 					map.on("move", onMapMove);
-					map.add(markers);
 				}
 				return controller;
 			} else {
@@ -668,8 +669,18 @@ var NIL = -999;
 		};
 
 		// get/set the origin string (asynchronous)
-		controller.origin = function(loc, success, failure) {
+		controller.origin = function(loc, latlon, success, failure) {
 			if (arguments.length) {
+				if (latlon) {
+					updateHrefs(permalinks, {"origin": loc}, window.location.hash);
+					state.origin = loc;
+					state.origin_taz = getTAZ(loc);
+					state.origin_location = latlon;
+					updateMarkers();
+					applyStyle();
+					return controller;
+				}
+
 				state.origin_taz = null;
 				if (loc) {
 					lookupOrigin(loc, success, failure);
@@ -677,8 +688,7 @@ var NIL = -999;
 					state.origin = state.origin_location = null;
 					updateMarkers();
 					clearStyle();
-					dispatchStdout("","Cleared origin");
-					//stdout.text("Cleared origin");
+					dispatchStdout("", "Cleared origin");
 					if (success) success.call();
 				}
 				return controller;
@@ -687,9 +697,33 @@ var NIL = -999;
 			}
 		};
 
+		function getTAZ(str) {
+			if (str.match(/^TAZ:(\d+)$/i)) {
+				return str.split(":")[1];
+			}
+			return null;
+		}
+
+		function getOptions(loc) {
+			if (typeof loc == "string") {
+				return {loc: loc};
+			}
+			return loc;
+		}
+
 		// get/set the destination string (asynchronous)
-		controller.dest = function(loc, success, failure) {
+		controller.dest = function(loc, latlon, success, failure) {
 			if (arguments.length) {
+				if (latlon) {
+					var taz = getTAZ(loc);
+					updateHrefs(permalinks, {"dest": formatLocation(latlon)}, window.location.hash);
+					state.dest = state.dest_taz = taz;
+					state.dest_location = latlon;
+					updateMarkers();
+					applyStyle();
+					return controller;
+				}
+
 				state.dest_taz = null;
 				if (loc) {
 					lookupDest(loc, success, failure);
@@ -697,8 +731,7 @@ var NIL = -999;
 					state.dest = state.dest_location = null;
 					updateMarkers();
 					applyStyle();
-					dispatchStdout("","Cleared destination");
-					//stdout.text("Cleared destination");
+					dispatchStdout("", "Cleared destination");
 					if (success) success.call();
 				}
 				return controller;
@@ -728,14 +761,29 @@ $(function() {
 		.shapes(shapes)
 		.form(form)
 		.stdout("#stdout");
-	
+
+	controller.on("select-taz", function(e) {
+		if (e.location) {
+			controller.dest("TAZ:" + e.id, e.location);
+			/*
+			try {
+				var t = controller.travelTime(e.feature);
+				slider.slider("option", "value", t);
+				setMaxTime(t);
+			} catch (e) {
+				console.log("ERROR:", e);
+			}
+			*/
+			var loc = formatLocation(e.location);
+			inputs.dest.val(loc);
+		} else {
+			// controller.dest("TAZ:" + e.id);
+		}
+		return true;
+	});
 	controller.on("locate-origin", function(e) {
-		// TODO
-		// map.center(e.location);
 	});
 	controller.on("locate-dest", function(e) {
-		// TODO
-		// map.center(e.location);
 	});
 
 	var maxTime = parseInt($("input[name=max_time]").val());
@@ -781,14 +829,15 @@ $(function() {
 
 		} else {
 
-			prefix.html('Enter a start address to see travel times');
+			prefix.html('Enter a start address to see travel times,<br/>or <a class="select-center" href="#location=center">select the center of the map</a>');
+			prefix.find(".select-center").click(selectCenter);
 			minutes.text("");
 			showMax = false;
 			$("#bottom-bar").attr("class", "inactive");
 			page.addClass("no_origin").removeClass("has_origin").removeClass("has_dest");
 
 		}
-		setMapHeight();
+		$(window).trigger("resize");
 
 		if (origin) prefix.find("a[name=origin]").attr("href", "#" + formatZYX(map.zoom(), origin.location));
 		if (dest) prefix.find("a[name=dest]").attr("href", "#" + formatZYX(map.zoom(), dest.location));
@@ -826,7 +875,7 @@ $(function() {
 		function revert() {
 			submit.val(label).attr("disabled", false);
 		}
-		controller.origin(inputs.origin.val(), revert, revert);
+		controller.origin(inputs.origin.val(), null, revert, revert);
 		return false;
 	});
 
@@ -857,16 +906,7 @@ $(function() {
 		function revert() {
 			submit.val(label).attr("disabled", false);
 		}
-		controller.dest(inputs.dest.val(), function(feature) {
-			/*
-			// TODO: implement
-			if (controller.origin()) {
-				var time = controller.travelTime(feature);
-				$("#origin-dest").css("left", pct(time));
-			}
-			*/
-			revert();
-		}, revert);
+		controller.dest(inputs.dest.val(), null, revert, revert);
 		return false;
 	});
 
@@ -1019,7 +1059,7 @@ $(function() {
 	});
 	
 	// create ticks for tod slider ... skipping ends
-	var tickBox = $('<div/>').attr("id","tickbox");
+	var tickBox = $('<div/>').attr("id", "tickbox");
 	for (var i = 1; i <= (last-1); i++) {
 		var label = $("<p/>")
 			.attr("class", "ticks")
@@ -1042,6 +1082,15 @@ $(function() {
 		});
 	}
 
+	function selectCenter() {
+		var loc = formatLocation(map.center());
+		inputs.origin.val(loc);
+		submits.origin.click();
+		return false;
+	}
+
+	$(".select-center").click(selectCenter);
+
 	var modeLinks = $("#travel-optionss a")
 		 .each(function() {
 			 var link = $(this);
@@ -1055,22 +1104,26 @@ $(function() {
 
 	/* adjust map size based on viewport */
 	function setMapHeight(){
-		var _mapHeight = container.height();
-		var _mapWidth = container.width();
-		var _mapTop = container.offset().top;
-		var _viewport = $(window).height();
-		if (!_mapHeight && !_viewport) return;
-		
-		var _newSize = _viewport - (_mapTop + 20);
-		if (_newSize < 200) return;
-		
-		container.css('cssText', 'height: '+_newSize+'px !important');
-		map.size({x: _mapWidth, y: _mapHeight});
+		try {
+			var _mapHeight = container.height();
+			var _mapWidth = container.width();
+			var _mapTop = container.offset().top;
+			var _viewport = $(window).height();
+			if (!_mapHeight && !_viewport) return;
+			
+			var _newSize = _viewport - (_mapTop + 20);
+			if (_newSize < 200) return;
+			
+			container.css('cssText', 'height: '+_newSize+'px !important');
+			map.size({x: _mapWidth, y: _mapHeight});
+		} catch (e) {
+			// console.log("setMapHeight() error:", e);
+		}
 	}
-	setMapHeight();
 
 	/* listen for window resize then adjust map size */
 	$(window).resize(defer(5, setMapHeight));
+	$(window).trigger("resize");
 	
 	/////////////////////////////////////////////////////// end
 	} catch (e) {

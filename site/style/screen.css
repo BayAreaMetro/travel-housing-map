@@ -71,6 +71,10 @@ img{border:none;}
 	width: 12ex;
 }
 
+#info-geo .or {
+	margin-left: 2.5em;
+}
+
 #info-geo p,
 #travel-optionss,
 #time-of-day {
@@ -135,13 +139,18 @@ img{border:none;}
 }
 
 #info #travel-optionss a {
-	display:inline-block;
-	width:69px;
-	height:42px;
-	background-color:#000;
-	padding:.7em;
+	display: inline-block;
+	width: 40px;
+	height: 42px;
+	background-color: #000;
+	padding: .5em .6em;
 	.ieInlineBlockFix;
-	text-align:center;
+	text-align: center;
+}
+
+#info #travel-optionss img {
+	vertical-align: middle;
+	height: 42px;
 }
 
 #info #travel-optionss a:hover {
@@ -150,11 +159,6 @@ img{border:none;}
 
 #info #travel-optionss a.selected {
 	background-color: @linkColor;
-}
-
-#info #travel-optionss img {
-	height: 42px;
-	vertical-align: middle;
 }
 
 #tod-slider {
@@ -171,13 +175,11 @@ img{border:none;}
 	margin-left: -.3em !important;
 }
 
-
-
-.dest-circle, a.marker {
+.dest-circle, .marker {
 	display: inline-block;
 	width: 2em;
 	height: 2em;
-	color: #fff;
+	color: #fff !important;
 	line-height: 2em;
 	font-weight: 600;
 	text-align: center;
@@ -270,23 +272,28 @@ input[disabled] {
 }
 
 #taztip{
-	position:absolute;
-	z-index:9999;
-	background:#000;
-	color:#fff;
-	width:200px;
-	display:none;
-	text-align:center;
-	margin-left:0;
+	position: absolute;
+	z-index: 9999;
+	background: #000;
+	color: #fff;
+	width: 200px;
+	display: none;
+	text-align: center;
+	margin-left: 0;
 	
-	-webkit-border-radius:3px;
-	-moz-border-radius:3px;
-	border-radius:3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
 	-moz-box-shadow: 0 0 2px #333;
 	-webkit-box-shadow: 0 0 2px #333;
 	box-shadow: 0 0 2px #333;
 }
-#taztip p{margin:0;padding:0;padding:10px;}
+
+#taztip p {
+	margin: 0;
+	padding: 0;
+	padding: 10px;
+}
 
 .nub {
 border-bottom: 0;
@@ -299,9 +306,6 @@ border-top: 10px solid black;
 left: 30%;
 bottom: -10px;
 }
-
-
-
 
 /* not being used
 #data-progress-bar{
@@ -365,22 +369,9 @@ ol li p {
 	position: relative;
 }
 
-/*
-.crosshairs {
-	position: absolute;
-	z-index: 1000;
-	left: 50%;
-	top: 50%;
-	width: 15px;
-	height: 15px;
-	margin: -7px 0 0 -7px;
-	background-image: url(images/crosshair.png);
-}
-*/
-
 .controls {
 	position: absolute;
-	z-index: 1001;
+	z-index: 1000;
 	top: 10px;
 	left: 10px;
 }
@@ -395,8 +386,20 @@ ol li p {
 		line-height: 0;
 	}
 
+	#select-center {
+		position: relative;
+		background: none;
+		color: @linkColor;
+		line-height: inherit;
+	}
+
+	#select-center img {
+		margin-right: 4px;
+	}
+
 	.controls a img {
 		border: 0 !important;
+		vertical-align: middle;
 	}
 
 	.controls label {

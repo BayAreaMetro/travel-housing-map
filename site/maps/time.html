@@ -11,10 +11,36 @@
 				border-color: #000 !important;
 			}
 
+			#crosshairs {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				width: 15px;
+				height: 15px;
+				margin: -7px 0 0 -7px;
+				background-image: url(../style/images/crosshair.png);
+			}
+
+			.has_origin #origin-marker { display: ""; }
+			.has_dest #dest-marker { display: ""; }
+
 			#travel-time {
 				height: 500px !important;
 				background: #B1B8B8; /* acetate ocean */
 				overflow: hidden;
+			}
+
+			#crosshairs { z-index: 80; }
+			#travel-time .markers { z-index: 90; }
+			#bottom-bar { z-index: 100; }
+			#legend { z-index: 190; }
+			#time-slider { z-index: 200; }
+
+			#travel-time .markers .marker {
+				display: none;
+				margin: -1em 0 0 -1em;
+				cursor: pointer;
+				pointer-events: none; /* no mouse interaction with pointers */
 			}
 
 			/* FIXME: These styles are fucked up. Help me! */
@@ -23,7 +49,6 @@
 				left: 0;
 				bottom: 0;
 				width: 100%;
-				z-index: 1004;
 				height: 8em;
 				pointer-events: none;
 			}
@@ -36,11 +61,25 @@
 			}
 
 			#bottom-bar.inactive {
-				height: 3.5em;
+				height: 6em;
+			}
+
+			#bottom-bar.inactive .bg {
+				background: rgba(255,255,255,.5);
+			}
+
+			#bottom-bar.inactive #time-slider,
+			#bottom-bar.inactive #legend {
+				display: none;
 			}
 
 			#bottom-bar.inactive .title {
-				pointer-events: none;
+				width: 100%;
+				text-align: center;
+			}
+
+			#bottom-bar.title a {
+				pointer-events: all !important;
 			}
 
 			#time-slider, #legend {
@@ -52,14 +91,12 @@
 			#time-slider {
 				font-size: inherit !important;
 				margin-top: 6em;
-				z-index: 1005;
 			}
 
 			#legend {
 				margin-top: -2em;
 				height: 100%;
 				position: relative;
-				z-index: 1004;
 			}
 
 			#legend .label,
@@ -129,21 +166,23 @@
 			.no_origin #info-dest,
 			.no_origin #time-of-day,
 			.no_origin #travel-optionss {
-				display: none;
+				opacity: .1;
+				pointer-events: none;
 			}
 
 			.has_origin #info-dest,
 			.has_origin #time-of-day,
 			.has_origin #travel-optionss {
-				display: "";
+				opacity: 1;
+				pointer-events: all;
 			}
 
 			.no_origin #info-extras {
-				padding: 0;
+				/* padding: 0; */
 			}
 
 			.has_origin #info-extras {
-				border-top: 1px dashed #ccc;
+				/* border-top: 1px dashed #ccc; */
 			}
 
 		</style>
@@ -186,7 +225,9 @@
 					<div id="info-geo" class="clearfix">
 						<p id="info-origin"><span class="dest-circle">A</span><label>Start address: <input type="text" id="location_origin" name="origin" value=""/></label>
 							<input type="submit" class="locate" name="submit-origin" title="Locate your start address" value="Locate" />
-							<input type="submit" name="clear-origin" value="X" />
+							<!-- <input type="image" src="../style/images/crosshair.png" name="origin-center" /> -->
+							<input type="submit" name="clear-origin" value="X" /><br/>
+							<!-- <span class="or">or <a class="select-center" href="#origin=center"><img src="../style/images/crosshair.png"/> select the center</a></span> -->
 						</p>
 						<p id="info-dest"><span class="dest-circle">B</span><label>Destination address: <input type="text" id="location_dest" name="dest" value=""/></label>
 							<input type="submit" class="locate" name="submit-dest" title="Locate your destination" value="Locate" />
@@ -196,7 +237,8 @@
 					
 					<div id="info-extras" class="clearfix">
 						<p id="travel-optionss">
-							<a href="#mode=da" id="mode_da" title="by car alone"><img src="../style/images/modes/auto.png"/></a>
+							<a href="#mode=da" id="mode_da" title="by car alone"><img src="../style/images/modes/da.png"/></a>
+							<a href="#mode=s2" id="mode_s2" title="by car (2 people)"><img src="../style/images/modes/s2.png"/></a>
 							<a href="#mode=wTrnW" id="mode_wTrnW" title="by public transit"><img src="../style/images/modes/transit.png"/></a>
 							<a href="#mode=bike" id="mode_bike" title="by bicycle"><img src="../style/images/modes/bike.png"/></a>
 							<a href="#mode=walk" id="mode_walk" title="by foot"><img src="../style/images/modes/walk.png"/></a>
@@ -238,7 +280,7 @@
 				<div class="map drag" id="travel-time"
 					data-zoomRange="9,14" data-center="37.7639,-122.4130" data-zoom="9">
 					<div class="layer" data-type="image"
-						data-url="http://a.acetate.geoiq.com/tiles/acetate-base/{Z}/{X}/{Y}.png"></div>
+						data-url="http://a2.acetate.geoiq.com/tiles/terrain/{Z}/{X}/{Y}.png"></div>
 					<div class="layer" id="taz-shapes" data-type="geoJson"
 						data-scale="fixed" data-zoom="11" data-url="/data/areas/taz1454-clipurb.json"></div>
 					<div class="layer" id="acetate-roads" data-type="image"
@@ -249,11 +291,6 @@
 					<!--
 					<div class="layer" data-type="image"
 						data-url="http://c.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{Z}/{X}/{Y}.png"></div>
-					-->
-
-					<!--
-					<a class="crosshairs"
-						title="show travel times from the location under the crosshairs" href="#select-center"></a>
 					-->
 
 					<div class="controls">
@@ -267,6 +304,11 @@
 						<div id="time-slider"></div>
 						<div id="legend"><span class="chips"></span><span class="labels"></span></div>
 					</div>
+
+					<a id="crosshairs" class="select-center"
+						title="show travel times from this location" href="#origin=center"></a>
+					<a class="marker" id="origin-marker">A</a>
+					<a class="marker" id="dest-marker">B</a>
 				
 					<div id="taztip"><span class="nub"></span><p id="tazinfo"></p></div>
 				</div>

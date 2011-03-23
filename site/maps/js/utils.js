@@ -263,6 +263,7 @@ function formatLocation(loc, zoom) {
 }
 
 function formatZYX(z, xy, y) {
+  if (!xy) return "";
   var pn = zoomPrecision(z);
   var x = xy;
   if (arguments.length == 2) {
