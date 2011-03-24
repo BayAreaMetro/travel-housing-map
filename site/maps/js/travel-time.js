@@ -1,6 +1,7 @@
 var gov = {ca: {mtc: {}}},
 		po = org.polymaps;
-var NIL = -999;
+var NIL = -999,
+		BLUE = "#009DDC";
 
 (function(mtc) {
 
@@ -71,6 +72,14 @@ var NIL = -999;
 			// .range("#000", "#063", "#063", "#8c7", "#ffc");
 			.range("#000", "#009DDC", "#009DDC", "#d87", "#ffe");
 
+		colorScale.domain(NIL, 		0,			60, 		90);
+		colorScale.range("#000",	"#d09", "#fd6", "#ffe");
+
+		/*
+		colorScale.domain(NIL, 	0, 5,			30, 60, 90);
+		colorScale.range("#000", "#a73", "#a73", "#d83", "#fc6", "#ffe");
+		*/
+
 		// keep features around by ID, for cross-referencing from CSV data
 		var featuresById = {};
 		// get the ID of a TAZ feature from its properties
@@ -95,11 +104,11 @@ var NIL = -999;
 
 		// get the "default" color of a feature (this
 		function defaultColor(feature) {
-			return selected(feature) ? "#ff0" : "none";
+			return selected(feature) ? BLUE : "none";
 		}
 
 		function getTitle(feature) {
-			return formatTime(travelTime(feature));
+			return formatTime(travelTime(feature)) || "unknown";
 		}
 
 		function displayFilter(feature) {
@@ -122,7 +131,7 @@ var NIL = -999;
 			.attr("id", function(feature) { return "taz" + feature.id; })
 			.attr("class", "tazact") // sets class for tooltip to grab
 			.attr("display", displayFilter)
-			.attr("stroke", function(feature) { return selected(feature) ? "#ff0" : "#666"; })
+			.attr("stroke", defaultColor)
 			.attr("stroke-width", function(feature) { return selected(feature) ? 1 : .15; })
 			.attr("fill", function(feature) {
 				if (typeof feature.properties.travel == "object") {
@@ -258,7 +267,7 @@ var NIL = -999;
 		////////// TOOLTIP //////////////
 		// being initiated from onShapesLoad
 		//
-		function theTip(){
+		function theTip() {
 			this.closetimer = null;
 			this.tipRef = $("#taztip");
 			this.txtRef = $("#tazinfo");
@@ -268,23 +277,23 @@ var NIL = -999;
 			this.tipHeight = null;
 			this.mapCoord = null;
 			var self = this;
+
+			var selectors = ".tazact, #crosshairs";
 			
 			this.setTip = function(){
 
-				$('.tazact').unbind('mouseover');
-				$('.tazact').unbind('mouseout');
-				
-				
+				$(selectors).unbind('mouseover').unbind('mouseout');
+
 				//$('#travel-time')
 				self.mapCoord = $('#travel-time').offset();
 				
-				$('.tazact').mouseover(function(e){
+				$(selectors).mouseover(function(e){
 					e.preventDefault();
 					clearTimeout(self.closetimer);
 					//console.log(featuresById[1453]);
 					
 					// set txt
-					self.txtRef.text( $(this).attr('title') );
+					self.txtRef.html( $(this).attr('title') );
 					
 					// store old title stuff
 					self.oldTitleAttr = $(this).attr('title');
@@ -309,44 +318,36 @@ var NIL = -999;
 					self.tipRef.show();
 					self.tipState = true;
 					
-					$('#travel-time').unbind('mousemove');
-					$('#travel-time').mousemove(function(e){
-					    if (self.tipState){
+					container.unbind('mousemove').mousemove(function(e){
+						if (self.tipState){
 							var _x = e.pageX - self.mapCoord.left;
 							var _y = (e.pageY - self.mapCoord.top) - (15+self.tipHeight);
-					      self.tipRef.css("left", _x).css("top", _y);
-					    }
+							self.tipRef.css("left", _x).css("top", _y);
+						}
 					});
 					
 				});
 				
-				$('.tazact').mouseout(function(e){
+				$(selectors).mouseout(function(e){
 					e.preventDefault();
-					
-					//replace title stuff
-					if(self.oldTitleAttr)$(this).attr('title',self.oldTitleAttr);
-					if(self.oldTitleElm)$(this).append(self.oldTitleElm);
+					// replace title stuff
+					if (self.oldTitleAttr) $(this).attr('title', self.oldTitleAttr);
+					if (self.oldTitleElm) $(this).append(self.oldTitleElm);
 					self.tipState = false;
-					
 					// start close timer
 					self.closetimer = setTimeout(function(){
 						self.closeTip();
-					},100);
-
+					}, 100);
 				});
-				
-				
-				
 			}
-			
+
 			this.closeTip = function(){
 				$('#travel-time').unbind('mousemove');
 				self.tipRef.hide();
 				self.txtRef.text("");
 			}
-			
-			
 		}
+
 		var tipController = new theTip();
 		
 		////////// END TOOLTIP //////////////
@@ -372,28 +373,44 @@ var NIL = -999;
 			}
 			tipController.setTip(); // set tooltip events for TAZ's
 
-			var down = null,
+			var down = null, waiting = false,
+					click = null, timeout = null,
 					shps = shapes.container();
-			$(shps).mousedown(function(e) {
-				down = e.timeStamp;
-			});
-			$(shps).click(function(e) {
-				var delta = e.timeStamp - down;
+			shps.setAttribute("cursor", "pointer");
+			var select = defer(250, function() {
+				if (!click) return;
+				var delta = click.timeStamp - down;
 				if (delta > 500) {
-					console.log("not a click");
+					// console.log("not a click");
 					return false;
 				}
-				var match = e.target.id.match(/^taz(\d+)$/),
-						pos = {x: e.offsetX, y: e.offsetY};
+				var match = click.target.id.match(/^taz(\d+)$/),
+						pos = {x: click.offsetX, y: click.offsetY};
 				if (match) {
 					var id = match[1],
 							feature = featuresById[id];
 					if (feature) {
-						controller.dispatch({type: "select-taz", id: id, feature: feature, location: map.pointLocation(pos)});
+						controller.dispatch({
+							type: "select-taz",
+							id: id,
+							feature: feature,
+							location: map.pointLocation(pos)
+						});
 					}
 				}
-				e.preventDefault();
-				return false;
+				return true;
+			});
+
+			$(shps).mousedown(function(e) {
+				down = e.timeStamp;
+			});
+			$(shps).click(function(e) {
+				click = e;
+				timeout = select();
+			});
+			$(shps).dblclick(function(e) {
+				click = null;
+				clearTimeout(timeout);
 			});
 		}
 
@@ -762,18 +779,24 @@ $(function() {
 		.form(form)
 		.stdout("#stdout");
 
+	var loadHash = window.location.hash.substr(1);
+	function originalHashLoaded() {
+		var hash = formatZYX(map.zoom(), map.center());
+		console.log(hash, loadHash, hash == loadHash);
+		return hash == loadHash;
+	}
+
 	controller.on("select-taz", function(e) {
 		if (e.location) {
-			controller.dest("TAZ:" + e.id, e.location);
-			/*
+			// controller.dest("TAZ:" + e.id, e.location);
 			try {
 				var t = controller.travelTime(e.feature);
 				slider.slider("option", "value", t);
 				setMaxTime(t);
+				return false;
 			} catch (e) {
 				console.log("ERROR:", e);
 			}
-			*/
 			var loc = formatLocation(e.location);
 			inputs.dest.val(loc);
 		} else {
@@ -782,6 +805,9 @@ $(function() {
 		return true;
 	});
 	controller.on("locate-origin", function(e) {
+		if (!originalHashLoaded()) {
+			map.center(e.location);
+		}
 	});
 	controller.on("locate-dest", function(e) {
 	});
@@ -791,7 +817,16 @@ $(function() {
 	var minutes = $("#minutes").html(formatTime(maxTime)),
 			showMax = true;
 	function updateTimeText(t) {
-		minutes.html((typeof t == "string") ? t : formatTime(t));
+		minutes.html("&le;" + ((typeof t == "string") ? t : formatTime(t)));
+	}
+
+	var locating = false;
+	function selectCenter(e) {
+		var loc = formatLocation(map.center());
+		inputs.origin.val(loc);
+		submits.origin.click();
+		e.preventDefault();
+		return false;
 	}
 
 	controller.on("travel-time", function(e) {
@@ -804,7 +839,9 @@ $(function() {
 
 		if (origin && dest) {
 
-			prefix.html('Travel time from <a name="origin" class="marker">A</a> to <a name="dest" class="marker">B</a>:');
+			prefix.html('Travel time from <a name="origin" class="marker">' +
+				$("#origin-marker").html() + '</a> to <a name="dest" class="marker">' +
+				$("#dest-marker").html() + '</a>:');
 			if (time != NIL) {
 				updateTimeText(time);
 			} else {
@@ -821,15 +858,21 @@ $(function() {
 
 		} else if (origin) {
 
-			prefix.html('Places accessible from <a name="origin" class="marker">A</a> in');
+			prefix.html('Places accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> in');
 			updateTimeText(maxTime);
 			showMax = true;
 			$("#bottom-bar").attr("class", "active");
 			page.removeClass("no_origin").addClass("has_origin").removeClass("has_dest");
 
+		} else if (locating) {
+
+			// do nothing?
+			prefix.html('Locating...');
+			minutes.text("");
+
 		} else {
 
-			prefix.html('Enter a start address to see travel times,<br/>or <a class="select-center" href="#location=center">select the center of the map</a>');
+			prefix.html('Enter a start address to see travel times,<br/>or <a class="select-center" href="#origin=center">select the center of the map</a>');
 			prefix.find(".select-center").click(selectCenter);
 			minutes.text("");
 			showMax = false;
@@ -837,7 +880,9 @@ $(function() {
 			page.addClass("no_origin").removeClass("has_origin").removeClass("has_dest");
 
 		}
-		$(window).trigger("resize");
+		if (!locating) {
+			$(window).trigger("resize");
+		}
 
 		if (origin) prefix.find("a[name=origin]").attr("href", "#" + formatZYX(map.zoom(), origin.location));
 		if (dest) prefix.find("a[name=dest]").attr("href", "#" + formatZYX(map.zoom(), dest.location));
@@ -846,12 +891,12 @@ $(function() {
 	var inputs = {},
 			submits = {};
 	// update mode on <select name="mode"/> change
-	inputs.mode = form.find("select[name=mode]").change(function() {
+	inputs.mode = form.find("input[name=mode]").change(function() {
 		var mode = $(this).val();
 		controller.mode(mode);
 	}).change();
 	// update time on <select name="time"/> change
-	inputs.time = form.find("select[name=time]").change(function() {
+	inputs.time = form.find("input[name=time]").change(function() {
 		controller.time($(this).val());
 	}).change();
 
@@ -874,8 +919,11 @@ $(function() {
 		submit.val("Locating...").attr("disabled", true);
 		function revert() {
 			submit.val(label).attr("disabled", false);
+			locating = false;
 		}
-		controller.origin(inputs.origin.val(), null, revert, revert);
+		var value = inputs.origin.val();
+		locating = value ? true : false;
+		controller.origin(value, null, revert, revert);
 		return false;
 	});
 
@@ -898,28 +946,19 @@ $(function() {
 			return false;
 		}
 	});
-	// submit the destination on <input name="submit-dest"/> click
-	submits.dest = form.find("input[name=submit-dest]").click(function() {
-		var submit = $(this),
-				label = submit.val();
-		submit.val("Locating...").attr("disabled", true);
-		function revert() {
-			submit.val(label).attr("disabled", false);
-		}
-		controller.dest(inputs.dest.val(), null, revert, revert);
-		return false;
-	});
-
-	// when the crosshairs is clicked, populate the origin input with the
-	// formatted "lat,lon" and submit
-	/*
-	container.find("a.crosshairs").click(function() {
-		var loc = formatLocation(map.center());
-		inputs.origin.val(loc);
-		submits.origin.click();
-		return false;
-	});
-	*/
+	if (inputs.dest.length) {
+		// submit the destination on <input name="submit-dest"/> click
+		submits.dest = form.find("input[name=submit-dest]").click(function() {
+			var submit = $(this),
+					label = submit.val();
+			submit.val("Locating...").attr("disabled", true);
+			function revert() {
+				submit.val(label).attr("disabled", false);
+			}
+			controller.dest(inputs.dest.val(), null, revert, revert);
+			return false;
+		});
+	}
 
 	// TODO: formatting functions?
 	map.add(po.hash());
@@ -930,7 +969,7 @@ $(function() {
 	} else {
 		inputs.origin.focus();
 	}
-	if (inputs.dest.val()) {
+	if (inputs.dest.length && inputs.dest.val()) {
 		submits.dest.click();
 	}
 
@@ -1016,59 +1055,7 @@ $(function() {
 	// show title now that bottom bar is rendered
 	$('#bottom-bar .title').show();
 
-	// Time of Day slider (tod)
-	var periods = inputs.time.find("option").map(function(i, el) {
-		return {index: i, time: el.value, label: $(el).text()};
-	});
-	// get the index of a period time ("AM" -> 1) in the array, for setting the
-	// slider value
-	function periodIndex(time) {
-		for (var i = 0; i < periods.length; i++) {
-			if (periods[i].time == time) return i;
-		}
-		return 0;
-	}
-
-	var tod_slider = $( "#tod-slider" ).slider({
-		min: 		0,
-		max: 		periods.length - 1,
-		value: 	periodIndex(controller.time()),
-		step: 	1,
-		slide: function(e, ui) {
-			controller.time(periods[ui.value].time);
-		}
-	});
-
-	var todlabels = $("#tod-legend .labels"),
-			last = periods.length - 1;
-	for (var i = 0; i <= last; i++) {
-		var period = periods[i];
-		var label = $("<a/>")
-			.text(period.label)
-			.attr("href", "#")
-			.attr("class", "label")
-			.data("time", period.time)
-			.data("index", i)
-			.css("left", (i / last * 100) + "%")
-			.appendTo(todlabels);
-	}
-	todlabels.find("a").click(function() {
-		var period = $(this).data();
-		tod_slider.slider("option", "value", period.index);
-		controller.time(period.time);
-	});
-	
-	// create ticks for tod slider ... skipping ends
-	var tickBox = $('<div/>').attr("id", "tickbox");
-	for (var i = 1; i <= (last-1); i++) {
-		var label = $("<p/>")
-			.attr("class", "ticks")
-			.css("left", (i / last * 100) + "%")
-			.appendTo(tickBox);
-	}
-	$("#tod-slider").append(tickBox);
-	// end create ticks for tod slider
-	
+	$(".select-center").click(selectCenter);
 
 	function setMode(mode) {
 		controller.mode(mode);
@@ -1082,25 +1069,28 @@ $(function() {
 		});
 	}
 
-	function selectCenter() {
-		var loc = formatLocation(map.center());
-		inputs.origin.val(loc);
-		submits.origin.click();
-		return false;
-	}
-
-	$(".select-center").click(selectCenter);
-
-	var modeLinks = $("#travel-optionss a")
-		 .each(function() {
-			 var link = $(this);
-			 link.data("mode", link.attr("id").split("_")[1]);
-		 }).click(function() {
+	var modeLinks = $("#travel-optionss .mode a")
+		 .click(function() {
 			 var mode = $(this).data("mode");
 			 setMode(mode);
 			 return false;
 		 });
 	setMode(controller.mode());
+
+	function setTime(time) {
+		controller.time(time);
+		timeLinks.attr("class", function() {
+			return $(this).data("time") == time ? "selected" : "";
+		});
+	}
+
+	var timeLinks = $("#travel-optionss .time a")
+		.click(function() {
+			var time = $(this).data("time");
+			setTime(time);
+			return false;
+		});
+	setTime(controller.time());
 
 	/* adjust map size based on viewport */
 	function setMapHeight(){
@@ -1116,6 +1106,7 @@ $(function() {
 			
 			container.css('cssText', 'height: '+_newSize+'px !important');
 			map.size({x: _mapWidth, y: _mapHeight});
+			map.dispatch({type: "move"});
 		} catch (e) {
 			// console.log("setMapHeight() error:", e);
 		}

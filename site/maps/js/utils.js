@@ -270,7 +270,7 @@ function formatZYX(z, xy, y) {
     x = xy.lon;
     y = xy.lat;
   }
-  return [(z % 1 == 0) ? z : z.toFixed(2), y.toFixed(pn), x.toFixed(pn)].join("/");
+  return [z.toFixed(2), y.toFixed(pn), x.toFixed(pn)].join("/");
 }
 
 function updateHrefs(links, vars, hash) {
@@ -325,8 +325,10 @@ function pluralize(n, str, plural) {
 }
 
 function formatTime(minutes) {
-  var min = Number(minutes) >>> 0,
+  var min = Math.round(Number(minutes)),
       str = String(min);
+  // console.log(minutes, min);
+  if (isNaN(min) || min < 0) return null;
   if (min >= 60) {
     var hours = (min / 60) >>> 0;
     min %= 60;
@@ -336,6 +338,10 @@ function formatTime(minutes) {
     str = hours + " " + pluralize(hours, "hour");
     if (min > 0) str += ", " + min;
     else return str;
+  /*
+  } else if (min == 30) {
+      return "&frac12; hour";
+  */
   }
   return str + " minutes";
 }

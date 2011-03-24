@@ -21,8 +21,7 @@
 				background-image: url(../style/images/crosshair.png);
 			}
 
-			.has_origin #origin-marker { display: ""; }
-			.has_dest #dest-marker { display: ""; }
+			#origin-marker, #dest-marker { display: none; }
 
 			#travel-time {
 				height: 500px !important;
@@ -149,7 +148,7 @@
 			}
 
 			#legend .chip:first-child { padding-left: 1em; margin-left: -1em; }
-			#legend .chip:last-child { padding-right: 1em; border-right: 1px solid #fff; }
+			#legend .chip:last-child { padding-left: 2px; padding-right: 1em; }
 
 			#legend .label {
 				color: #000 !important;
@@ -164,14 +163,12 @@
 			}
 
 			.no_origin #info-dest,
-			.no_origin #time-of-day,
 			.no_origin #travel-optionss {
 				opacity: .1;
 				pointer-events: none;
 			}
 
 			.has_origin #info-dest,
-			.has_origin #time-of-day,
 			.has_origin #travel-optionss {
 				opacity: 1;
 				pointer-events: all;
@@ -223,60 +220,48 @@
 
 				<div id="info">
 					<div id="info-geo" class="clearfix">
-						<p id="info-origin"><span class="dest-circle">A</span><label>Start address: <input type="text" id="location_origin" name="origin" value=""/></label>
+						<p id="info-origin"><span class="dest-circle">A</span><label>Enter a start address: <input type="text" id="location_origin" name="origin" value=""/></label>
 							<input type="submit" class="locate" name="submit-origin" title="Locate your start address" value="Locate" />
 							<!-- <input type="image" src="../style/images/crosshair.png" name="origin-center" /> -->
-							<input type="submit" name="clear-origin" value="X" /><br/>
-							<!-- <span class="or">or <a class="select-center" href="#origin=center"><img src="../style/images/crosshair.png"/> select the center</a></span> -->
+							<input type="submit" name="clear-origin" value="X" />
+							<span class="or">or <a class="select-center" href="#origin=center"><img src="../style/images/crosshair.png"/> select the center of the map</a></span>
 						</p>
+						<!-- Uncomment this to get the destination back
 						<p id="info-dest"><span class="dest-circle">B</span><label>Destination address: <input type="text" id="location_dest" name="dest" value=""/></label>
 							<input type="submit" class="locate" name="submit-dest" title="Locate your destination" value="Locate" />
 							<input type="submit" name="clear-dest" value="X" />
 						</p>
+						-->
 					</div>
-					
+
 					<div id="info-extras" class="clearfix">
 						<p id="travel-optionss">
-							<a href="#mode=da" id="mode_da" title="by car alone"><img src="../style/images/modes/da.png"/></a>
-							<a href="#mode=s2" id="mode_s2" title="by car (2 people)"><img src="../style/images/modes/s2.png"/></a>
-							<a href="#mode=wTrnW" id="mode_wTrnW" title="by public transit"><img src="../style/images/modes/transit.png"/></a>
-							<a href="#mode=bike" id="mode_bike" title="by bicycle"><img src="../style/images/modes/bike.png"/></a>
-							<a href="#mode=walk" id="mode_walk" title="by foot"><img src="../style/images/modes/walk.png"/></a>
+							<span id="travel-mode" class="mode">
+								<label>Traveling by:</label>
+								<a href="#mode=da" data-mode="da" title="by car alone"><img src="../style/images/modes/da.png"/></a>
+								<a href="#mode=s2" data-mode="s2" title="by car (2 people)"><img src="../style/images/modes/s2.png"/></a>
+								<a href="#mode=wTrnW" data-mode="wTrnW" title="by public transit"><img src="../style/images/modes/transit.png"/></a>
+								<a href="#mode=bike" data-mode="bike" title="by bicycle"><img src="../style/images/modes/bike.png"/></a>
+								<a href="#mode=walk" data-mode="walk" title="by foot"><img src="../style/images/modes/walk.png"/></a>
+								<input type="hidden" name="mode" value="da"/>
+							</span>
+
+							<span id="time-of-day" class="time">
+								<label>in the</label>
+								<a href="#time=EA" data-time="EA"><img src="../style/images/times/EA.png"/><span> Early AM</a>
+								<a href="#time=AM" data-time="AM"><img src="../style/images/times/AM.png"/><span>AM commute</span></a>
+								<a href="#time=MD" data-time="MD"><img src="../style/images/times/MD.png"/><span>Mid-day</span></a>
+								<a href="#time=PM" data-time="PM"><img src="../style/images/times/PM.png"/><span>PM commute</span></a>
+								<a href="#time=EV" data-time="EV"><img src="../style/images/times/EV.png"/><span>Evening</span></a>
+								<input type="hidden" name="time" value="AM"/>
+							</span>
 						</p>
-						<div id="time-of-day">
-							<h5 id="tod-label">Time of Day</h5>
-							<div id="tod-slider"></div>
-							<div id="tod-legend"><span class="labels"></span></div>
-						</div>
 					</div>
-					
-					<p id="travel-options">
-						<label title="select a mode of transit">Traveling by <select id="mode" name="mode">
-							<option value="da" selected="selected">car (alone)</option>
-							<option value="s2">car (2 people)</option>
-							<option value="s3">car (3+ people)</option>
-							<option value="wTrnW">public transit</option>
-							<!--
-							<option value="wTrnW">public transit (walk to and from)</option>
-							<option value="wTrnD">public transit (walk to, drive from)</option>
-							<option value="dTrnW">public transit (drive to, walk from)</option>
-							-->
-							<option value="bike">bicycle</option>
-							<option value="walk">foot</option>
-						</select></label>
-						<label title="select a time of day">in the <select id="time" name="time">
-							<option value="EA">Early AM</option>
-							<option value="AM" selected="selected">AM</option>
-							<option value="MD">Mid-day</option>
-							<option value="PM">PM</option>
-							<option value="EV">Evening</option>
-						</select></label>
-					</p>
 					<div id="info-meta">
 						<p id="stdout"></p>
 					</div>
 				</div>
-				
+
 				<div class="map drag" id="travel-time"
 					data-zoomRange="9,14" data-center="37.7639,-122.4130" data-zoom="9">
 					<div class="layer" data-type="image"
@@ -294,8 +279,8 @@
 					-->
 
 					<div class="controls">
-						<label>Zoom:</label> <a class="zoom-in" href="#location-map"><img alt="in" src="../style/images/zoom-plus.png"/></a>
-						<a class="zoom-out" href="#location-map"><img alt="out" src="../style/images/zoom-minus.png"/></a>
+						<label>Zoom:</label> <a class="zoom-in" href="#zoom-in"><img alt="in" src="../style/images/zoom-plus.png"/></a>
+						<a class="zoom-out" href="#zoom-out"><img alt="out" src="../style/images/zoom-minus.png"/></a>
 					</div>
 
 					<div id="bottom-bar">
@@ -307,8 +292,8 @@
 
 					<a id="crosshairs" class="select-center"
 						title="show travel times from this location" href="#origin=center"></a>
-					<a class="marker" id="origin-marker">A</a>
-					<a class="marker" id="dest-marker">B</a>
+					<a class="marker" id="origin-marker" data-location="0,0">A</a>
+					<a class="marker" id="dest-marker" data-location="0,0">B</a>
 				
 					<div id="taztip"><span class="nub"></span><p id="tazinfo"></p></div>
 				</div>

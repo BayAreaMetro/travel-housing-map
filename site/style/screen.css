@@ -64,72 +64,42 @@ img{border:none;}
 #info-geo, 
 #info-extras {
 	display: block;
-	padding: .75em 0;
+	padding-top: .75em;
 }
 
+#info-geo p input[type=text] {
+	width: 30ex;
+}
 #info-geo p input.locate {
 	width: 12ex;
 }
 
 #info-geo .or {
-	margin-left: 2.5em;
+	white-space: nowrap;
+	padding-left: 1em;
 }
 
 #info-geo p,
-#travel-optionss,
-#time-of-day {
+#travel-optionss {
 	margin: 0 2em 0 0;
 	padding: 0;
 	float: left;
 	min-height: 1.5em;
 }
 
-#info-dest,
-#time-of-day {
+#info-dest {
 	margin-right: 0 !important;
 }
 
-#travel-optionss,
-#time-of-day {
+#travel-optionss {
 	min-height: 4em;
 }
 
 #travel-optionss {
 }
 
-#time-of-day {
-	width: 30em;
-}
-
 #info #info-geo p label {
 	padding-left: .5em;
-}
-
-#tod-legend {
-	position: relative;
-}
-
-#tod-legend .label {
-	position: absolute;
-	display: block;
-	width: 5em;
-	text-align: center;
-	padding: .2em;
-
-	margin-top: .7em;
-	margin-left: -2.5em !important;
-	font-size: 12px;
-	color: #000;
-	font-weight: bold;
-	text-decoration: none;
-}
-
-/* nudge outer labels inward */
-#tod-legend .labels a:first-child {
-	margin-left: -.5em !important;
-}
-#tod-legend .labels a:last-child {
-	margin-left: -4.5em !important;
 }
 
 #info h5 {
@@ -138,19 +108,53 @@ img{border:none;}
 	text-align: center;
 }
 
+#travel-optionss .mode,
+#travel-optionss .time {
+	display: inline-block;
+	margin-right: .5em;
+	margin-bottom: .5em;
+}
+
 #info #travel-optionss a {
 	display: inline-block;
 	width: 40px;
 	height: 42px;
 	background-color: #000;
-	padding: .5em .6em;
+	padding: 10px 12px;
 	.ieInlineBlockFix;
 	text-align: center;
 }
 
 #info #travel-optionss img {
 	vertical-align: middle;
-	height: 42px;
+}
+
+#info #travel-optionss .time a {
+	position: relative;
+	color: #fff;
+	border-bottom: 0;
+	text-decoration: none;
+	padding-top: 8px;
+	padding-bottom: 12px;
+}
+
+#info #travel-optionss .time img {
+	height: 24px;
+	padding-bottom: 18px;
+}
+
+#info #travel-optionss .time a span {
+	display: block;
+	font-size: 70%;
+	line-height: 1em;
+	position: absolute;
+	bottom: 4px;
+	left: 8%;
+	width: 84%;
+}
+
+#travel-optionss label {
+	padding-right: .5em;
 }
 
 #info #travel-optionss a:hover {
@@ -161,30 +165,16 @@ img{border:none;}
 	background-color: @linkColor;
 }
 
-#tod-slider {
-	width: 100%;
-	height: .3em !important;
-	background: #000 !important;
-	border-width: 0 !important;
-}
-
-#tod-slider .ui-slider-handle {
-	width: .6em !important;
-	height: 1em !important;
-	top: -.4em !important;
-	margin-left: -.3em !important;
-}
-
 .dest-circle, .marker {
 	display: inline-block;
-	width: 2em;
-	height: 2em;
+	width: 1.4em;
+	height: 1.4em;
 	color: #fff !important;
-	line-height: 2em;
+	line-height: 1.6em;
 	font-weight: 600;
 	text-align: center;
 	.ieInlineBlockFix;
-	.full-circle(1em);/*radius*/
+	.full-circle(.8em);/*radius*/
 }
 
 #bottom-bar .title .marker {
