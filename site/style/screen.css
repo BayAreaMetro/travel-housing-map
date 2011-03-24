@@ -236,10 +236,17 @@ input[disabled] {
 	right: 0;
 	margin: 0 .25em 0 0;
 	text-align: right;
-	text-transform: uppercase;
-	font-size: 1.5em;
 	font-weight: bold;
+	font-size: 1.5em;
 	line-height: 1.2em;
+}
+#permalink a:link { text-decoration: none; }
+#permalink a:hover { text-decoration: underline; }
+
+#permalink img {
+	background-color: @linkColor;
+	vertical-align: baseline;
+	margin-bottom: -4px;
 }
 
 /* hiding at first, shown once page is rendered */
@@ -383,8 +390,13 @@ ol li p {
 		line-height: inherit;
 	}
 
-	#select-center img {
-		margin-right: 4px;
+	a.select-center {
+		font-weight: bold;
+	}
+
+	#info .select-center img {
+		margin-right: 2px;
+		margin-bottom: -2px;
 	}
 
 	.controls a img {
