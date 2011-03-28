@@ -256,9 +256,10 @@
 	}
 
 	// keep a reference around to the plugin object for exporting useful functions
-	var exports = $.fn.htmapl = function(defaults, overrides) {
+	// added useThisSvg (seanc | 3/23/2011)
+	var exports = $.fn.htmapl = function(defaults, overrides,useThisSvg) {
 		return this.each(function(i, el) {
-			htmapl(el, defaults, overrides);
+			htmapl(el, defaults, overrides,useThisSvg);
 		});
 	};
 
@@ -659,20 +660,29 @@
 		});
 	}
 	
-
-	function htmapl(el,defaults,overrides) {
+	/* added extra param, "useThisSvg", to take into account that svgweb is being used */
+	function htmapl(el,defaults,overrides,useThisSvg) {
 		var engine = $.fn.htmapl.engine;
 		if (!engine.map) throw new Error("No map() generator in engine");
 
 		// the root element
 		var root = $(el);
-
-		container = engine.container();
-
-		container.style.width = container.style.height = "100%";
-		if (container) el.insertBefore(container, null);
-		else container = el;
-
+		
+		/**
+		 * Modified this area to account for svgweb
+		 * if svgweb is being used you pass it in the useThisSvg
+		 * probably could be a better way
+		**/
+		container = (useThisSvg) ?  useThisSvg : engine.container();
+		
+		if(!useThisSvg){
+			container.style.width = container.style.height = "100%";
+			if (container) el.insertBefore(container, null);
+			else container = el;
+		}
+		
+		/* everything below is untouched */
+		
 
 		var map = engine.map();
 		map.container(container);
@@ -872,6 +882,11 @@
 		function deferredInit() {
 			clearTimeout(deferredInit.timeout);
 			var size = {x: root.innerWidth(), y: root.innerHeight()};
+			// console.log(["init:", size.x, size.y]);
+			if(container.fake){
+				container.setAttribute("width",size.x);
+				container.setAttribute("height",size.y);
+			}
 			map.size(size);
 		}
 		deferredInit.timeout = setTimeout(deferredInit, 10);

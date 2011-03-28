@@ -2,6 +2,12 @@
 	<head>
 		<title>One Bay Area: Move / Maps / Travel Time</title>
 		
+		<!-- svgweb meta config data-->
+		<meta name="svg.render.forceflash" content="true"/>
+		<meta name="svg.render.flashdebug" content="true"/>
+		<meta name="svg.config.data-path" content="js/svgweb"/>
+		<meta name="svg.config.data-htc-filename" content="svg-htc.php"/>
+		
 		<link rel="stylesheet/less" type="text/css" href="../style/screen.css">
 		<style type="text/css">
 			@import url("http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/themes/smoothness/jquery-ui.css");
@@ -183,6 +189,8 @@
 			}
 
 		</style>
+		<!-- load svgweb js -->
+		<script type="text/javascript" src="js/svgweb/svg-uncompressed.js"></script>
 		<script type="text/javascript" src="js/less-1.0.41.min.js"></script>
 		<script type="text/javascript" src="js/LAB.min.js"></script>
 		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
@@ -195,14 +203,19 @@
 			// hosted jQuery and jQuery UI
 			.script("http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.5.1.min.js")
 			.script("http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/jquery-ui.min.js")
-			.script("js/polymaps.min.js")
+			.script("js/svgweb/polymaps.js")
 			.script("js/protovis-r3.2.js")
-			.script("js/htmapl.js")
+			.script("js/svgweb/htmapl_svgweb.js")
 			.script("js/utils.js")
 			.script("js/autofill.js")
 			.script("js/geocode.js")
 			.script("http://move.onebayarea.org/data/blk2taz/convert.js")
-			.script("js/travel-time.js");
+			.script("js/svgweb/travel-time-svgweb.js")
+			.wait(function(){
+					$(document).ready(function() {
+						beginMapCreation();
+					});
+				});
 
 		</script>
 	</head>
@@ -267,8 +280,10 @@
 					data-zoomRange="9,14" data-center="37.7639,-122.4130" data-zoom="9">
 					<div class="layer" data-type="image"
 						data-url="http://a2.acetate.geoiq.com/tiles/terrain/{Z}/{X}/{Y}.png"></div>
+				
 					<div class="layer" id="taz-shapes" data-type="geoJson"
 						data-scale="fixed" data-zoom="11" data-url="http://move.onebayarea.org/data/areas/taz1454-clipurb.json"></div>
+					
 					<div class="layer" id="acetate-roads" data-type="image"
 						data-url="http://a.acetate.geoiq.com/tiles/acetate-roads/{Z}/{X}/{Y}.png"></div>
 					<div class="layer" id="acetate-labels" data-type="image"
