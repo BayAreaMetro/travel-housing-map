@@ -2,7 +2,7 @@
 	<head>
 		<title>One Bay Area: Move / Maps / Travel Time</title>
 		
-		<link rel="stylesheet/less" type="text/css" href="../style/screen.css">
+		<link rel="stylesheet/less" type="text/css" href="../style/screen-housing.css">
 		<style type="text/css">
 			@import url("http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/themes/smoothness/jquery-ui.css");
 
@@ -24,7 +24,7 @@
 			#origin-marker, #dest-marker { display: none; }
 
 			#travel-time {
-				height: 500px !important;
+				height: 94%;
 				background: #B1B8B8; /* acetate ocean */
 				overflow: hidden;
 			}
@@ -46,9 +46,9 @@
 			#bottom-bar {
 				position: absolute;
 				left: 0;
-				bottom: 0;
+				top: 0;
 				width: 100%;
-				height: 8em;
+				height: 6em;
 				pointer-events: none;
 			}
 
@@ -124,9 +124,9 @@
 
 				position: absolute;
 				left: 0;
-				/* width: 100%; */
+				/*width: 100%;*/
 				top: 0;
-				padding: .25em .5em 2em 0;
+				padding: .25em 0 2em 0;
 				margin: 0;
 
 				pointer-events: all;
@@ -181,6 +181,66 @@
 			.has_origin #info-extras {
 				/* border-top: 1px dashed #ccc; */
 			}
+			
+			/* for new two-column layout */
+			/* fixed left column for controls & fluid right column for map */
+			#page{
+				position:relative;
+				width:100%;
+				margin-top:10px;
+			}
+			#main-form{
+				position:relative;
+				width:100%;
+			}
+			#left_column{
+				float:left;
+				width:480px;
+			}
+			
+			#right_column{
+				float:left;
+				width:100%;
+				margin-left:-480px; /* based of left column width */
+			}
+			
+			#map-content{
+				position:relative;
+				margin-left: 480px; /* based of left column width */
+			}
+			
+			#time-slider-container,#housing-slider-container {
+				position: relative;
+				width: 90%;
+				height: 8em;
+				pointer-events: none;
+				display:none;
+			}
+			
+			#housing-slider-container{
+				
+			}
+			
+			#time-slider-container #time-slider{
+				margin-top:3em;
+			}
+			
+			#time-slider-container.inactive,
+			#housing-slider-container.inactive{
+				pointer-events: none;
+				display: none;
+			}
+			
+			#time-slider-container.active,
+			#housing-slider-container.active {
+				pointer-events: all;
+				display: block;
+			}
+			
+			#housing_price_range{padding-left:5px;font-size:12px;color:#666;}
+			
+			
+			
 
 		</style>
 		<script type="text/javascript" src="js/less-1.0.41.min.js"></script>
@@ -202,105 +262,121 @@
 			.script("js/autofill.js")
 			.script("js/geocode.js")
 			.script("http://move.onebayarea.org/data/blk2taz/convert.js")
-			.script("js/travel-time.js");
+			.script("js/travel-time-housing.js");
 
 		</script>
 	</head>
 	<body>
 		<div id="page" class="no_origin">
+				<form class="autofill" action="time_housing.html" method="GET" id="main-form">
+					<!-- left column -->
+					<div id="left_column">
+						<div id="title">
+							<h1><a href="/">Move</a> / <a href="./">Maps</a> / Travel Time</h1>
+						</div>
+						<!-- <input type="hidden" name="taz" value=""/> -->
+						<input type="hidden" name="max_time" value="60"/>
+					
+						<div id="info">
+							<div id="info-geo" class="clearfix">
+								<p id="info-origin"><span class="dest-circle">A</span><label>Traveling to:<br/> <input type="text" id="location_origin" name="origin" value=""/></label>
+									<input type="submit" class="locate" name="submit-origin" title="Locate your start address" value="Locate" />
+									<!-- <input type="image" src="../style/images/crosshair.png" name="origin-center" /> -->
+									<input type="submit" name="clear-origin" value="X" />
+									<span class="or">or <a class="select-center" href="#origin=center"><img src="../style/images/crosshair.png"/> select the center of the map</a></span>
+								</p>
+								<!-- Uncomment this to get the destination back
+								<p id="info-dest"><span class="dest-circle">B</span><label>Destination address: <input type="text" id="location_dest" name="dest" value=""/></label>
+									<input type="submit" class="locate" name="submit-dest" title="Locate your destination" value="Locate" />
+									<input type="submit" name="clear-dest" value="X" />
+								</p>
+								-->
+							</div>
 
-			<div id="title">
-				<h1><a href="/">Move</a> / <a href="./">Maps</a> / Travel Time</h1>
-				<p id="permalink"><a class="permalink"
-					title="bookmark this map view to share with friends" href="?"><img src="../style/images/bookmark-clear_bg.png"/> bookmark</a></p>
-			</div>
+							<div id="info-extras" class="clearfix">
+								<p id="travel-optionss">
+									<span id="travel-mode" class="mode">
+										<label>by:</label>
+										<a href="#mode=da" data-mode="da" title="by car alone"><img src="../style/images/modes/da.png"/></a>
+										<a href="#mode=s2" data-mode="s2" title="by car (2 people)"><img src="../style/images/modes/s2.png"/></a>
+										<a href="#mode=wTrnW" data-mode="wTrnW" title="by public transit"><img src="../style/images/modes/transit.png"/></a>
+										<a href="#mode=bike" data-mode="bike" title="by bicycle"><img src="../style/images/modes/bike.png"/></a>
+										<a href="#mode=walk" data-mode="walk" title="by foot"><img src="../style/images/modes/walk.png"/></a>
+										<input type="hidden" name="mode" value="da"/>
+									</span>
 
-			<form class="autofill" action="time.html" method="GET">
-				<!-- <input type="hidden" name="taz" value=""/> -->
-				<input type="hidden" name="max_time" value="60"/>
-
-				<div id="info">
-					<div id="info-geo" class="clearfix">
-						<p id="info-origin"><span class="dest-circle">A</span><label>Enter a start address: <input type="text" id="location_origin" name="origin" value=""/></label>
-							<input type="submit" class="locate" name="submit-origin" title="Locate your start address" value="Locate" />
-							<!-- <input type="image" src="../style/images/crosshair.png" name="origin-center" /> -->
-							<input type="submit" name="clear-origin" value="X" />
-							<span class="or">or <a class="select-center" href="#origin=center"><img src="../style/images/crosshair.png"/> select the center of the map</a></span>
-						</p>
-						<!-- Uncomment this to get the destination back
-						<p id="info-dest"><span class="dest-circle">B</span><label>Destination address: <input type="text" id="location_dest" name="dest" value=""/></label>
-							<input type="submit" class="locate" name="submit-dest" title="Locate your destination" value="Locate" />
-							<input type="submit" name="clear-dest" value="X" />
-						</p>
-						-->
-					</div>
-
-					<div id="info-extras" class="clearfix">
-						<p id="travel-optionss">
-							<span id="travel-mode" class="mode">
-								<label>Traveling by</label>
-								<a href="#mode=da" data-mode="da" title="by car alone"><img src="../style/images/modes/da.png"/></a>
-								<a href="#mode=s2" data-mode="s2" title="by car (2 people)"><img src="../style/images/modes/s2.png"/></a>
-								<a href="#mode=wTrnW" data-mode="wTrnW" title="by public transit"><img src="../style/images/modes/transit.png"/></a>
-								<a href="#mode=bike" data-mode="bike" title="by bicycle"><img src="../style/images/modes/bike.png"/></a>
-								<a href="#mode=walk" data-mode="walk" title="by foot"><img src="../style/images/modes/walk.png"/></a>
-								<input type="hidden" name="mode" value="da"/>
-							</span>
-
-							<span id="time-of-day" class="time">
-								<label>in the</label>
-								<a href="#time=EA" data-time="EA"><img src="../style/images/times/EA.png"/><span> Early AM</a>
-								<a href="#time=AM" data-time="AM"><img src="../style/images/times/AM.png"/><span>AM commute</span></a>
-								<a href="#time=MD" data-time="MD"><img src="../style/images/times/MD.png"/><span>Mid-day</span></a>
-								<a href="#time=PM" data-time="PM"><img src="../style/images/times/PM.png"/><span>PM commute</span></a>
-								<a href="#time=EV" data-time="EV"><img src="../style/images/times/EV.png"/><span>Evening</span></a>
-								<input type="hidden" name="time" value="AM"/>
-							</span>
-						</p>
-					</div>
-					<div id="info-meta">
-						<p id="stdout"></p>
-					</div>
-				</div>
-
-				<div class="map drag" id="travel-time"
-					data-zoomRange="9,14" data-center="37.7639,-122.4130" data-zoom="9">
-					<div class="layer" data-type="image"
-						data-url="http://a2.acetate.geoiq.com/tiles/terrain/{Z}/{X}/{Y}.png"></div>
-					<div class="layer" id="taz-shapes" data-type="geoJson"
-						data-scale="fixed" data-zoom="11" data-url="http://move.onebayarea.org/data/areas/taz1454-clipurb.json"></div>
-					<div class="layer" id="acetate-roads" data-type="image"
-						data-url="http://a.acetate.geoiq.com/tiles/acetate-roads/{Z}/{X}/{Y}.png"></div>
-					<div class="layer" id="acetate-labels" data-type="image"
-						data-url="http://a.acetate.geoiq.com/tiles/acetate-labels/{Z}/{X}/{Y}.png"></div>
-
-					<!--
-					<div class="layer" data-type="image"
-						data-url="http://c.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{Z}/{X}/{Y}.png"></div>
-					-->
-
-					<div class="controls">
-						<label>Zoom:</label> <a class="zoom-in" href="#zoom-in"><img alt="in" src="../style/images/zoom-plus.png"/></a>
-						<a class="zoom-out" href="#zoom-out"><img alt="out" src="../style/images/zoom-minus.png"/></a>
-					</div>
-
-					<div id="bottom-bar">
-						<div class="bg"></div>
-						<h2 class="title"><span class="prefix"></span> <strong id="minutes"></strong></h2>
-						<div id="time-slider"></div>
-						<div id="legend"><span class="chips"></span><span class="labels"></span></div>
-					</div>
-
-					<a id="crosshairs" class="select-center"
-						title="show travel times from this location" href="#origin=center"></a>
-					<a class="marker" id="origin-marker" data-location="0,0">A</a>
-					<a class="marker" id="dest-marker" data-location="0,0">B</a>
+									<span id="time-of-day" class="time">
+										<label>during the:</label>
+										<a href="#time=EA" data-time="EA"><img src="../style/images/times/EA.png"/><span> Early AM</a>
+										<a href="#time=AM" data-time="AM"><img src="../style/images/times/AM.png"/><span>AM commute</span></a>
+										<a href="#time=MD" data-time="MD"><img src="../style/images/times/MD.png"/><span>Mid-day</span></a>
+										<a href="#time=PM" data-time="PM"><img src="../style/images/times/PM.png"/><span>PM commute</span></a>
+										<a href="#time=EV" data-time="EV"><img src="../style/images/times/EV.png"/><span>Evening</span></a>
+										<input type="hidden" name="time" value="AM"/>
+									</span>
+								</p>
+							</div>
+							
+							<div id="time-slider-container">
+								<h5>within (time period)</h5>
+								<div id="time-slider"></div>
+								<div id="legend"><span class="chips"></span><span class="labels"></span></div>
+							</div>
+							
+							<div id="housing-slider-container">
+								<h5>within (this price range)<span id="housing_price_range"></span></h5>
+								<div id="housing-slider"></div>
+							</div>
+						</div>
+					</div><!-- close left column -->
 				
-					<div id="taztip"><span class="nub"></span><p id="tazinfo"></p></div>
-				</div>
-			
+					<!-- right column -->
+					<div id="right_column">
+						<div id="map-content">
+						
+							<div class="map drag" id="travel-time"
+								data-zoomRange="9,14" data-center="37.7639,-122.4130" data-zoom="9">
+								<div class="layer" data-type="image"
+									data-url="http://a2.acetate.geoiq.com/tiles/terrain/{Z}/{X}/{Y}.png"></div>
+								<div class="layer" id="taz-shapes" data-type="geoJson"
+									data-scale="fixed" data-zoom="11" data-url="http://move.onebayarea.org/data/areas/taz1454-clipurb.json"></div>
+								<div class="layer" id="acetate-roads" data-type="image"
+									data-url="http://a.acetate.geoiq.com/tiles/acetate-roads/{Z}/{X}/{Y}.png"></div>
+								<div class="layer" id="acetate-labels" data-type="image"
+									data-url="http://a.acetate.geoiq.com/tiles/acetate-labels/{Z}/{X}/{Y}.png"></div>
+
+								<!--
+								<div class="layer" data-type="image"
+									data-url="http://c.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{Z}/{X}/{Y}.png"></div>
+								-->
+
+								<div class="controls">
+									<label>Zoom:</label> <a class="zoom-in" href="#zoom-in"><img alt="in" src="../style/images/zoom-plus.png"/></a>
+									<a class="zoom-out" href="#zoom-out"><img alt="out" src="../style/images/zoom-minus.png"/></a>
+								</div>
+								
+								
+								<div id="bottom-bar">
+									<div class="bg"></div>
+									<h2 class="title"><span class="prefix"></span> <strong id="minutes"></strong></h2>
+									<p id="permalink"><a class="permalink"
+										title="bookmark this map view to share with friends" href="?"><img src="../style/images/bookmark-clear_bg.png"/> bookmark</a></p>
+									<p id="stdout"></p>
+								</div>
+
+								<a id="crosshairs" class="select-center"
+									title="show travel times from this location" href="#origin=center"></a>
+								<a class="marker" id="origin-marker" data-location="0,0">A</a>
+								<a class="marker" id="dest-marker" data-location="0,0">B</a>
+				
+								<div id="taztip"><span class="nub"></span><p id="tazinfo"></p></div>
+							</div>
+						</div>
+					</div><!-- close right column -->
+					<div style="clear:both;height:0;">&nbsp;</div>
+					
 			</form>
 
-		</div>
+		</div><!-- close page wrapper -- >
 	</body>
 </html>
