@@ -240,6 +240,36 @@
 			
 			#housing_price_range{padding-left:5px;font-size:12px;color:#666;}
 			
+			#time-slider-container label,
+			#housing-slider-container label{
+				font-size: 12px;
+				font-weight: 400;
+				padding-right: 15px;
+				color: #666;
+			}
+			
+			#time-slider-container.sliderEnabled h5 span,
+			#time-slider-container.sliderEnabled #time-slider,
+			#time-slider-container.sliderEnabled #legend,
+			#housing-slider-container.sliderEnabled h5 span,
+			#housing-slider-container.sliderEnabled #housing-slider{
+				opacity:1;
+			}
+			
+			#time-slider-container.sliderDisabled h5 span,
+			#time-slider-container.sliderDisabled #time-slider,
+			#time-slider-container.sliderDisabled #legend,
+			#housing-slider-container.sliderDisabled h5 span,
+			#housing-slider-container.sliderDisabled #housing-slider{
+				opacity:.3;
+			}
+			
+			#time-slider-container.sliderEnabled label,
+			#housing-slider-container.sliderEnabled label,
+			#time-slider-container.sliderDisabled label,
+			#housing-slider-container.sliderDisabled label{
+				opacity:1;
+			}
 			
 			
 
@@ -319,13 +349,13 @@
 							</div>
 							
 							<div id="time-slider-container">
-								<h5>within (time period)</h5>
+								<h5><label for="time_slider_enabled"><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> disable</label> <span>within (time period)</span></h5>
 								<div id="time-slider"></div>
 								<div id="legend"><span class="chips"></span><span class="labels"></span></div>
 							</div>
 							
 							<div id="housing-slider-container">
-								<h5>within (this price range)<span id="housing_price_range"></span></h5>
+								<h5><label for="housing_slider_enabled"><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> disable</label> <span>within (this price range)</span><span id="housing_price_range"></span></h5>
 								<div id="housing-slider"></div>
 							</div>
 						</div>

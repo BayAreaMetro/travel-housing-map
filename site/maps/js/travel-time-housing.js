@@ -368,10 +368,9 @@ var NIL = -999,
 		
 		
 		function onShapesLoad(e) {
+			// reset price ranges
 			priceRange.minPrice = Infinity;
 			priceRange.maxPrice = 0;
-			
-			
 			
 			var features = e.features,
 					len = features.length;
@@ -441,7 +440,7 @@ var NIL = -999,
 			// call function that was waiting for shapes to be loaded
 			if(processOnShapeLoad != null){
 				processOnShapeLoad();
-				processOnShapeLoad = null;
+				//processOnShapeLoad = null;
 			}
 		}
 
@@ -827,6 +826,53 @@ $(function() {
 		.stdout("#stdout");
 
 	var loadHash = window.location.hash.substr(1);
+	
+	// flags to determine whether a slider is active and should be used in the filtering process
+	// true by default
+	var housing_slider_active = $("#housing_slider_enabled").is(':checked'),
+		time_slider_active = $("#time_slider_enabled").is(':checked');
+		
+	$("#housing_slider_enabled").change(function(){
+		housing_slider_active = $(this).is(':checked');
+		handleSliderCheckboxes();
+	});
+	$("#time_slider_enabled").change(function(){
+		time_slider_active = $(this).is(':checked');
+		handleSliderCheckboxes();
+	});
+	
+	function handleSliderCheckboxes(){
+		//housing slider
+		var labelContent = $("label[for='housing_slider_enabled']");
+		labelContent.contents().last().remove();
+		
+		if(housing_slider_active){ 
+			$("#housing-slider").slider( "enable" );
+			labelContent.append("disable");
+			$("#housing-slider-container").removeClass('sliderDisabled').addClass("sliderEnabled");
+		}else{
+			$("#housing-slider").slider( "disable" );
+			labelContent.append("enable");
+			$("#housing-slider-container").removeClass("sliderEnabled").addClass("sliderDisabled");
+		}
+		
+		// time slider
+		labelContent = $("label[for='time_slider_enabled']");
+		labelContent.contents().last().remove();
+		
+		if(time_slider_active){ 
+			$("#time-slider").slider( "enable" );
+			labelContent.append("disable");
+			$("#time-slider-container").removeClass('sliderDisabled').addClass("sliderEnabled");
+		}else{
+			$("#time-slider").slider( "disable" );
+			labelContent.append("enable");
+			$("#time-slider-container").removeClass("sliderEnabled").addClass("sliderDisabled");
+		}
+		
+		deferredUpdate();
+	}
+	
 	function originalHashLoaded() {
 		var hash = formatZYX(map.zoom(), map.center());
 		console.log(hash, loadHash, hash == loadHash);
@@ -1027,9 +1073,19 @@ $(function() {
 	controller.filters([
 		function(feature) {
 			var price = controller.housingPrice(feature);
-			var priceOk = false;
 			var time = controller.travelTime(feature);
-			return (time > NIL && time <= maxTime) && (price >= minPrice && price <= maxPrice);
+			if(housing_slider_active && time_slider_active){
+				return (time > NIL && time <= maxTime) && (price >= minPrice && price <= maxPrice);
+				
+			}else if(housing_slider_active && !time_slider_active){
+				return (price >= minPrice && price <= maxPrice);
+				
+			}else if(!housing_slider_active && time_slider_active){
+				return (time > NIL && time <= maxTime);
+				
+			}else{ // if all else fails, fall back to both in play
+				return (time > NIL && time <= maxTime) && (price >= minPrice && price <= maxPrice);
+			}
 		}
 	]);
 
@@ -1122,29 +1178,36 @@ $(function() {
 	// show title now that bottom bar is rendered
 	$('#bottom-bar .title').show();
 	
-	//////
+	
 	// create the housing slider
 	// need to defer to after shapes have been loaded
+	var housing_slider = null;
 	function createHousingSlider(){
 		maxPrice = controller.priceRange.maxPrice;
 		minPrice = controller.priceRange.minPrice;
 		updatePriceText([controller.priceRange.minPrice,controller.priceRange.maxPrice]);
-		var slider = $("#housing-slider").slider({
-			slide: function(e, ui) {
-				setHousingPrice(ui.values);
-			},
-			range: true,
-			min: controller.priceRange.minPrice,
-			max: controller.priceRange.maxPrice,
-			step: 1,
-			values: [ controller.priceRange.minPrice, controller.priceRange.maxPrice ]
-		});
+		if(!housing_slider){
+			var housing_slider = $("#housing-slider").slider({
+				slide: function(e, ui) {
+					setHousingPrice(ui.values);
+				},
+				range: true,
+				min: controller.priceRange.minPrice,
+				max: controller.priceRange.maxPrice,
+				step: 1,
+				values: [ controller.priceRange.minPrice, controller.priceRange.maxPrice ]
+			});
+		}else{
+			$(housing_slider).slider("values", 0, minPrice); 
+			$(housing_slider).slider("values", 1, maxPrice);
+		}
 	}
-	if(!controller.priceRange.minPrice){
-		controller.processOnShapeLoad( createHousingSlider );
-	}else{
+	// set callback function for onShapesLoad to generate the housing slider
+	// since that is where we are setting the min/max price
+	controller.processOnShapeLoad( createHousingSlider );
+	// if the min/max are already set, then create housing slider
+	if(controller.priceRange.minPrice)
 		createHousingSlider();
-	}
 	
 
 	$(".select-center").click(selectCenter);
