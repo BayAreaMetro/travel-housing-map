@@ -154,7 +154,11 @@ img{border:none;}
 }
 
 #travel-optionss label {
-	padding-right: .5em;
+	float:left;
+	width:90px;
+}
+#travel-optionss .last_right{
+	clear:right;
 }
 
 #info #travel-optionss a:hover {
