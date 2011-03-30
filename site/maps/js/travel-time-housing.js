@@ -1101,7 +1101,6 @@ $(function() {
 	}
 	
 	function updatePriceText(x){
-		
 		$("#housing_price_range").text("$"+commize(x[0])+" - $"+commize(x[1]));
 	}
 	
