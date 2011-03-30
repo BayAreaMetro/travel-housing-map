@@ -61,7 +61,7 @@ var NIL = -999,
 		// these variables go into the scenario request URI
 		// state.scenario = "2005"; // scenario directory name
 		state.time = "AM"; // morning commute
-		// state.direction = "from"; // from origin to dest
+		state.direction = "from"; // from origin to dest
 		state.origin = null; // origin TAZ
 		// the destination is a row with the destination TAZ's id
 		state.dest = null; // destination TAZ
@@ -76,6 +76,7 @@ var NIL = -999,
 
 		colorScale.domain(NIL, 		0,			60, 		90);
 		colorScale.range("#000",	"#d09", "#fd6", "#ffe");
+		// colorScale.range(BLUE, BLUE, BLUE, BLUE);
 
 		/*
 		colorScale.domain(NIL, 	0, 5,			30, 60, 90);
@@ -119,7 +120,8 @@ var NIL = -999,
 		}
 
 		function getTitle(feature) {
-			return formatTime(travelTime(feature)) || "unknown";
+			var time = travelTime(feature);
+			return formatTime(time) || "unknown";
 		}
 
 		function displayFilter(feature) {
@@ -221,7 +223,7 @@ var NIL = -999,
 			
 			dispatchStdout( "loading", "Loading scenario data...");
 			
-			var url = "/data/scenarios/2005/time/" + [state.time, "from", state.origin_taz].join("/") + ".csv";
+			var url = "/data/scenarios/2005/time/" + [state.time, state.direction, state.origin_taz].join("/") + ".csv";
 			return scenarioReq = $.ajax(url, {
 				dataType: "text",
 				success: function(text) {
@@ -717,6 +719,17 @@ var NIL = -999,
 			}
 		};
 
+		// get/set the travel direction ("to" or "from")
+		controller.direction = function(x) {
+			if (arguments.length) {
+				state.direction = x;
+				updateHrefs(permalinks, {"dir": state.direction}, window.location.hash);
+				if (state.origin_taz) {
+					loadScenario();
+				}
+			}
+		};
+
 		// get/set the time of day (async)
 		controller.time = function(x) {
 			if (arguments.length) {
@@ -880,39 +893,27 @@ $(function() {
 		time_slider_active = $(this).is(':checked');
 		handleSliderCheckboxes();
 	});
-	
+
 	function handleSliderCheckboxes(){
-		//housing slider
-		var labelContent = $("label[for='housing_slider_enabled']");
-		labelContent.contents().last().remove();
-		
-		if(housing_slider_active){ 
+		if (housing_slider_active) {
 			$("#housing-slider").slider( "enable" );
-			labelContent.append("disable");
 			$("#housing-slider-container").removeClass('sliderDisabled').addClass("sliderEnabled");
-		}else{
+		} else {
 			$("#housing-slider").slider( "disable" );
-			labelContent.append("enable");
 			$("#housing-slider-container").removeClass("sliderEnabled").addClass("sliderDisabled");
 		}
-		
-		// time slider
-		labelContent = $("label[for='time_slider_enabled']");
-		labelContent.contents().last().remove();
-		
-		if(time_slider_active){ 
+
+		if (time_slider_active) {
 			$("#time-slider").slider( "enable" );
-			labelContent.append("disable");
 			$("#time-slider-container").removeClass('sliderDisabled').addClass("sliderEnabled");
-		}else{
+		} else {
 			$("#time-slider").slider( "disable" );
-			labelContent.append("enable");
 			$("#time-slider-container").removeClass("sliderEnabled").addClass("sliderDisabled");
 		}
-		
+
 		deferredUpdate();
 	}
-	
+
 	function originalHashLoaded() {
 		var hash = formatZYX(map.zoom(), map.center());
 		console.log(hash, loadHash, hash == loadHash);
@@ -948,7 +949,7 @@ $(function() {
 	var maxTime = parseInt($("input[name=max_time]").val());
 	var maxPrice,minPrice;
 	if (isNaN(maxTime)) maxTime = 60;
-	var minutes = $("#minutes").html(formatTime(maxTime)),
+	var minutes = $(".travel_time_threshold").html(formatTime(maxTime)),
 			showMax = true;
 	function updateTimeText(t) {
 		minutes.html("&le;" + ((typeof t == "string") ? t : formatTime(t)));
@@ -968,7 +969,7 @@ $(function() {
 				dest = e.dest,
 				time = e.time;
 
-		var title = $("#bottom-bar .title"),
+		var title = $("#map-title .title"),
 				prefix = title.find(".prefix");
 
 		if (origin && dest) {
@@ -987,18 +988,16 @@ $(function() {
 				// map.zoom(map.zoom() >>> 0);
 			}
 			showMax = false;
-			$("#bottom-bar").attr("class", "active");
-			$("#time-slider-container").attr("class", "active");
-			$("#housing-slider-container").attr("class", "active");
+			$("#map-title").attr("class", "active");
+			$(".slider-container").removeClass("inactive");
 			page.removeClass("no_origin").addClass("has_origin").addClass("has_dest");
 
 		} else if (origin) {
 			prefix.html('Places accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> in');
 			updateTimeText(maxTime);
 			showMax = true;
-			$("#bottom-bar").attr("class", "active");
-			$("#time-slider-container").attr("class", "active");
-			$("#housing-slider-container").attr("class", "active");
+			$("#map-title").attr("class", "active");
+			$(".slider-container").removeClass("inactive");
 			page.removeClass("no_origin").addClass("has_origin").removeClass("has_dest");
 
 		} else if (locating) {
@@ -1012,9 +1011,8 @@ $(function() {
 			prefix.find(".select-center").click(selectCenter);
 			minutes.text("");
 			showMax = false;
-			$("#bottom-bar").attr("class", "inactive");
-			$("#time-slider-container").attr("class", "inactive");
-			$("#housing-slider-container").attr("class", "inactive");
+			$("#map-title").attr("class", "inactive");
+			$(".slider-container").addClass("inactive");
 			page.addClass("no_origin").removeClass("has_origin").removeClass("has_dest");
 
 		}
@@ -1141,7 +1139,7 @@ $(function() {
 	}
 	
 	function updatePriceText(x){
-		$("#housing_price_range").text("$"+commize(x[0])+" - $"+commize(x[1]));
+		$(".housing_price_range").text("$"+commize(x[0])+" and $"+commize(x[1]));
 	}
 	
 	function setHousingPrice(x){
@@ -1215,26 +1213,27 @@ $(function() {
 	}
 	
 	// show title now that bottom bar is rendered
-	$('#bottom-bar .title').show();
+	$('#map-title .title').show();
 	
 	
 	// create the housing slider
 	// need to defer to after shapes have been loaded
 	var housing_slider = null;
 	function createHousingSlider(){
-		maxPrice = controller.priceRange.maxPrice;
-		minPrice = controller.priceRange.minPrice;
-		updatePriceText([controller.priceRange.minPrice,controller.priceRange.maxPrice]);
+		var step = 10000;
+		maxPrice = Math.ceil(controller.priceRange.maxPrice / step) * step;
+		minPrice = Math.floor(controller.priceRange.minPrice / step) * step;
+		updatePriceText([minPrice, maxPrice]);
 		if(!housing_slider){
 			var housing_slider = $("#housing-slider").slider({
 				slide: function(e, ui) {
 					setHousingPrice(ui.values);
 				},
 				range: true,
-				min: controller.priceRange.minPrice,
-				max: controller.priceRange.maxPrice,
-				step: 1,
-				values: [ controller.priceRange.minPrice, controller.priceRange.maxPrice ]
+				min: minPrice,
+				max: maxPrice,
+				step: step,
+				values: [minPrice, maxPrice]
 			});
 		}else{
 			$(housing_slider).slider("values", 0, minPrice); 
@@ -1254,9 +1253,9 @@ $(function() {
 	function setMode(mode) {
 		controller.mode(mode);
 		if (mode == "bike" || mode == "walk") {
-			$("#time-of-day").css("visibility", "hidden");
+			$("#time-of-day").addClass("inactive");
 		} else {
-			$("#time-of-day").css("visibility", "visible");
+			$("#time-of-day").removeClass("inactive");
 		}
 		modeLinks.attr("class", function() {
 			return $(this).data("mode") == mode ? "selected" : "";
@@ -1285,6 +1284,12 @@ $(function() {
 			return false;
 		});
 	setTime(controller.time());
+
+	var directionSelect = $("#travel-direction").change(function() {
+		var dir = $(this).val();
+		console.log(dir);
+		controller.direction(dir);
+	}).change();
 
 	/* adjust map size based on viewport */
 	function setMapHeight(){

@@ -6,9 +6,20 @@
 		<style type="text/css">
 			@import url("http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/themes/smoothness/jquery-ui.css");
 
-			.ui-slider-handle {
-				background: #000 !important;
-				border-color: #000 !important;
+			.ui-corner-all { border-radius: 0 !important; }
+
+			.ui-widget-header {
+				background: #fff url('http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/themes/smoothness/images/ui-bg_flat_75_ffffff_40x100.png') 50% 50% repeat-x !important;
+			}
+
+			.ui-slider {
+				background: #ccc !important;
+				border-width: 0 !important;
+			}
+			.ui-slider-handle,
+			.ui-slider-range {
+				background: #009DDC !important;
+				border-color: #009DDC !important;
 			}
 
 			#crosshairs {
@@ -31,9 +42,7 @@
 
 			#crosshairs { z-index: 80; }
 			#travel-time .markers { z-index: 90; }
-			#bottom-bar { z-index: 100; }
-			#legend { z-index: 190; }
-			#time-slider { z-index: 200; }
+			#map-title { z-index: 100; }
 
 			#travel-time .markers .marker {
 				display: none;
@@ -42,55 +51,25 @@
 				pointer-events: none; /* no mouse interaction with pointers */
 			}
 
-			/* FIXME: These styles are fucked up. Help me! */
-			#bottom-bar {
+			#map-title {
+				background: rgba(255,255,255,.3);
 				position: absolute;
 				left: 0;
 				top: 0;
 				width: 100%;
-				height: 6em;
+				height: auto;
 				pointer-events: none;
-				min-width:850px;
 			}
 
-			#bottom-bar .bg {
-				position: absolute;
-				width: 100%;
-				height: 100%;
-				background: rgba(255,255,255,.3);
-			}
-
-			#bottom-bar.inactive {
-				height: 6em;
-			}
-
-			#bottom-bar.inactive .bg {
-				background: rgba(255,255,255,.5);
-			}
-
-			#bottom-bar.inactive #time-slider,
-			#bottom-bar.inactive #legend {
-				display: none;
-			}
-
-			#bottom-bar.inactive .title {
-				width: 80%;
-				text-align: center;
-			}
-
-			#bottom-bar.title a {
+			#map-title .title a {
 				pointer-events: all !important;
 			}
 
-			#time-slider, #legend {
-				position: relative;
-				margin: 0 1em;
+			#time-slider,
+			#housing-slider {
+				margin: 1em 2em;
+				font-size: .8em;
 				pointer-events: all;
-			}
-
-			#time-slider {
-				font-size: inherit !important;
-				margin-top: 6em;
 			}
 
 			#legend {
@@ -118,23 +97,16 @@
 				margin-left: -1.5em !important;
 			}
 
-			#bottom-bar .title {
+			#map-title .title {
 				color: #000;
 				font-weight: normal;
-				text-align: left;
-
-				position: absolute;
-				left: 0;
-				/*width: 100%;*/
-				top: 0;
-				padding: .25em 0 2em 0;
+				padding: 10px;
 				margin: 0;
-
 				pointer-events: all;
 				display: none;
 			}
 
-			#bottom-bar .title .prefix {
+			#map-title .prefix {
 				padding-left: .5em;
 			}
 
@@ -182,6 +154,11 @@
 			.has_origin #info-extras {
 				/* border-top: 1px dashed #ccc; */
 			}
+
+			#map-title .controls {
+				top: 100%;
+				margin-top: 10px;
+			}
 			
 			/* for new two-column layout */
 			/* fixed left column width for controls & fluid right column width for map */
@@ -215,83 +192,28 @@
 				margin-left: 450px; /* based of left column width */
 			}
 			
-			#time-slider-container,#housing-slider-container {
-				position: relative;
-				width: 90%;
-				height: 7em;
-				pointer-events: none;
-				display:none;
-			}
-			
-			#housing-slider-container{
-				width:85%;
-			}
-			#housing-slider{
-				margin-left:5%;
-			}
-			 /* change housing slider bar color to match time slider */
-			#housing-slider-container .ui-widget-header{
-				background: #fff url('http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/themes/smoothness/images/ui-bg_flat_75_ffffff_40x100.png') 50% 50% repeat-x !important;
+			.inactive {
+				opacity: .3;
 			}
 
-			#time-slider-container #time-slider{
-				margin-top:3em;
+			 /* change housing slider bar color to match time slider */
+			
+			.slider-container.inactive { display: none; }
+			
+			.slider-container label {
 			}
 			
-			#time-slider-container.inactive,
-			#housing-slider-container.inactive{
-				pointer-events: none;
-				display: none;
+			#helper_btn {
+				position: absolute;
+				right: 5px;
+				top: 0;
+				cursor: pointer;
 			}
-			
-			#time-slider-container.active,
-			#housing-slider-container.active {
-				pointer-events: all;
-				display: block;
+
+			#helper_btn:hover {
+				opacity: .5;
 			}
-			
-			#housing_price_range{padding-left:5px;font-size:12px;color:#666;}
-			
-			#time-slider-container label,
-			#housing-slider-container label{
-				font-size: 12px;
-				font-weight: 400;
-				padding-right: 15px;
-				color: #666;
-			}
-			
-			#time-slider-container.sliderEnabled h5 span,
-			#time-slider-container.sliderEnabled #time-slider,
-			#time-slider-container.sliderEnabled #legend,
-			#housing-slider-container.sliderEnabled h5 span,
-			#housing-slider-container.sliderEnabled #housing-slider{
-				opacity:1;
-			}
-			
-			#time-slider-container.sliderDisabled h5 span,
-			#time-slider-container.sliderDisabled #time-slider,
-			#time-slider-container.sliderDisabled #legend,
-			#housing-slider-container.sliderDisabled h5 span,
-			#housing-slider-container.sliderDisabled #housing-slider{
-				opacity:.3;
-			}
-			
-			#time-slider-container.sliderEnabled label,
-			#housing-slider-container.sliderEnabled label,
-			#time-slider-container.sliderDisabled label,
-			#housing-slider-container.sliderDisabled label{
-				opacity:1;
-			}
-			
-			#helper_btn{
-				position:absolute;
-				right:5px;
-				top:0;
-				cursor:pointer;
-			}
-			#helper_btn:hover{
-				opacity:.5;
-			}
+
 			#helper_panel{
 				position:absolute;
 				width:99%;
@@ -347,7 +269,14 @@
 					
 						<div id="info">
 							<div id="info-geo" class="clearfix">
-								<p id="info-origin"><span class="dest-circle">A</span><label>Traveling to:<br/> <input type="text" id="location_origin" name="origin" value=""/></label>
+								<p id="info-origin"><span class="dest-circle">A</span><label>Traveling from:
+									<!--
+									<select id="travel-direction" name="dir">
+										<option selected="selected">from</option>
+										<option>to</option>
+									</select>
+									-->
+									:<br/> <input type="text" id="location_origin" name="origin" value=""/></label>
 									<input type="submit" class="locate" name="submit-origin" title="Locate your start address" value="Locate" />
 									<!-- <input type="image" src="../style/images/crosshair.png" name="origin-center" /> -->
 									<input type="submit" name="clear-origin" value="X" />
@@ -385,14 +314,14 @@
 								</p>
 							</div>
 							
-							<div id="time-slider-container">
-								<h5><label for="time_slider_enabled"><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> disable</label> <span>within (time period)</span></h5>
+							<div id="time-slider-container" class="slider-container inactive">
+								<h5><label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> in <span class="travel_time_threshold">&le;1&frac12; hours</span></label></h5>
 								<div id="time-slider"></div>
-								<div id="legend"><span class="chips"></span><span class="labels"></span></div>
+								<!-- <div id="legend"><span class="chips"></span><span class="labels"></span></div> -->
 							</div>
 							
-							<div id="housing-slider-container">
-								<h5><label for="housing_slider_enabled"><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> disable</label> <span>within (this price range)</span><span id="housing_price_range"></span></h5>
+							<div id="housing-slider-container" class="slider-container inactive">
+								<h5><label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> between <span class="housing_price_range">$0 and $1,000,000</span></label></h5>
 								<div id="housing-slider"></div>
 							</div>
 							
@@ -425,25 +354,22 @@
 									data-url="http://c.tile.cloudmade.com/1a1b06b230af4efdbb989ea99e9841af/998/256/{Z}/{X}/{Y}.png"></div>
 								-->
 
-								<div class="controls">
-									<label>Zoom:</label> <a class="zoom-in" href="#zoom-in"><img alt="in" src="../style/images/zoom-plus.png"/></a>
-									<a class="zoom-out" href="#zoom-out"><img alt="out" src="../style/images/zoom-minus.png"/></a>
-								</div>
-								
-								
-								<div id="bottom-bar">
-									<div class="bg"></div>
-									<h2 class="title"><span class="prefix"></span> <strong id="minutes"></strong></h2>
-									<p id="permalink"><a class="permalink"
-										title="bookmark this map view to share with friends" href="?"><img src="../style/images/bookmark-clear_bg.png"/> bookmark</a></p>
-									<p id="stdout"></p>
-								</div>
-
 								<a id="crosshairs" class="select-center"
 									title="show travel times from this location" href="#origin=center"></a>
 								<a class="marker" id="origin-marker" data-location="0,0">A</a>
 								<a class="marker" id="dest-marker" data-location="0,0">B</a>
-				
+
+								<div id="map-title">
+									<h2 class="title"><span class="prefix"></span> <strong class="travel_time_threshold"></strong></h2>
+									<p id="permalink"><a class="permalink"
+										title="bookmark this map view to share with friends" href="?"><img src="../style/images/bookmark-clear_bg.png"/> bookmark</a></p>
+									<p id="stdout"></p>
+									<div class="controls">
+										<label>Zoom:</label> <a class="zoom-in" href="#zoom-in"><img alt="in" src="../style/images/zoom-plus.png"/></a>
+										<a class="zoom-out" href="#zoom-out"><img alt="out" src="../style/images/zoom-minus.png"/></a>
+									</div>
+								</div>
+
 								<div id="taztip"><span class="nub"></span><p id="tazinfo"></p></div>
 							</div>
 						</div>

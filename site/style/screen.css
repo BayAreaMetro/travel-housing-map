@@ -67,16 +67,17 @@ img{border:none;}
 	padding-top: .75em;
 }
 
-#info-geo p input[type=text] {
+#info-geo p input.search {
 	width: 30ex;
 }
-#info-geo p input.locate {
+#info-geo p input.submit {
 	width: 12ex;
+	margin: 0 .5ex;
 }
 
 #info-geo .or {
+	margin-left: 1ex;
 	white-space: nowrap;
-	padding-left: 1em;
 }
 
 #info-geo p,
@@ -383,20 +384,12 @@ ol li p {
 		line-height: 0;
 	}
 
-	#select-center {
-		position: relative;
-		background: none;
-		color: @linkColor;
-		line-height: inherit;
-	}
-
 	a.select-center {
 		font-weight: bold;
 	}
 
-	#info .select-center img {
-		margin-right: 2px;
-		margin-bottom: -2px;
+	a.select-center .marker {
+		margin: 0 .5ex;
 	}
 
 	.controls a img {
@@ -458,7 +451,6 @@ input, select {
 	line-height: inherit;
 }
 
-input[type=search],
 input[type=submit] {
 	cursor: pointer;
 	display: inline-block;

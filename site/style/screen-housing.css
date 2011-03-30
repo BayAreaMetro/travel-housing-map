@@ -204,7 +204,7 @@ a.marker {
 	position: absolute;
 	text-align: right;
 	right: 0;
-	top: 0;
+	top: 100%;
 	color: #000;
 	height: 2em;
 	width: 2em;
@@ -238,12 +238,15 @@ input[disabled] {
 	position: absolute;
 	top: 0;
 	right: 0;
-	margin: 0 2em 0 0;
+	margin: 0;
+	padding: .5em;
+	padding-right: 0;
 	text-align: right;
 	font-weight: bold;
 	font-size: 1.5em;
 	line-height: 1.2em;
 	pointer-events: all;
+	background: #fff;
 }
 #permalink a:link { text-decoration: none; }
 #permalink a:hover { text-decoration: underline; }
@@ -374,7 +377,7 @@ ol li p {
 .controls {
 	position: absolute;
 	z-index: 1000;
-	top: 6.5em;
+	top: 10px;
 	left: 10px;
 }
 

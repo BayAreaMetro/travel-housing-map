@@ -15,10 +15,10 @@
 				position: absolute;
 				left: 50%;
 				top: 50%;
-				width: 15px;
-				height: 15px;
-				margin: -7px 0 0 -7px;
-				background-image: url(../style/images/crosshair.png);
+				margin: -1em 0 0 -1em;
+				/* background-image: url(../style/images/crosshair.png); */
+				text-decoration: none !important;
+				opacity: .5;
 			}
 
 			#origin-marker, #dest-marker { display: none; }
@@ -221,15 +221,15 @@
 
 				<div id="info">
 					<div id="info-geo" class="clearfix">
-						<p id="info-origin"><span class="dest-circle">A</span><label>Enter a start address: <input type="text" id="location_origin" name="origin" value=""/></label>
-							<input type="submit" class="locate" name="submit-origin" title="Locate your start address" value="Locate" />
+						<p id="info-origin"><span class="dest-circle">A</span><label>Enter a start address: <input type="search" class="search" id="location_origin" name="origin" value=""/></label>
+							<input type="submit" class="submit" name="submit-origin" title="Locate your start address" value="Locate" />
 							<!-- <input type="image" src="../style/images/crosshair.png" name="origin-center" /> -->
-							<input type="submit" name="clear-origin" value="X" />
-							<span class="or">or <a class="select-center" href="#origin=center"><img src="../style/images/crosshair.png"/> select the center of the map</a></span>
+							<!-- <input type="submit" name="clear-origin" value="X" /> -->
+							<span class="or">or <a class="select-center" href="#origin=center"><span class="marker">X</span> select the center of the map</a></span>
 						</p>
 						<!-- Uncomment this to get the destination back
-						<p id="info-dest"><span class="dest-circle">B</span><label>Destination address: <input type="text" id="location_dest" name="dest" value=""/></label>
-							<input type="submit" class="locate" name="submit-dest" title="Locate your destination" value="Locate" />
+						<p id="info-dest"><span class="dest-circle">B</span><label>Destination address: <input type="search" class="search" id="location_dest" name="dest" value=""/></label>
+							<input type="submit" class="submit" name="submit-dest" title="Locate your destination" value="Locate" />
 							<input type="submit" name="clear-dest" value="X" />
 						</p>
 						-->
@@ -291,8 +291,8 @@
 						<div id="legend"><span class="chips"></span><span class="labels"></span></div>
 					</div>
 
-					<a id="crosshairs" class="select-center"
-						title="show travel times from this location" href="#origin=center"></a>
+					<a id="crosshairs" class="select-center dest-circle"
+						title="show travel times from this location" href="#origin=center">X</a>
 					<a class="marker" id="origin-marker" data-location="0,0">A</a>
 					<a class="marker" id="dest-marker" data-location="0,0">B</a>
 				
