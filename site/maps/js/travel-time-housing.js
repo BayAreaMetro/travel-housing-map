@@ -827,6 +827,46 @@ $(function() {
 
 	var loadHash = window.location.hash.substr(1);
 	
+	
+	/// assign toggle handler to info button
+	$("#helper_btn").toggle(function(e) {
+		console.log("CLICK")
+	  	// show info panel
+		var _panel = $("#helper_panel");
+		var _top = $(this).offset().top + $(this).height();
+		var _height = $("#right_column").height() - _top;
+		var _width = _panel.width();
+		
+		_panel.css("top",_top+"px").css("left","-"+_width+"px").css("height",_height).css("display","block");
+		slidePanel(_panel,0,false);
+	}, function(e) {
+		// hide info panel
+		var _panel = $("#helper_panel");
+		var _width = _panel.width();
+		slidePanel(_panel,"-"+_width+"px",true);
+	});
+	
+	function updateLeftColumnHeight(_h){
+		$("#left_column").height(_h);
+		
+		var _panel = $("#helper_panel");
+		var _top = $("#helper_btn").offset().top + $("#helper_btn").height();
+		var _height = $("#right_column").height() - _top;
+		_panel.css("height",_height);
+	}
+	
+	function slidePanel(_panel,_w,_hide){
+		  _panel.animate({
+		    left: _w
+		  }, 300, function() {
+			if(_hide){
+				$(this).css("display","none");
+			}
+		  });
+
+	}
+
+	
 	// flags to determine whether a slider is active and should be used in the filtering process
 	// true by default
 	var housing_slider_active = $("#housing_slider_enabled").is(':checked'),
@@ -1256,6 +1296,7 @@ $(function() {
 
 			map.size({x: _mapWidth, y: _mapHeight});
 			map.dispatch({type: "move"});
+			updateLeftColumnHeight(_mapHeight);
 		} catch (e) {
 			// console.log("setMapHeight() error:", e);
 		}

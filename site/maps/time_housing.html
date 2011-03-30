@@ -195,11 +195,16 @@
 				width:100%;
 			}
 			#left_column{
+				position:relative;
 				float:left;
 				width:450px;
+				height:100%;
+				z-index:100;
+				overflow:hidden;
 			}
 			
 			#right_column{
+				position:relative;
 				float:left;
 				width:100%;
 				margin-left:-450px; /* based of left column width */
@@ -278,6 +283,30 @@
 				opacity:1;
 			}
 			
+			#helper_btn{
+				position:absolute;
+				right:5px;
+				top:0;
+				cursor:pointer;
+			}
+			#helper_btn:hover{
+				opacity:.5;
+			}
+			#helper_panel{
+				position:absolute;
+				width:99%;
+				height:100%;
+				background:rgba(0,0,0,.9);
+				display:none;
+				z-index:500;
+				color:#fff;
+				padding:0;
+				margin:0;
+			}
+			#helper_panel div{
+				padding:10px;
+			}
+			
 			
 
 		</style>
@@ -311,6 +340,7 @@
 					<div id="left_column">
 						<div id="title">
 							<h1><a href="/">Move</a> / <a href="./">Maps</a> / Travel Time</h1>
+							<a href="/" id="helper_btn" title="show info layer"><img src="../style/images/confused.png" alt="question mark"/></a>
 						</div>
 						<!-- <input type="hidden" name="taz" value=""/> -->
 						<input type="hidden" name="max_time" value="60"/>
@@ -364,6 +394,13 @@
 							<div id="housing-slider-container">
 								<h5><label for="housing_slider_enabled"><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> disable</label> <span>within (this price range)</span><span id="housing_price_range"></span></h5>
 								<div id="housing-slider"></div>
+							</div>
+							
+						</div>
+						<div id="helper_panel">
+							<div>
+							<h1>What is this?</h1>
+							<p>Place holder for information for the user</p>
 							</div>
 						</div>
 					</div><!-- close left column -->
