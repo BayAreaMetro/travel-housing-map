@@ -273,9 +273,19 @@ function formatZYX(z, xy, y) {
   return [z.toFixed(2), y.toFixed(pn), x.toFixed(pn)].join("/");
 }
 
+function hashCoordParser(s) {
+   var args = s.split("/").map(Number);
+   if (args.length < 3 || args.some(isNaN)){
+     	return [];
+   } else {
+		return args;
+   }
+}
+
 //BBQ mode
 function updateMapHrefs(obj){
-	$.bbq.pushState( obj );
+	//$.bbq.pushState( obj ); // not sure this is right way since it was creating a history state
+	window.location.href = $.param.fragment(window.location.href,obj)
 }
 
 function updateHrefs(links, vars, hash) {

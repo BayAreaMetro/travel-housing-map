@@ -846,35 +846,7 @@ var hashState;
 
 $(function() {
 	try {
-		
-	// Bind an event to window.onhashchange that, when the history state changes,
-	// iterates over all .bbq widgets, getting their appropriate url from the
-	// current state. If that .bbq widget's url has changed, display either our
-	// cached content or fetch new content to be displayed.
-	$(window).bind( 'hashchange', function(e) {
-
-		var url = $.deparam.fragment();
-		
-		// set this only once on initial load
-		if(!hashState)hashState = url;
-		
-		if(url){
-			for(var prop in url){
-				try{
-					$("input[name="+prop+"]").val(url[prop]);
-				}catch(e){}
-				//console.log(prop,url[prop])
-				//prefix.find("a[name=origin]").attr("href", "#" + formatZYX(map.zoom(), origin.location));
-		
-			}
-		}
-	});
-
-	// Since the event is only triggered when the hash changes, we need to trigger
-	// the event now, to handle the hash the page may have loaded with.
-	$(window).trigger( 'hashchange' );
-	
-
+		var _initalMapLocation;
 	var container = $("#travel-time").htmapl(),
 			page = $("#page"),
 			form = $("#main-form")//container.parent("form").first(),
@@ -889,8 +861,41 @@ $(function() {
 		.form(form)
 		.stdout("#stdout");
 
-	var loadHash = null;//window.location.hash.substr(1);
-	
+	var loadHash = null;
+	// Bind an event to window.onhashchange that, when the history state changes,
+	// iterates over all .bbq widgets, getting their appropriate url from the
+	// current state. If that .bbq widget's url has changed, display either our
+	// cached content or fetch new content to be displayed.
+	$(window).bind( 'hashchange', function(e) {
+
+		var url = $.deparam.fragment();
+		
+		// set this only once on initial load
+		if(!hashState){
+			hashState = url;
+			if(hashState['xyz']){
+				var coords = hashCoordParser(hashState['xyz']);
+				_initalMapLocation = coords;
+				map.center({lon: coords[2], lat: coords[1]});
+				map.zoom(coords[0]);
+			}
+		}
+		
+		if(url){
+			for(var prop in url){
+				try{
+					$("input[name="+prop+"]").val(url[prop]);
+				}catch(e){}
+			}
+		}
+		if(controller.permalinks()){
+			$(controller.permalinks()).attr("href",$.param.fragment(window.location.href,hashState));
+		}
+	});
+
+	// Since the event is only triggered when the hash changes, we need to trigger
+	// the event now, to handle the hash the page may have loaded with.
+	$(window).trigger( 'hashchange' );
 	
 	/// assign toggle handler to info button
 	$("#helper_btn").toggle(function(e) {
@@ -991,7 +996,7 @@ $(function() {
 		return true;
 	});
 	controller.on("locate-origin", function(e) {
-		if (!originalHashLoaded()) {
+		if (!_initalMapLocation) {
 			map.center(e.location);
 		}
 	});
@@ -1385,36 +1390,11 @@ $(function() {
 	$(window).resize(defer(5, setMapHeight));
 	$(window).trigger("resize");
 	
-	//mapToHash();
-	
 	map.on("move",function(){
 		formatZYX(map.zoom(), map.center())
 		hashState['xyz'] = formatZYX(map.zoom(), map.center());
 		updateMapHrefs(hashState);
 	})
-	
-	
-	function mapToHash(){
-		var self = this;
-		this.coords = '';
-		this.hashInterval = null;
-		map.on("move", function() {
-			self.coords = formatZYX(map.zoom(), map.center())
-			self.doDrawn();
-		});
-		
-		this.doDrawn = function(){
-			clearInterval(this.hashInterval);
-			this.hashInterval = setInterval(function(){self.updateHash();}, 5);
-		}
-		
-		this.updateHash = function(){
-			clearInterval(this.hashInterval);
-			hashState['xyz'] = self.coords;
-			updateMapHrefs(hashState);
-		}
-	
-	}
 	
 	/////////////////////////////////////////////////////// end
 	} catch (e) {
