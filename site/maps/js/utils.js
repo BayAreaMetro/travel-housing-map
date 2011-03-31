@@ -273,7 +273,13 @@ function formatZYX(z, xy, y) {
   return [z.toFixed(2), y.toFixed(pn), x.toFixed(pn)].join("/");
 }
 
+//BBQ mode
+function updateMapHrefs(obj){
+	$.bbq.pushState( obj );
+}
+
 function updateHrefs(links, vars, hash) {
+	return;
   var suffix = hash
     ? (hash.charAt(0) == "#" ? hash : ("#" + hash))
     : "";

@@ -3,6 +3,8 @@ var gov = {ca: {mtc: {}}},
 var NIL = -999,
 		BLUE = "#009DDC";
 
+var hashState;
+		
 (function(mtc) {
 
  	mtc.scenarioLoader = function() {
@@ -247,7 +249,8 @@ var NIL = -999,
 
 		// update permalinks on map move
 		function onMapMove(e) {
-			updateHrefs(permalinks, null, window.location.hash);
+			
+			//updateHrefs(permalinks, null, window.location.hash);
 		}
 
 		var svg = {
@@ -496,7 +499,9 @@ var NIL = -999,
 
 		function lookupOrigin(loc, success, failure) {
 			dispatchStdout("loading", "Looking up &ldquo;" + loc + "&rdquo;...");
-			updateHrefs(permalinks, {"origin": loc}, window.location.hash);
+			hashState['origin']=loc
+			updateMapHrefs(hashState);
+			//updateHrefs(permalinks, {"origin": loc}, window.location.hash);
 			state.origin = loc;
 			state.origin_location = null;
 			clearStyle();
@@ -530,7 +535,10 @@ var NIL = -999,
 
 		function lookupDest(loc, success, failure) {
 			dispatchStdout("loading", "Looking up &ldquo;" + loc + "&rdquo;...");
-			updateHrefs(permalinks, {"dest": loc}, window.location.hash);
+			//updateHrefs(permalinks, {"dest": loc}, window.location.hash);
+			hashState['dest']=loc
+			updateMapHrefs(hashState);
+			
 			state.dest = loc;
 			state.dest_location = null;
 			updateMarkers();
@@ -713,7 +721,9 @@ var NIL = -999,
 			if (arguments.length) {
 				state.mode = x;
 				applyStyle();
-				updateHrefs(permalinks, {"mode": state.mode}, window.location.hash);
+				hashState['mode']=state.mode;
+				updateMapHrefs(hashState);
+				//updateHrefs(permalinks, {"mode": state.mode}, window.location.hash);
 			} else {
 				return state.mode;
 			}
@@ -723,7 +733,9 @@ var NIL = -999,
 		controller.direction = function(x) {
 			if (arguments.length) {
 				state.direction = x;
-				updateHrefs(permalinks, {"dir": state.direction}, window.location.hash);
+				hashState['dir']=state.direction;
+				updateMapHrefs(hashState);
+				//updateHrefs(permalinks, {"dir": state.direction}, window.location.hash);
 				if (state.origin_taz) {
 					loadScenario();
 				}
@@ -734,7 +746,9 @@ var NIL = -999,
 		controller.time = function(x) {
 			if (arguments.length) {
 				state.time = x;
-				updateHrefs(permalinks, {"time": state.time}, window.location.hash);
+				hashState['time']=state.time;
+				updateMapHrefs(hashState);
+				//updateHrefs(permalinks, {"time": state.time}, window.location.hash);
 				if (state.origin_taz) {
 					loadScenario();
 				}
@@ -742,12 +756,17 @@ var NIL = -999,
 				return state.time;
 			}
 		};
+		
 
 		// get/set the origin string (asynchronous)
 		controller.origin = function(loc, latlon, success, failure) {
 			if (arguments.length) {
 				if (latlon) {
-					updateHrefs(permalinks, {"origin": loc}, window.location.hash);
+					
+					hashState['origin']=loc;
+					updateMapHrefs(hashState);
+					
+					//updateHrefs(permalinks, {"origin": loc}, window.location.hash);
 					state.origin = loc;
 					state.origin_taz = getTAZ(loc);
 					state.origin_location = latlon;
@@ -791,7 +810,11 @@ var NIL = -999,
 			if (arguments.length) {
 				if (latlon) {
 					var taz = getTAZ(loc);
-					updateHrefs(permalinks, {"dest": formatLocation(latlon)}, window.location.hash);
+					
+					hashState['dest']=formatLocation(latlon);
+					updateMapHrefs(hashState);
+					
+				//	updateHrefs(permalinks, {"dest": formatLocation(latlon)}, window.location.hash);
 					state.dest = state.dest_taz = taz;
 					state.dest_location = latlon;
 					updateMarkers();
@@ -823,6 +846,34 @@ var NIL = -999,
 
 $(function() {
 	try {
+		
+	// Bind an event to window.onhashchange that, when the history state changes,
+	// iterates over all .bbq widgets, getting their appropriate url from the
+	// current state. If that .bbq widget's url has changed, display either our
+	// cached content or fetch new content to be displayed.
+	$(window).bind( 'hashchange', function(e) {
+
+		var url = $.deparam.fragment();
+		
+		// set this only once on initial load
+		if(!hashState)hashState = url;
+		
+		if(url){
+			for(var prop in url){
+				try{
+					$("input[name="+prop+"]").val(url[prop]);
+				}catch(e){}
+				//console.log(prop,url[prop])
+				//prefix.find("a[name=origin]").attr("href", "#" + formatZYX(map.zoom(), origin.location));
+		
+			}
+		}
+	});
+
+	// Since the event is only triggered when the hash changes, we need to trigger
+	// the event now, to handle the hash the page may have loaded with.
+	$(window).trigger( 'hashchange' );
+	
 
 	var container = $("#travel-time").htmapl(),
 			page = $("#page"),
@@ -838,12 +889,11 @@ $(function() {
 		.form(form)
 		.stdout("#stdout");
 
-	var loadHash = window.location.hash.substr(1);
+	var loadHash = null;//window.location.hash.substr(1);
 	
 	
 	/// assign toggle handler to info button
 	$("#helper_btn").toggle(function(e) {
-		console.log("CLICK")
 	  	// show info panel
 		var _panel = $("#helper_panel");
 		var _top = $(this).offset().top + $(this).height();
@@ -859,15 +909,6 @@ $(function() {
 		slidePanel(_panel,"-"+_width+"px",true);
 	});
 	
-	function updateLeftColumnHeight(_h){
-		$("#left_column").height(_h);
-		
-		var _panel = $("#helper_panel");
-		var _top = $("#helper_btn").offset().top + $("#helper_btn").height();
-		var _height = $("#right_column").height() - _top;
-		_panel.css("height",_height);
-	}
-	
 	function slidePanel(_panel,_w,_hide){
 		  _panel.animate({
 		    left: _w
@@ -876,7 +917,16 @@ $(function() {
 				$(this).css("display","none");
 			}
 		  });
-
+	}
+	
+	// need this to update helper panel mainly
+	function updateLeftColumnHeight(_h){
+		$("#left_column").height(_h);
+		
+		var _panel = $("#helper_panel");
+		var _top = $("#helper_btn").offset().top + $("#helper_btn").height();
+		var _height = $("#right_column").height() - _top;
+		_panel.css("height",_height);
 	}
 
 	
@@ -915,9 +965,11 @@ $(function() {
 	}
 
 	function originalHashLoaded() {
+		/*
 		var hash = formatZYX(map.zoom(), map.center());
 		console.log(hash, loadHash, hash == loadHash);
 		return hash == loadHash;
+		*/
 	}
 	
 	controller.on("select-taz", function(e) {
@@ -1097,7 +1149,9 @@ $(function() {
 	}
 
 	// TODO: formatting functions?
-	map.add(po.hash());
+	//map.add(po.hash());
+	
+	
 	// submit the origin if there is one
 	if (inputs.origin.val()) {
 		submits.origin.click();
@@ -1134,7 +1188,9 @@ $(function() {
 			maxTime = t;
 			if (showMax) updateTimeText(t);
 			deferredUpdate();
-			updateHrefs(controller.permalinks(), {"max_time": t}, window.location.hash);
+			hashState['max_time'] = t;
+			updateMapHrefs(hashState);
+			//updateHrefs(controller.permalinks(), {"max_time": t}, window.location.hash);
 		}
 	}
 	
@@ -1147,6 +1203,9 @@ $(function() {
 			maxPrice = x[1];
 			minPrice = x[0];
 			updatePriceText(x);
+			hashState['max_price']=maxPrice;
+			hashState['min_price']=minPrice;
+			updateMapHrefs(hashState);
 			deferredUpdate();
 		}
 	}
@@ -1223,7 +1282,20 @@ $(function() {
 		var step = 10000;
 		maxPrice = Math.ceil(controller.priceRange.maxPrice / step) * step;
 		minPrice = Math.floor(controller.priceRange.minPrice / step) * step;
-		updatePriceText([minPrice, maxPrice]);
+		
+		var minVal = minPrice,
+		maxVal = maxPrice;
+		
+		if(hashState['max_price'] && Number(hashState['max_price']) <= controller.priceRange.maxPrice){
+			maxVal = Math.ceil(Number(hashState['max_price']) / step) * step;
+		}
+		
+		if(hashState['min_price'] && Number(hashState['min_price']) >= controller.priceRange.minPrice){
+			minVal = Math.floor(Number(hashState['min_price']) / step) * step;
+		}
+		
+		
+		///updatePriceText([minPrice, maxPrice]);
 		if(!housing_slider){
 			var housing_slider = $("#housing-slider").slider({
 				slide: function(e, ui) {
@@ -1233,12 +1305,15 @@ $(function() {
 				min: minPrice,
 				max: maxPrice,
 				step: step,
-				values: [minPrice, maxPrice]
+				values: [minVal, maxVal]
 			});
 		}else{
-			$(housing_slider).slider("values", 0, minPrice); 
-			$(housing_slider).slider("values", 1, maxPrice);
+			$(housing_slider).slider("values", 0, minVal); 
+			$(housing_slider).slider("values", 1, maxVal);
 		}
+		
+		setHousingPrice([minVal,maxVal]);
+
 	}
 	// set callback function for onShapesLoad to generate the housing slider
 	// since that is where we are setting the min/max price
@@ -1287,7 +1362,6 @@ $(function() {
 
 	var directionSelect = $("#travel-direction").change(function() {
 		var dir = $(this).val();
-		console.log(dir);
 		controller.direction(dir);
 	}).change();
 
@@ -1310,6 +1384,37 @@ $(function() {
 	/* listen for window resize then adjust map size */
 	$(window).resize(defer(5, setMapHeight));
 	$(window).trigger("resize");
+	
+	//mapToHash();
+	
+	map.on("move",function(){
+		formatZYX(map.zoom(), map.center())
+		hashState['xyz'] = formatZYX(map.zoom(), map.center());
+		updateMapHrefs(hashState);
+	})
+	
+	
+	function mapToHash(){
+		var self = this;
+		this.coords = '';
+		this.hashInterval = null;
+		map.on("move", function() {
+			self.coords = formatZYX(map.zoom(), map.center())
+			self.doDrawn();
+		});
+		
+		this.doDrawn = function(){
+			clearInterval(this.hashInterval);
+			this.hashInterval = setInterval(function(){self.updateHash();}, 5);
+		}
+		
+		this.updateHash = function(){
+			clearInterval(this.hashInterval);
+			hashState['xyz'] = self.coords;
+			updateMapHrefs(hashState);
+		}
+	
+	}
 	
 	/////////////////////////////////////////////////////// end
 	} catch (e) {
