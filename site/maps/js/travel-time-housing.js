@@ -951,19 +951,19 @@ $(function() {
 
 	function handleSliderCheckboxes(){
 		if (housing_slider_active) {
-			$("#housing-slider").slider( "enable" );
-			$("#housing-slider-container").removeClass('sliderDisabled').addClass("sliderEnabled");
+			$("#housing-slider").slider("enable");
+			$("#housing-slider-container").removeClass("disabled");
 		} else {
-			$("#housing-slider").slider( "disable" );
-			$("#housing-slider-container").removeClass("sliderEnabled").addClass("sliderDisabled");
+			$("#housing-slider").slider("disable");
+			$("#housing-slider-container").addClass("disabled");
 		}
 
 		if (time_slider_active) {
-			$("#time-slider").slider( "enable" );
-			$("#time-slider-container").removeClass('sliderDisabled').addClass("sliderEnabled");
+			$("#time-slider").slider("enable");
+			$("#time-slider-container").removeClass("disabled");
 		} else {
-			$("#time-slider").slider( "disable" );
-			$("#time-slider-container").removeClass("sliderEnabled").addClass("sliderDisabled");
+			$("#time-slider").slider("disable");
+			$("#time-slider-container").addClass("disabled");
 		}
 
 		deferredUpdate();

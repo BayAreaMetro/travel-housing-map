@@ -196,9 +196,19 @@
 				opacity: .3;
 			}
 
+			.disabled {
+				color: #999;
+			}
+
 			 /* change housing slider bar color to match time slider */
 			
 			.slider-container.inactive { display: none; }
+
+			.disabled .ui-slider-handle,
+			.disabled .ui-slider-range {
+				background: #666 !important;
+				border-color: #666 !important;
+			}
 			
 			.slider-container label {
 			}
