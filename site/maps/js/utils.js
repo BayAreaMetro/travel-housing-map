@@ -283,9 +283,38 @@ function hashCoordParser(s) {
 }
 
 //BBQ mode
+/*
+
+// 	sets hash
+function setHash(){
+	var filters = config.mapSelection.join('/');
+	if(filters.charAt(-1) == "/")filters = filters.slice(0,-1); // remove trailing forward slash
+	var coords = hashCoordFormatter();
+	var newHash = "v="+filters+"&c="+coords;
+	
+	if(currentHash != newHash){
+		window.location.hash = newHash;
+		currentHash = newHash;
+	}
+}
+*/
+function reallyUpdateHash(){
+	clearTimeout(hashInterval);
+	var hash = location.hash;
+	var _new = "";
+	var ct = 0;
+	for(var prop in hashState){
+		_new += ((ct==0)?"":"&")+prop +"="+hashState[prop];
+		ct++;
+	}
+	window.location.hash = _new;
+}
+var hashInterval;
 function updateMapHrefs(obj){
-	//$.bbq.pushState( obj ); // not sure this is right way since it was creating a history state
-	window.location.href = $.param.fragment(window.location.href,obj)
+	// had to move away for pushState function BBQ for general hash update
+	// possibly use for mode and time updates (seanc | 4/1/2011)
+	clearTimeout(hashInterval);
+	hashInterval = setTimeout(function(){reallyUpdateHash();}, 100);
 }
 
 function updateHrefs(links, vars, hash) {

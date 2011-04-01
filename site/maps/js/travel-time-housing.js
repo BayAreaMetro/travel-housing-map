@@ -862,14 +862,11 @@ $(function() {
 		.stdout("#stdout");
 
 	var loadHash = null;
-	// Bind an event to window.onhashchange that, when the history state changes,
-	// iterates over all .bbq widgets, getting their appropriate url from the
-	// current state. If that .bbq widget's url has changed, display either our
-	// cached content or fetch new content to be displayed.
+	
+	// jQuery BBQ stuff
 	$(window).bind( 'hashchange', function(e) {
 
 		var url = $.deparam.fragment();
-		
 		// set this only once on initial load
 		if(!hashState){
 			hashState = url;
@@ -1002,10 +999,11 @@ $(function() {
 	});
 	controller.on("locate-dest", function(e) {
 	});
-
-	var maxTime = parseInt($("input[name=max_time]").val());
+	
 	var maxPrice,minPrice;
+	var maxTime = (hashState['max_time']) ? parseInt(hashState['max_time']) : 60;
 	if (isNaN(maxTime)) maxTime = 60;
+	
 	var minutes = $(".travel_time_threshold").html(formatTime(maxTime)),
 			showMax = true;
 	function updateTimeText(t) {
@@ -1152,9 +1150,6 @@ $(function() {
 			return false;
 		});
 	}
-
-	// TODO: formatting functions?
-	//map.add(po.hash());
 	
 	
 	// submit the origin if there is one

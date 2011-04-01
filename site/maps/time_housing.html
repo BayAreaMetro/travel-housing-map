@@ -64,6 +64,16 @@
 			#map-title .title a {
 				pointer-events: all !important;
 			}
+			
+			#copyright{
+				position:absolute;
+				bottom:2px;
+				left:5px;
+				z-index:9999;
+				margin: 0;
+				font-size: 12px;
+				color: #666;
+			}
 
 			#time-slider,
 			#housing-slider {
@@ -238,6 +248,12 @@
 			#helper_panel div{
 				padding:10px;
 			}
+			#helper_panel p{
+				font-family: Helvetica,Arial,sans-serif;
+				font-weight: lighter;
+				font-size: 14px; /* ems ?*/
+				line-height: 18px;/* ems ?*/
+			}
 			
 			
 
@@ -340,7 +356,8 @@
 						<div id="helper_panel">
 							<div>
 							<h1>What is this?</h1>
-							<p>Place holder for information for the user</p>
+							<p>MTC maintains an analytical tool referred to by transportation planning professionals as a "travel demand model" (or "travel forecasting model").  The purpose of the tool is to first describe the reaction of travelers to expected changes in transport projects, transport policies, and development patterns and to then quantify the impact of cumulative individual decisions on the Bay Area's transport networks and environment.  For example, if a congested section of a freeway is widened, the MTC travel model could be used to estimate the short term changes in travel speed, as well as longer term responses such as travelers choosing to commute a bit earlier/later or by different routes.</p>
+							<p>To accurately describe the behavior of travelers in the Bay Area, MTC needs to understand the travel options available to residents of all nine Bay Area counties.  As such, a key feature of MTC's travel model is a representation of the roadway and transit networks.  These networks are used to estimate travel time to and from locations throughout the Bay Area during different times of the day and for different ways of getting from A to B.  The travel times shown in the interactive map are for the year 2005.  In subsequent versions of this map, we hope to present travel time estimates for the year 2010 as well as future years (2020! 2035! 2040 even!).  In doing so, we hope to give the public a more tangible and enjoyable way to understand the various future year scenarios MTC and ABAG will consider during our long range planning exercises.</p>
 							</div>
 						</div>
 					</div><!-- close left column -->
@@ -372,9 +389,6 @@
 
 								<div id="map-title">
 									<h2 class="title"><span class="prefix"></span> <strong class="travel_time_threshold"></strong></h2>
-									<p id="permalink"><a class="permalink"
-										title="bookmark this map view to share with friends" href="?"><img src="../style/images/bookmark-clear_bg.png"/> bookmark</a></p>
-									<p id="stdout"></p>
 									<div class="controls">
 										<label>Zoom:</label> <a class="zoom-in" href="#zoom-in"><img alt="in" src="../style/images/zoom-plus.png"/></a>
 										<a class="zoom-out" href="#zoom-out"><img alt="out" src="../style/images/zoom-minus.png"/></a>
@@ -382,6 +396,8 @@
 								</div>
 
 								<div id="taztip"><span class="nub"></span><p id="tazinfo"></p></div>
+								
+								<p id="copyright">map &copy; <a href="http://www.geoiq.com/" title="qeoiq site">GeoIQ</a> & <a href="http://www.stamen.com/" title="stamen site">Stamen</a></p>
 							</div>
 						</div>
 					</div><!-- close right column -->
