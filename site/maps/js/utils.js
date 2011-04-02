@@ -43,6 +43,18 @@ function uncommize(s) {
   return parseInt(s.split(',').join(''));
 }
 
+function convertCurrency(num){
+	
+	if(isNaN(num))return;
+	if(num > 1000000){
+		return Math.round((num/1000000) * 10) / 10+ 'm';
+	}else if(num > 1000){
+		return Math.round((num/1000) * 10) / 10 + 'k';
+	}
+	return num;
+	
+}
+
 function getProp(o, prop) {
 	if (prop.indexOf(".") > -1) {
 		var parts = prop.split(".");

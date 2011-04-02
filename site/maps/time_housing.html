@@ -74,10 +74,14 @@
 				font-size: 12px;
 				color: #666;
 			}
+			
+			.slider_wrapper{
+				margin: 0 2em 20px;
+			}
 
 			#time-slider,
 			#housing-slider {
-				margin: 1em 2em;
+				margin: 0;
 				font-size: .8em;
 				pointer-events: all;
 			}
@@ -206,19 +210,9 @@
 				opacity: .3;
 			}
 
-			.disabled {
-				color: #999;
-			}
-
 			 /* change housing slider bar color to match time slider */
 			
 			.slider-container.inactive { display: none; }
-
-			.disabled .ui-slider-handle,
-			.disabled .ui-slider-range {
-				background: #666 !important;
-				border-color: #666 !important;
-			}
 			
 			.slider-container label {
 			}
@@ -255,7 +249,43 @@
 				line-height: 18px;/* ems ?*/
 			}
 			
+			#location_origin,#info-origin .or{margin-left:35px;}
+			.ui-slider-horizontal .ui-slider-handle {cursor: pointer;}
+			#map-title h2{font-size:170%;}
 			
+			
+			#time-slider-container,#housing-slider-container{
+				position:relative;
+				padding: .75em 0;
+				border-bottom: 1px dashed #CCC;
+			}
+			#time-slider-container #ticks,#housing-slider-container #ticks{
+				position:relative;
+				margin: 0 2px 5px;
+				height:23px;
+			}
+			
+			#time-slider-container #ticks .tick,#housing-slider-container #ticks .tick{				
+				position: absolute;
+				display: block;
+				text-align: center;
+				top: 0;
+				width: 2em;
+				/*height: 1.5em; */
+				padding: .25em 0 5px;
+				background: white url(../style/images/tickmark.png) no-repeat 50% 100%;
+				font-size: 12px;
+				text-decoration: none;
+				color: black;
+				font-weight: 600;
+			}
+			#time-slider-container #ticks .tick{
+				margin-left: -1em !important;
+			}
+
+			#housing-slider-container #ticks .firsttick{
+				margin-left: -2em !important;
+			}
 
 		</style>
 		<script type="text/javascript" src="js/less-1.0.41.min.js"></script>
@@ -303,7 +333,7 @@
 										<option>to</option>
 									</select>
 									-->
-									:<br/> <input type="text" id="location_origin" name="origin" value=""/></label>
+									<br/><input type="text" id="location_origin" name="origin" value=""/></label>
 									<input type="submit" class="locate" name="submit-origin" title="Locate your start address" value="Locate" />
 									<!-- <input type="image" src="../style/images/crosshair.png" name="origin-center" /> -->
 									<input type="submit" name="clear-origin" value="X" />
@@ -330,7 +360,7 @@
 									</span>
 
 									<span id="time-of-day" class="time">
-										<label>during the:</label>
+										<label>when:</label>
 										<a href="#time=EA" data-time="EA"><img src="../style/images/times/EA.png"/><span> Early AM</a>
 										<a href="#time=AM" data-time="AM"><img src="../style/images/times/AM.png"/><span>AM commute</span></a>
 										<a href="#time=MD" data-time="MD"><img src="../style/images/times/MD.png"/><span>Mid-day</span></a>
@@ -341,16 +371,29 @@
 								</p>
 							</div>
 							
-							<div id="time-slider-container" class="slider-container inactive">
-								<h5><label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> in <span class="travel_time_threshold">&le;1&frac12; hours</span></label></h5>
-								<div id="time-slider"></div>
-								<!-- <div id="legend"><span class="chips"></span><span class="labels"></span></div> -->
-							</div>
+								<div id="time-slider-container" class="slider-container inactive">
+									<!-- in <span class="travel_time_threshold">&le;1&frac12; hours</span> -->
+									<h5><label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Filter :: Travel time</label></h5>
+									
+									<div class="slider_wrapper">
+									<div id="ticks"></div>
+									<div id="time-slider"></div>
+									</div>
+								
+									<!-- <div id="legend"><span class="chips"></span><span class="labels"></span></div> -->
+								</div>
 							
-							<div id="housing-slider-container" class="slider-container inactive">
-								<h5><label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> between <span class="housing_price_range">$0 and $1,000,000</span></label></h5>
-								<div id="housing-slider"></div>
-							</div>
+							
+							
+								<div id="housing-slider-container" class="slider-container inactive">
+									<!--  between <span class="housing_price_range">$0 and $1,000,000</span> -->
+									<h5><label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Filter :: Average housing price</label></h5>
+									<div class="slider_wrapper">
+									<div id="ticks"></div>
+									<div id="housing-slider"></div>
+									</div>
+								</div>
+							
 							
 						</div>
 						<div id="helper_panel">
@@ -388,7 +431,7 @@
 								<a class="marker" id="dest-marker" data-location="0,0">B</a>
 
 								<div id="map-title">
-									<h2 class="title"><span class="prefix"></span> <strong class="travel_time_threshold"></strong></h2>
+									<h2 class="title"><span class="prefix"></span> <strong class="travel_time_threshold"></strong><span class="housing_threshold"></span></h2>
 									<div class="controls">
 										<label>Zoom:</label> <a class="zoom-in" href="#zoom-in"><img alt="in" src="../style/images/zoom-plus.png"/></a>
 										<a class="zoom-out" href="#zoom-out"><img alt="out" src="../style/images/zoom-minus.png"/></a>

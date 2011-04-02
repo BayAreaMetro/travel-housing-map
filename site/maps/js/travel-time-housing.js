@@ -846,7 +846,7 @@ var hashState;
 
 $(function() {
 	try {
-		var _initalMapLocation;
+		var _initalMapLocation; // flag to determine if initial hash had location data in it...
 	var container = $("#travel-time").htmapl(),
 			page = $("#page"),
 			form = $("#main-form")//container.parent("form").first(),
@@ -948,19 +948,19 @@ $(function() {
 
 	function handleSliderCheckboxes(){
 		if (housing_slider_active) {
-			$("#housing-slider").slider("enable");
-			$("#housing-slider-container").removeClass("disabled");
+			$("#housing-slider").slider( "enable" );
+			$("#housing-slider-container").removeClass('sliderDisabled').addClass("sliderEnabled");
 		} else {
-			$("#housing-slider").slider("disable");
-			$("#housing-slider-container").addClass("disabled");
+			$("#housing-slider").slider( "disable" );
+			$("#housing-slider-container").removeClass("sliderEnabled").addClass("sliderDisabled");
 		}
 
 		if (time_slider_active) {
-			$("#time-slider").slider("enable");
-			$("#time-slider-container").removeClass("disabled");
+			$("#time-slider").slider( "enable" );
+			$("#time-slider-container").removeClass('sliderDisabled').addClass("sliderEnabled");
 		} else {
-			$("#time-slider").slider("disable");
-			$("#time-slider-container").addClass("disabled");
+			$("#time-slider").slider( "disable" );
+			$("#time-slider-container").removeClass("sliderEnabled").addClass("sliderDisabled");
 		}
 
 		deferredUpdate();
@@ -1006,8 +1006,16 @@ $(function() {
 	
 	var minutes = $(".travel_time_threshold").html(formatTime(maxTime)),
 			showMax = true;
+			
 	function updateTimeText(t) {
 		minutes.html("&le;" + ((typeof t == "string") ? t : formatTime(t)));
+	}
+	
+	var housing = $(".housing_threshold"),
+		showPrice = false;
+	function housingPriceText(){
+		var _output = " and homes within <strong>$" + commize(minPrice) + " to $" + commize(maxPrice) +"</strong>";
+		housing.html(_output);
 	}
 
 	var locating = false;
@@ -1042,17 +1050,20 @@ $(function() {
 				// map.extent(e.extent);
 				// map.zoom(map.zoom() >>> 0);
 			}
-			showMax = false;
+			showMax = showPrice = false;
 			$("#map-title").attr("class", "active");
 			$(".slider-container").removeClass("inactive");
+			adjustHousingTicks()
 			page.removeClass("no_origin").addClass("has_origin").addClass("has_dest");
 
 		} else if (origin) {
 			prefix.html('Places accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> in');
 			updateTimeText(maxTime);
-			showMax = true;
+			housingPriceText();
+			showMax = showPrice = true;
 			$("#map-title").attr("class", "active");
 			$(".slider-container").removeClass("inactive");
+			adjustHousingTicks();
 			page.removeClass("no_origin").addClass("has_origin").removeClass("has_dest");
 
 		} else if (locating) {
@@ -1065,7 +1076,7 @@ $(function() {
 			prefix.html('Enter a start address to see travel times,<br/>or <a class="select-center" href="#origin=center">select the center of the map</a>');
 			prefix.find(".select-center").click(selectCenter);
 			minutes.text("");
-			showMax = false;
+			showMax = showPrice = false;
 			$("#map-title").attr("class", "inactive");
 			$(".slider-container").addClass("inactive");
 			page.addClass("no_origin").removeClass("has_origin").removeClass("has_dest");
@@ -1195,6 +1206,7 @@ $(function() {
 	}
 	
 	function updatePriceText(x){
+		if(showPrice)housingPriceText();
 		$(".housing_price_range").text("$"+commize(x[0])+" and $"+commize(x[1]));
 	}
 	
@@ -1234,6 +1246,21 @@ $(function() {
 	function pct(t) {
 		return timeScale(t) * 100;
 	}
+	
+	
+	var timeticks = $("#time-slider-container #ticks"),
+			steps = pv.range(0, boundMax + 1, 15),
+			last = steps.length - 1;
+	for (var i = 1; i <= last; i++) {
+		var current = steps[i];
+		var label = $("<a/>")
+			.text(current)
+			.attr("href", "#")
+			.attr("class", "tick")
+			.data("minutes", current)
+			.css("left", pct(current) + "%")
+			.appendTo(timeticks);
+	}	
 
 	var labels = $("#legend .labels"),
 			steps = pv.range(0, boundMax + 1, 15),
@@ -1307,13 +1334,56 @@ $(function() {
 				step: step,
 				values: [minVal, maxVal]
 			});
+			
+			//(Math.floor((i/last) * 100))
+			var housingticks = $("#housing-slider-container #ticks"),
+					steps = [minPrice,middlePrice(),maxPrice],
+					last = steps.length - 1;
+					
+				function hpct(n){
+					var _w = housing_slider.width();
+					return Math.floor((n/last) * 100);
+					//return Math.floor(n / step) * step;
+				}
+
+				function middlePrice(){
+					return Math.floor((maxPrice-minPrice)/2);
+				}
+				for (var i = 0; i <= last; i++) {
+					var current = steps[i];
+				
+					var label = $("<a/>")
+						.text("$"+convertCurrency(current))
+						.attr("href", "#")
+						.attr("class", "tick")	
+						.data("hprice", current)
+						.css("left", hpct(i) + "%")
+						.appendTo(housingticks);
+						
+				}
+	
+				
 		}else{
 			$(housing_slider).slider("values", 0, minVal); 
 			$(housing_slider).slider("values", 1, maxVal);
 		}
 		
 		setHousingPrice([minVal,maxVal]);
+		adjustHousingTicks();
 
+	}
+	
+	function adjustHousingTicks(){
+		var housinglabels = $("#housing-slider-container #ticks .tick");
+		housinglabels.each(function(i){
+			$(this).css("width","auto");
+			var _w = $(this).width();
+			var _w2 = Math.floor(_w/2);
+			
+			$(this).css('margin-left', '-'+_w2+'px');
+			$(this).css("width",_w);
+			
+		});
 	}
 	// set callback function for onShapesLoad to generate the housing slider
 	// since that is where we are setting the min/max price
