@@ -906,6 +906,7 @@ $(function() {
 		
 	$("#housing_slider_enabled").change(function(){
 		housing_slider_active = $(this).is(':checked');
+		updatePriceText();
 		handleSliderCheckboxes();
 	});
 	$("#time_slider_enabled").change(function(){
