@@ -1191,7 +1191,7 @@ $(function() {
 	function updatePriceText() {
 		$(".housing_threshold").html("with home prices between "
 			+ "<strong>$" + convertCurrency(minPrice) + "</strong> and "
-			+ "<strong>$" + convertCurrency(maxPrice) + "</strong> ");
+			+ "<strong>$" + convertCurrency(maxPrice) + "</strong><br/>");
 	}
 	
 	function setHousingPrice(x){
