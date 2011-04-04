@@ -120,10 +120,6 @@
 				display: none;
 			}
 
-			#map-title .prefix {
-				padding-left: .5em;
-			}
-
 			#legend .label {
 				text-shadow: #fff 1px 1px 1px;
 			}
@@ -201,13 +197,17 @@
 				margin-left:-450px; /* based of left column width */
 			}
 			
-			#map-content{
+			#map-content {
 				position:relative;
 				margin-left: 450px; /* based of left column width */
 			}
 			
 			.inactive {
 				opacity: .3;
+			}
+
+			.disabled {
+				color: #999;
 			}
 
 			 /* change housing slider bar color to match time slider */
@@ -239,20 +239,22 @@
 				padding:0;
 				margin:0;
 			}
-			#helper_panel div{
-				padding:10px;
+			#helper_panel div {
+				padding: 10px;
 			}
-			#helper_panel p{
+			#helper_panel p {
 				font-family: Helvetica,Arial,sans-serif;
 				font-weight: lighter;
 				font-size: 14px; /* ems ?*/
 				line-height: 18px;/* ems ?*/
 			}
 			
-			#location_origin,#info-origin .or{margin-left:35px;}
+			#location_origin,
+			#info-origin .or {
+				margin-left: 35px;
+			}
 			.ui-slider-horizontal .ui-slider-handle {cursor: pointer;}
-			#map-title h2{font-size:170%;}
-			
+			#map-title h2 { font-size: 170%; }
 			
 			#time-slider-container,#housing-slider-container{
 				position:relative;
@@ -372,8 +374,7 @@
 							</div>
 							
 								<div id="time-slider-container" class="slider-container inactive">
-									<!-- in <span class="travel_time_threshold">&le;1&frac12; hours</span> -->
-									<h5><label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Filter :: Travel time</label></h5>
+									<h5><label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Filter by travel time</label></h5>
 									
 									<div class="slider_wrapper">
 									<div id="ticks"></div>
@@ -386,8 +387,7 @@
 							
 							
 								<div id="housing-slider-container" class="slider-container inactive">
-									<!--  between <span class="housing_price_range">$0 and $1,000,000</span> -->
-									<h5><label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Filter :: Average housing price</label></h5>
+									<h5><label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Filter by average housing price</label></h5>
 									<div class="slider_wrapper">
 									<div id="ticks"></div>
 									<div id="housing-slider"></div>
@@ -431,7 +431,7 @@
 								<a class="marker" id="dest-marker" data-location="0,0">B</a>
 
 								<div id="map-title">
-									<h2 class="title"><span class="prefix"></span> <strong class="travel_time_threshold"></strong><span class="housing_threshold"></span></h2>
+									<h2 class="title"><span class="prefix">Places</span> <strong class="travel_time_threshold"></strong></h2>
 									<div class="controls">
 										<label>Zoom:</label> <a class="zoom-in" href="#zoom-in"><img alt="in" src="../style/images/zoom-plus.png"/></a>
 										<a class="zoom-out" href="#zoom-out"><img alt="out" src="../style/images/zoom-minus.png"/></a>

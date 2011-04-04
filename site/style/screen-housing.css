@@ -30,7 +30,7 @@ a:visited {
 	text-decoration: none;
 	border-bottom: 1px dotted;
 }
-img{border:none;}
+img { border: none; }
 
 .clear{clear:both;height:0;}
 .clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden;}
@@ -61,7 +61,6 @@ img{border:none;}
 	border-bottom: 1px solid transparent;
 }
 
-#info-geo, 
 #info-extras {
 	display: block;
 	padding: .75em 0;
@@ -233,6 +232,7 @@ input[disabled] {
 
 #title {
 	position: relative;
+	margin-bottom: 10px;
 }
 
 #permalink {

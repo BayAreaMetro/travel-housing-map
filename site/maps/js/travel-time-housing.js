@@ -441,12 +441,6 @@ var hashState;
 				click = null;
 				clearTimeout(timeout);
 			});
-			
-			// call function that was waiting for shapes to be loaded
-			if(processOnShapeLoad != null){
-				processOnShapeLoad();
-				//processOnShapeLoad = null;
-			}
 		}
 
 		function onShapesShow(e) {
@@ -949,18 +943,18 @@ $(function() {
 	function handleSliderCheckboxes(){
 		if (housing_slider_active) {
 			$("#housing-slider").slider( "enable" );
-			$("#housing-slider-container").removeClass('sliderDisabled').addClass("sliderEnabled");
+			$("#housing-slider-container").removeClass("disabled");
 		} else {
 			$("#housing-slider").slider( "disable" );
-			$("#housing-slider-container").removeClass("sliderEnabled").addClass("sliderDisabled");
+			$("#housing-slider-container").addClass("disabled");
 		}
 
 		if (time_slider_active) {
 			$("#time-slider").slider( "enable" );
-			$("#time-slider-container").removeClass('sliderDisabled').addClass("sliderEnabled");
+			$("#time-slider-container").removeClass("disabled");
 		} else {
 			$("#time-slider").slider( "disable" );
-			$("#time-slider-container").removeClass("sliderEnabled").addClass("sliderDisabled");
+			$("#time-slider-container").addClass("disabled");
 		}
 
 		deferredUpdate();
@@ -1000,22 +994,15 @@ $(function() {
 	controller.on("locate-dest", function(e) {
 	});
 	
-	var maxPrice,minPrice;
+	var maxPrice, minPrice;
 	var maxTime = (hashState['max_time']) ? parseInt(hashState['max_time']) : 60;
 	if (isNaN(maxTime)) maxTime = 60;
 	
 	var minutes = $(".travel_time_threshold").html(formatTime(maxTime)),
-			showMax = true;
+		showMax = true;
 			
 	function updateTimeText(t) {
 		minutes.html("&le;" + ((typeof t == "string") ? t : formatTime(t)));
-	}
-	
-	var housing = $(".housing_threshold"),
-		showPrice = false;
-	function housingPriceText(){
-		var _output = " and homes within <strong>$" + commize(minPrice) + " to $" + commize(maxPrice) +"</strong>";
-		housing.html(_output);
 	}
 
 	var locating = false;
@@ -1033,7 +1020,7 @@ $(function() {
 				time = e.time;
 
 		var title = $("#map-title .title"),
-				prefix = title.find(".prefix");
+			prefix = title.find(".prefix");
 
 		if (origin && dest) {
 
@@ -1057,9 +1044,10 @@ $(function() {
 			page.removeClass("no_origin").addClass("has_origin").addClass("has_dest");
 
 		} else if (origin) {
-			prefix.html('Places accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> in');
+
+			prefix.html('Places  <span class="housing_threshold"></span> accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> in');
 			updateTimeText(maxTime);
-			housingPriceText();
+			updatePriceText();
 			showMax = showPrice = true;
 			$("#map-title").attr("class", "active");
 			$(".slider-container").removeClass("inactive");
@@ -1175,20 +1163,15 @@ $(function() {
 
 	controller.filters([
 		function(feature) {
-			var price = controller.housingPrice(feature);
-			var time = controller.travelTime(feature);
-			if(housing_slider_active && time_slider_active){
-				return (time > NIL && time <= maxTime) && (price >= minPrice && price <= maxPrice);
-				
-			}else if(housing_slider_active && !time_slider_active){
-				return (price >= minPrice && price <= maxPrice);
-				
-			}else if(!housing_slider_active && time_slider_active){
-				return (time > NIL && time <= maxTime);
-				
-			}else{ // if all else fails, fall back to both in play
-				return (time > NIL && time <= maxTime) && (price >= minPrice && price <= maxPrice);
+			if (time_slider_active) {
+				var time = controller.travelTime(feature);
+				if (time == NIL || time > maxTime) return false;
 			}
+			if (housing_slider_active) {
+				var price = controller.housingPrice(feature);
+				if (price < minPrice || price > maxPrice) return false;
+			}
+			return true;
 		}
 	]);
 
@@ -1205,16 +1188,17 @@ $(function() {
 		}
 	}
 	
-	function updatePriceText(x){
-		if(showPrice)housingPriceText();
-		$(".housing_price_range").text("$"+commize(x[0])+" and $"+commize(x[1]));
+	function updatePriceText() {
+		$(".housing_threshold").html("with home prices between "
+			+ "<strong>$" + convertCurrency(minPrice) + "</strong> and "
+			+ "<strong>$" + convertCurrency(maxPrice) + "</strong> ");
 	}
 	
 	function setHousingPrice(x){
-		if(maxPrice != x[1] || minPrice != x[0]){
+		if (maxPrice != x[1] || minPrice != x[0]) {
 			maxPrice = x[1];
 			minPrice = x[0];
-			updatePriceText(x);
+			updatePriceText();
 			hashState['max_price']=maxPrice;
 			hashState['min_price']=minPrice;
 			updateMapHrefs(hashState);
@@ -1236,6 +1220,7 @@ $(function() {
 		slide: function(e, ui) {
 			setMaxTime(ui.value);
 		},
+		range: "min",
 		min: boundMin,
 		max: boundMax,
 		step: 1,
@@ -1329,6 +1314,7 @@ $(function() {
 					setHousingPrice(ui.values);
 				},
 				range: true,
+				disabled: !housing_slider_enabled,
 				min: minPrice,
 				max: maxPrice,
 				step: step,
@@ -1385,9 +1371,12 @@ $(function() {
 			
 		});
 	}
+
 	// set callback function for onShapesLoad to generate the housing slider
 	// since that is where we are setting the min/max price
-	controller.processOnShapeLoad( createHousingSlider );
+	shapes.on("load", function(e) {
+		createHousingSlider();
+	});
 	// if the min/max are already set, then create housing slider
 	if(controller.priceRange.minPrice)
 		createHousingSlider();
@@ -1436,8 +1425,7 @@ $(function() {
 	}).change();
 
 	/* adjust map size based on viewport */
-	function setMapHeight(){
-
+	function setMapHeight() {
 		try {
 			var _mapHeight = container.height();
 			var _mapWidth = container.width();
@@ -1454,13 +1442,13 @@ $(function() {
 	/* listen for window resize then adjust map size */
 	$(window).resize(defer(5, setMapHeight));
 	$(window).trigger("resize");
-	
+
 	map.on("move",function(){
 		formatZYX(map.zoom(), map.center())
 		hashState['xyz'] = formatZYX(map.zoom(), map.center());
 		updateMapHrefs(hashState);
-	})
-	
+	});
+
 	/////////////////////////////////////////////////////// end
 	} catch (e) {
 		if (typeof console != "undefined" && console.log) console.log(e);
