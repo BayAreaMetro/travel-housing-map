@@ -934,6 +934,7 @@ $(function() {
 	$("#housing_slider_enabled").change(function(){
 		housing_slider_active = $(this).is(':checked');
 		handleSliderCheckboxes();
+		updatePriceText();
 	});
 	$("#time_slider_enabled").change(function(){
 		time_slider_active = $(this).is(':checked');
@@ -1189,9 +1190,14 @@ $(function() {
 	}
 	
 	function updatePriceText() {
-		$(".housing_threshold").html("with home prices between "
-			+ "<strong>$" + convertCurrency(minPrice) + "</strong> and "
-			+ "<strong>$" + convertCurrency(maxPrice) + "</strong><br/>");
+		if (housing_slider_active) {
+			$(".housing_threshold").html("with home prices between "
+				+ "<strong>$" + convertCurrency(minPrice) + "</strong> and "
+				+ "<strong>$" + convertCurrency(maxPrice) + "</strong><br/>")
+				.show();
+		} else {
+			$(".housing_threshold").empty().hide();
+		}
 	}
 	
 	function setHousingPrice(x){
@@ -1307,14 +1313,13 @@ $(function() {
 		}
 		
 		
-		///updatePriceText([minPrice, maxPrice]);
 		if(!housing_slider){
 			var housing_slider = $("#housing-slider").slider({
 				slide: function(e, ui) {
 					setHousingPrice(ui.values);
 				},
 				range: true,
-				disabled: !housing_slider_enabled,
+				disabled: !housing_slider_active,
 				min: minPrice,
 				max: maxPrice,
 				step: step,
