@@ -272,17 +272,14 @@ var hashState;
 			this.setTip = function(){
 
 				$(selectors).unbind('mouseover').unbind('mouseout');
-
+				
 				//$('#travel-time')
 				self.mapCoord = $('#travel-time').offset();
 				
 				$(selectors).mouseover(function(e){
 					e.preventDefault();
 					clearTimeout(self.closetimer);
-					//console.log(featuresById[1453]);
 					
-					// set txt
-					self.txtRef.html( $(this).attr('title') );
 					
 					// store old title stuff
 					self.oldTitleAttr = $(this).attr('title');
@@ -290,6 +287,18 @@ var hashState;
 					// remove title stuff
 					$(this).removeAttr('title');
 					$(this).find("title").remove();
+					
+					
+					// set text
+				/*
+					var tazid = Number(($(this).attr("id")).slice(3));
+					var tazPrice = (featuresById[tazid] && featuresById[tazid].properties['average_value_per_unit']) 
+									? "<br/>$" + commize(featuresById[tazid].properties['average_value_per_unit']) 
+									: "";
+				*/
+					
+					var _outText = self.oldTitleAttr;// + tazPrice;
+					self.txtRef.html( _outText );
 					
 					// adjust width to size of txt
 					// TODO: still a bug when the tip get's next to edge of map
@@ -332,6 +341,7 @@ var hashState;
 
 			this.closeTip = function(){
 				$('#travel-time').unbind('mousemove');
+				self.tipState = false;
 				self.tipRef.hide();
 				self.txtRef.text("");
 			}
@@ -1282,7 +1292,7 @@ $(function() {
 		var minVal = minPrice,
 			maxVal = maxPrice;
 		
-		// check to see if min & max are in the hash
+		// check to see if min & max prices are in the hash
 		if(hashState['max_price'] && Number(hashState['max_price']) <= controller.priceRange.maxPrice){
 			maxVal = Math.ceil(Number(hashState['max_price']) / step) * step;
 		}
@@ -1307,7 +1317,7 @@ $(function() {
 			});
 			
 			var hpct = pv.Scale.linear(minPrice, maxPrice).range(0, 100);
-			function middlePrice(){ return (maxPrice-minPrice)/2; }
+			function middlePrice(){ return maxPrice/2; }
 			
 			var housingticks = $("#housing-slider-container #ticks"),
 				steps = [minPrice],
