@@ -857,7 +857,7 @@ $(function() {
 
 	var loadHash = null;
 	
-	// jQuery BBQ stuff
+	// jQuery BBQ hash stuff
 	$(window).bind( 'hashchange', function(e) {
 
 		var url = $.deparam.fragment();
@@ -934,7 +934,6 @@ $(function() {
 	$("#housing_slider_enabled").change(function(){
 		housing_slider_active = $(this).is(':checked');
 		handleSliderCheckboxes();
-		updatePriceText();
 	});
 	$("#time_slider_enabled").change(function(){
 		time_slider_active = $(this).is(':checked');
@@ -945,28 +944,24 @@ $(function() {
 		if (housing_slider_active) {
 			$("#housing-slider").slider( "enable" );
 			$("#housing-slider-container").removeClass("disabled");
+			$("#housing-slider-container .tick").removeClass("inactive");
 		} else {
 			$("#housing-slider").slider( "disable" );
 			$("#housing-slider-container").addClass("disabled");
+			$("#housing-slider-container .tick").addClass("inactive");
 		}
 
 		if (time_slider_active) {
 			$("#time-slider").slider( "enable" );
 			$("#time-slider-container").removeClass("disabled");
+			$("#time-slider-container .tick").removeClass("inactive");
 		} else {
 			$("#time-slider").slider( "disable" );
 			$("#time-slider-container").addClass("disabled");
+			$("#time-slider-container .tick").addClass("inactive");
 		}
 
 		deferredUpdate();
-	}
-
-	function originalHashLoaded() {
-		/*
-		var hash = formatZYX(map.zoom(), map.center());
-		console.log(hash, loadHash, hash == loadHash);
-		return hash == loadHash;
-		*/
 	}
 	
 	controller.on("select-taz", function(e) {
@@ -1190,14 +1185,9 @@ $(function() {
 	}
 	
 	function updatePriceText() {
-		if (housing_slider_active) {
-			$(".housing_threshold").html("with home prices between "
-				+ "<strong>$" + convertCurrency(minPrice) + "</strong> and "
-				+ "<strong>$" + convertCurrency(maxPrice) + "</strong><br/>")
-				.show();
-		} else {
-			$(".housing_threshold").empty().hide();
-		}
+		$(".housing_threshold").html("with home prices between "
+			+ "<strong>$" + convertCurrency(minPrice) + "</strong> and "
+			+ "<strong>$" + convertCurrency(maxPrice) + "</strong><br/>");
 	}
 	
 	function setHousingPrice(x){
@@ -1252,7 +1242,20 @@ $(function() {
 			.css("left", pct(current) + "%")
 			.appendTo(timeticks);
 	}	
+	
+	timeticks.find("a").click(function(e) {
+		e.preventDefault();
+		if(!time_slider_active) return;
+		var t = $(this).data("minutes");
+		slider.slider("option", "value", t);
+		setMaxTime(t);
+		
+	});
+	
+	// show title now that bottom bar is rendered
+	$('#map-title .title').show();
 
+/*
 	var labels = $("#legend .labels"),
 			steps = pv.range(0, boundMax + 1, 15),
 			last = steps.length - 1;
@@ -1268,12 +1271,6 @@ $(function() {
 			.appendTo(labels);
 	}
 
-	labels.find("a").click(function() {
-		var t = $(this).data("minutes");
-		slider.slider("option", "value", t);
-		setMaxTime(t);
-	});
-
 	var range = pv.range(boundMin, boundMax, 1),
 			left = pct(boundMin),
 			right = pct(boundMax),
@@ -1288,9 +1285,7 @@ $(function() {
 			.css("background", colorScale(range[i]).color)
 			.appendTo(chips);
 	}
-	
-	// show title now that bottom bar is rendered
-	$('#map-title .title').show();
+*/
 	
 	
 	// create the housing slider
@@ -1301,9 +1296,11 @@ $(function() {
 		maxPrice = Math.ceil(controller.priceRange.maxPrice / step) * step;
 		minPrice = Math.floor(controller.priceRange.minPrice / step) * step;
 		
+		// create a local copy
 		var minVal = minPrice,
-		maxVal = maxPrice;
+			maxVal = maxPrice;
 		
+		// check to see if min & max are in the hash
 		if(hashState['max_price'] && Number(hashState['max_price']) <= controller.priceRange.maxPrice){
 			maxVal = Math.ceil(Number(hashState['max_price']) / step) * step;
 		}
@@ -1313,45 +1310,53 @@ $(function() {
 		}
 		
 		
+		///updatePriceText([minPrice, maxPrice]);
 		if(!housing_slider){
-			var housing_slider = $("#housing-slider").slider({
+			housing_slider = $("#housing-slider").slider({
 				slide: function(e, ui) {
 					setHousingPrice(ui.values);
 				},
 				range: true,
-				disabled: !housing_slider_active,
+				disabled: !housing_slider_enabled,
 				min: minPrice,
 				max: maxPrice,
 				step: step,
 				values: [minVal, maxVal]
 			});
 			
-			//(Math.floor((i/last) * 100))
+			function hpct(n){ return Math.floor((n/last) * 100); }
+			function middlePrice(){ return (maxPrice-minPrice)/2; }
+			
 			var housingticks = $("#housing-slider-container #ticks"),
 					steps = [minPrice,middlePrice(),maxPrice],
 					last = steps.length - 1;
-					
-				function hpct(n){
-					var _w = housing_slider.width();
-					return Math.floor((n/last) * 100);
-					//return Math.floor(n / step) * step;
-				}
-
-				function middlePrice(){
-					return Math.floor((maxPrice-minPrice)/2);
-				}
-				for (var i = 0; i <= last; i++) {
-					var current = steps[i];
 				
-					var label = $("<a/>")
-						.text("$"+convertCurrency(current))
-						.attr("href", "#")
-						.attr("class", "tick")	
-						.data("hprice", current)
-						.css("left", hpct(i) + "%")
-						.appendTo(housingticks);
-						
+			for (var i = 0; i <= last; i++) {
+				var current = steps[i];
+			
+				var label = $("<a/>")
+					.text("$"+convertCurrency(current))
+					.attr("href", "#")
+					.attr("class", "tick")	
+					.data("hprice", current)
+					.css("left", hpct(i) + "%")
+					.appendTo(housingticks);
+					
+			}
+			
+			housingticks.find("a").click(function(e) {
+				e.preventDefault();
+				if(!housing_slider_active) return;
+				var t = $(this).data("hprice");
+				
+				if( Math.abs(minPrice - t) < Math.abs(maxPrice - t)){
+					$(housing_slider).slider("values", 0, t);
+				}else{
+					$(housing_slider).slider("values", 1, t);
 				}
+				
+				setHousingPrice( housing_slider.slider("values") );
+			});
 	
 				
 		}else{

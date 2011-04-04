@@ -51,6 +51,7 @@ function convertCurrency(num){
 	}else if(num > 1000){
 		return Math.round((num/1000) * 10) / 10 + 'k';
 	}
+	
 	return num;
 	
 }
