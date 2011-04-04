@@ -1019,7 +1019,7 @@ $(function() {
 
 			prefix.html('Bay Area places <span class="housing_threshold"></span>' +
 				' accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a>' +
-				' <strong class="mode_text"></strong> <span class="travel_time_threshold"></span>' + 
+				' <span class="mode_text"></span> <span class="travel_time_threshold"></span>' + 
 				' <span class="time_text"></span>');
 			updateTimeText(maxTime);
 			updatePriceText();
@@ -1177,8 +1177,8 @@ $(function() {
 			maxPrice = x[1];
 			minPrice = x[0];
 			updatePriceText();
-			hashState['max_price']=maxPrice;
-			hashState['min_price']=minPrice;
+			hashState['max_price'] = maxPrice;
+			hashState['min_price'] = minPrice;
 			updateMapHrefs(hashState);
 			deferredUpdate();
 		}
@@ -1274,9 +1274,9 @@ $(function() {
 	// need to defer to after shapes have been loaded
 	var housing_slider = null;
 	function createHousingSlider(){
-		var step = 10000;
+		var step = 100000;
+		minPrice = Math.round(controller.priceRange.minPrice / step) * step;
 		maxPrice = Math.ceil(controller.priceRange.maxPrice / step) * step;
-		minPrice = Math.floor(controller.priceRange.minPrice / step) * step;
 		
 		// create a local copy
 		var minVal = minPrice,
@@ -1306,12 +1306,21 @@ $(function() {
 				values: [minVal, maxVal]
 			});
 			
-			function hpct(n){ return Math.floor((n/last) * 100); }
+			var hpct = pv.Scale.linear(minPrice, maxPrice).range(0, 100);
 			function middlePrice(){ return (maxPrice-minPrice)/2; }
 			
 			var housingticks = $("#housing-slider-container #ticks"),
-					steps = [minPrice,middlePrice(),maxPrice],
-					last = steps.length - 1;
+				steps = [minPrice],
+				step = 1000000;
+			var price = quantize(minPrice + step, step, Math.floor);
+			while (price <= maxPrice) {
+				steps.push(price);
+				price += step;
+			}
+			if (((price - step) - maxPrice) > step / 2) {
+				steps.push(maxPrice);
+			}
+			var last = steps.length - 1;
 				
 			for (var i = 0; i <= last; i++) {
 				var current = steps[i];
@@ -1321,7 +1330,7 @@ $(function() {
 					.attr("href", "#")
 					.attr("class", "tick")	
 					.data("hprice", current)
-					.css("left", hpct(i) + "%")
+					.css("left", hpct(current) + "%")
 					.appendTo(housingticks);
 					
 			}
@@ -1399,7 +1408,7 @@ $(function() {
 	setMode(controller.mode());
 
 	function updateModeText() {
-		$(".mode_text").text(modeLinks.filter(".selected").attr("title"));
+		$(".mode_text").html("by <strong>" + modeLinks.filter(".selected").attr("title") + "</strong>");
 	}
 
 	function updateTimeOfDayText() {

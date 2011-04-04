@@ -279,7 +279,7 @@ input[disabled] {
 
 #taztip{
 	position: absolute;
-	z-index: 9999;
+	z-index: 999;
 	background: #000;
 	color: #fff;
 	width: 200px;

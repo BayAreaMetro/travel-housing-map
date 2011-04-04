@@ -53,7 +53,7 @@
 			}
 
 			#map-title {
-				background: rgba(255,255,255,.5);
+				background: rgba(255,255,255,.6);
 				/* border-bottom: 1px solid #fff; */
 				position: absolute;
 				left: 0;
@@ -115,7 +115,8 @@
 			#map-title .title {
 				color: #000;
 				font-weight: normal;
-				padding: 10px;
+				padding: 12px;
+				padding-top: 8px;
 				margin: 0;
 				pointer-events: all;
 				display: none;
@@ -361,11 +362,11 @@
 								<p id="travel-optionss">
 									<span id="travel-mode" class="mode">
 										<label>by:</label>
-										<a href="#mode=da" data-mode="da" title="by car alone"><img src="../style/images/modes/da.png"/></a>
-										<a href="#mode=s2" data-mode="s2" title="by car with 2 people"><img src="../style/images/modes/s2.png"/></a>
-										<a href="#mode=wTrnW" data-mode="wTrnW" title="by public transit"><img src="../style/images/modes/transit.png"/></a>
-										<a href="#mode=bike" data-mode="bike" title="by bicycle"><img src="../style/images/modes/bike.png"/></a>
-										<a href="#mode=walk" data-mode="walk" title="by foot" class="last_right"><img src="../style/images/modes/walk.png"/></a>
+										<a href="#mode=da" data-mode="da" title="car alone"><img src="../style/images/modes/da.png"/></a>
+										<a href="#mode=s2" data-mode="s2" title="car with 2 people"><img src="../style/images/modes/s2.png"/></a>
+										<a href="#mode=wTrnW" data-mode="wTrnW" title="public transit"><img src="../style/images/modes/transit.png"/></a>
+										<a href="#mode=bike" data-mode="bike" title="bicycle"><img src="../style/images/modes/bike.png"/></a>
+										<a href="#mode=walk" data-mode="walk" title="foot" class="last_right"><img src="../style/images/modes/walk.png"/></a>
 										<input type="hidden" name="mode" value="da"/>
 									</span>
 
@@ -382,7 +383,7 @@
 							</div>
 							
 								<div id="time-slider-container" class="slider-container inactive">
-									<h5><label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Filter by travel time</label></h5>
+									<h5><label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Filter by travel time in minutes:</label></h5>
 									
 									<div class="slider_wrapper">
 									<div id="ticks"></div>
@@ -395,7 +396,7 @@
 							
 							
 								<div id="housing-slider-container" class="slider-container inactive">
-									<h5><label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Filter by average housing price</label></h5>
+									<h5><label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Filter by average home price:</label></h5>
 									<div class="slider_wrapper">
 									<div id="ticks"></div>
 									<div id="housing-slider"></div>
