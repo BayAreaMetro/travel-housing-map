@@ -50,9 +50,9 @@ function quantize(n, q, round) {
 
 function convertCurrency(num){
 	if (isNaN(num)) return num;
-	if (num > 1000000){
+	if (num >= 1000000){
 		return Math.round((num/1000000) * 10) / 10 + "m";
-	}else if(num > 1000){
+	}else if(num >= 1000){
 		return Math.round((num/1000) * 10) / 10 + "k";
 	}
 	
