@@ -1317,7 +1317,6 @@ $(function() {
 			});
 			
 			var hpct = pv.Scale.linear(minPrice, maxPrice).range(0, 100);
-			function middlePrice(){ return maxPrice/2; }
 			
 			var housingticks = $("#housing-slider-container #ticks"),
 				steps = [minPrice],
