@@ -969,14 +969,12 @@ $(function() {
 	var maxTime = (hashState['max_time']) ? parseInt(hashState['max_time']) : 60;
 	if (isNaN(maxTime)) maxTime = 60;
 	
-	var minutes = $(".travel_time_threshold").html(formatTime(maxTime)),
-		showMax = true;
-			
+	var showMax = true;
 	function updateTimeText(t) {
 		if (time_slider_active) {
-			minutes.html(" in <strong>&le;" + ((typeof t == "string") ? t : formatTime(t)) + "</strong>").show();
+			$(".travel_time_threshold").html(" in <strong>&le;" + ((typeof t == "string") ? t : formatTime(t)) + "</strong>").show();
 		} else {
-			minutes.empty().hide();
+			$(".travel_time_threshold").empty().hide();
 		}
 	}
 
@@ -1019,10 +1017,10 @@ $(function() {
 
 		} else if (origin) {
 
-			prefix.html('Bay Area places <span class="housing_threshold"></span> ' +
-				' accessible  from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> ' +
-				'<strong class="mode_text"></strong>' + 
-				'<span class="time_text"></span>');
+			prefix.html('Bay Area places <span class="housing_threshold"></span>' +
+				' accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a>' +
+				' <strong class="mode_text"></strong> <span class="travel_time_threshold"></span>' + 
+				' <span class="time_text"></span>');
 			updateTimeText(maxTime);
 			updatePriceText();
 			updateModeText();
@@ -1036,12 +1034,10 @@ $(function() {
 			
 			// do nothing?
 			prefix.html('Locating...');
-			minutes.text("");
 
 		} else {
 			prefix.html('Enter a start address to see travel times,<br/>or <a class="select-center" href="#origin=center">select the center of the map</a>');
 			prefix.find(".select-center").click(selectCenter);
-			minutes.text("");
 			showMax = showPrice = false;
 			$(".slider-container").addClass("inactive");
 			page.addClass("no_origin").removeClass("has_origin").removeClass("has_dest");
