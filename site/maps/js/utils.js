@@ -43,13 +43,17 @@ function uncommize(s) {
   return parseInt(s.split(',').join(''));
 }
 
+function quantize(n, q, round) {
+  if (!round) round = Math.round;
+  return q * round(n / q);
+}
+
 function convertCurrency(num){
-	
-	if(isNaN(num))return;
-	if(num > 1000000){
-		return Math.round((num/1000000) * 10) / 10+ 'm';
+	if (isNaN(num)) return num;
+	if (num > 1000000){
+		return Math.round((num/1000000) * 10) / 10 + "m";
 	}else if(num > 1000){
-		return Math.round((num/1000) * 10) / 10 + 'k';
+		return Math.round((num/1000) * 10) / 10 + "k";
 	}
 	
 	return num;

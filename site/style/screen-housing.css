@@ -64,7 +64,7 @@ img { border: none; }
 #info-extras {
 	display: block;
 	padding: .75em 0;
-	border-bottom: 1px dashed #CCC;
+	border-bottom: 1px solid #ccc;
 }
 
 #info-geo p input[type=text] {

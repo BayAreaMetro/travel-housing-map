@@ -253,33 +253,6 @@ var hashState;
 			//updateHrefs(permalinks, null, window.location.hash);
 		}
 
-		var svg = {
-			element: function(name, attrs) {
-				var el = po.svg(name);
-				if (attrs) {
-					for (var a in attrs) {
-						el.setAttribute(a, attrs[a]);
-					}
-				}
-				return el;
-		 	},
-			label: function(text, attrs) {
-				var label = svg.element("text", $.extend({
-					"fill": "#fff",
-					"font-weight": "bold",
-					"text-anchor": "middle"
-				}, attrs || {}));
-				label.appendChild(document.createTextNode(text));
-				return label;
-		  },
-			title: function(el, title) {
-				var t = el.appendChild(po.svg("title"));
-				t.appendChild(document.createTextNode(title));
-				el.setAttribute("title", title);
-				return t;
-		 	}
-		};
-
 		////////// TOOLTIP //////////////
 		// being initiated from onShapesLoad
 		//
@@ -755,9 +728,9 @@ var hashState;
 		// get/set the origin string (asynchronous)
 		controller.origin = function(loc, latlon, success, failure) {
 			if (arguments.length) {
+				hashState['origin']=loc;
 				if (latlon) {
 					
-					hashState['origin']=loc;
 					updateMapHrefs(hashState);
 					
 					//updateHrefs(permalinks, {"origin": loc}, window.location.hash);
@@ -937,6 +910,7 @@ $(function() {
 	});
 	$("#time_slider_enabled").change(function(){
 		time_slider_active = $(this).is(':checked');
+		updateTimeText(maxTime);
 		handleSliderCheckboxes();
 	});
 
@@ -998,7 +972,11 @@ $(function() {
 		showMax = true;
 			
 	function updateTimeText(t) {
-		minutes.html("&le;" + ((typeof t == "string") ? t : formatTime(t)));
+		if (time_slider_active) {
+			minutes.html(" in <strong>&le;" + ((typeof t == "string") ? t : formatTime(t)) + "</strong>").show();
+		} else {
+			minutes.empty().hide();
+		}
 	}
 
 	var locating = false;
@@ -1034,18 +1012,21 @@ $(function() {
 				// map.zoom(map.zoom() >>> 0);
 			}
 			showMax = showPrice = false;
-			$("#map-title").attr("class", "active");
 			$(".slider-container").removeClass("inactive");
 			adjustHousingTicks()
 			page.removeClass("no_origin").addClass("has_origin").addClass("has_dest");
 
 		} else if (origin) {
 
-			prefix.html('Places  <span class="housing_threshold"></span> accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> in');
+			prefix.html('Bay Area places <span class="housing_threshold"></span> ' +
+				' accessible  from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> ' +
+				'<strong class="mode_text"></strong>' + 
+				'<span class="time_text"></span>');
 			updateTimeText(maxTime);
 			updatePriceText();
+			updateModeText();
+			updateTimeOfDayText();
 			showMax = showPrice = true;
-			$("#map-title").attr("class", "active");
 			$(".slider-container").removeClass("inactive");
 			adjustHousingTicks();
 			page.removeClass("no_origin").addClass("has_origin").removeClass("has_dest");
@@ -1061,7 +1042,6 @@ $(function() {
 			prefix.find(".select-center").click(selectCenter);
 			minutes.text("");
 			showMax = showPrice = false;
-			$("#map-title").attr("class", "inactive");
 			$(".slider-container").addClass("inactive");
 			page.addClass("no_origin").removeClass("has_origin").removeClass("has_dest");
 
@@ -1185,9 +1165,14 @@ $(function() {
 	}
 	
 	function updatePriceText() {
-		$(".housing_threshold").html("with home prices between "
-			+ "<strong>$" + convertCurrency(minPrice) + "</strong> and "
-			+ "<strong>$" + convertCurrency(maxPrice) + "</strong><br/>");
+		if (housing_slider_active) {
+			$(".housing_threshold").html("with home prices between "
+				+ "<strong>$" + convertCurrency(minPrice) + " and "
+				+ "$" + convertCurrency(maxPrice) + "</strong><br/>")
+				.show();
+		} else {
+			$(".housing_threshold").empty().hide();
+		}
 	}
 	
 	function setHousingPrice(x){
@@ -1401,9 +1386,11 @@ $(function() {
 		} else {
 			$("#time-of-day").removeClass("inactive");
 		}
+		updateTimeOfDayText();
 		modeLinks.attr("class", function() {
 			return $(this).data("mode") == mode ? "selected" : "";
 		});
+		updateModeText();
 	}
 
 	var modeLinks = $("#travel-optionss .mode a")
@@ -1414,11 +1401,24 @@ $(function() {
 		 });
 	setMode(controller.mode());
 
+	function updateModeText() {
+		$(".mode_text").text(modeLinks.filter(".selected").attr("title"));
+	}
+
+	function updateTimeOfDayText() {
+		if ($("#time-of-day").hasClass("inactive") || typeof timeLinks == "undefined") {
+			$(".time_text").empty();
+		} else {
+			$(".time_text").html("<br/>during the <strong>" + timeLinks.filter(".selected").find("span").text() + "</strong>");
+		}
+	}
+
 	function setTime(time) {
 		controller.time(time);
 		timeLinks.attr("class", function() {
 			return $(this).data("time") == time ? "selected" : "";
 		});
+		updateTimeOfDayText();
 	}
 
 	var timeLinks = $("#travel-optionss .time a")

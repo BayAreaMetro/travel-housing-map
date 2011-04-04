@@ -321,6 +321,7 @@
 	 * 	 center({lat, lon})
 	 * 	 zoom(z)
 	 * 	 zoomRange([min, max])
+	 * 	 centerRange([{lat, lon}, {lat, lon}])
 	 * 	 extent([{lat, lon}, {lat, lon}])
 	 * 	 size({x, y})
 	 * 	 tileSize({x, y})
@@ -694,7 +695,9 @@
 			// zoom is a float
 			zoom: 		getFloat,
 			// zoom is a float
-			zoomRange: getArray,
+			zoomRange: 	getArray,
+			// zoom range is an extent
+			centerRange: getExtent,
 			// size comes in "x,y"
 			size: 		getXY,
 			// tileSize comes in "x,y"
@@ -724,7 +727,7 @@
 		} else {
 			if (engine.drag && root.hasClass("drag")) {
 				map.add(engine.drag());
-				//if (engine.dblclick) map.add(engine.dblclick());
+				if (engine.dblclick) map.add(engine.dblclick());
 				
 			}
 			if (engine.wheel && root.hasClass("wheel")) {

@@ -15,6 +15,7 @@
 			.ui-slider {
 				background: #ccc !important;
 				border-width: 0 !important;
+				cursor: pointer;
 			}
 			.ui-slider-handle,
 			.ui-slider-range {
@@ -42,7 +43,7 @@
 
 			#crosshairs { z-index: 80; }
 			#travel-time .markers { z-index: 90; }
-			#map-title { z-index: 100; }
+			#map-title { z-index: 1000; }
 
 			#travel-time .markers .marker {
 				display: none;
@@ -58,7 +59,6 @@
 				top: 0;
 				width: 100%;
 				height: auto;
-				pointer-events: none;
 			}
 
 			#map-title .title a {
@@ -118,6 +118,10 @@
 				margin: 0;
 				pointer-events: all;
 				display: none;
+			}
+
+			#map-title .title span,
+			#map-title .title strong {
 			}
 
 			#legend .label {
@@ -192,19 +196,20 @@
 			
 			#right_column{
 				position:relative;
-				float:left;
-				width:100%;
-				margin-left:-450px; /* based of left column width */
+				float: left;
+				width: 100%;
+				margin-left: -450px; /* based of left column width */
 			}
 			
 			#map-content {
-				position:relative;
+				position: relative;
 				margin-left: 450px; /* based of left column width */
 			}
 			
 			.inactive {
 				opacity: .3 !important;
 				cursor:default !important;
+				pointer-events: none;
 			}
 
 			.disabled {
@@ -255,13 +260,13 @@
 			#info-origin .or {
 				margin-left: 35px;
 			}
-			.ui-slider-horizontal .ui-slider-handle {cursor: pointer;}
-			#map-title h2 { font-size: 170%; }
+
+			#map-title h2 { font-size: 150%; }
 			
 			#time-slider-container,#housing-slider-container{
 				position:relative;
 				padding: .75em 0;
-				border-bottom: 1px dashed #CCC;
+				border-bottom: 1px solid #ccc;
 			}
 			#time-slider-container #ticks,#housing-slider-container #ticks{
 				position:relative;
@@ -356,7 +361,7 @@
 									<span id="travel-mode" class="mode">
 										<label>by:</label>
 										<a href="#mode=da" data-mode="da" title="by car alone"><img src="../style/images/modes/da.png"/></a>
-										<a href="#mode=s2" data-mode="s2" title="by car (2 people)"><img src="../style/images/modes/s2.png"/></a>
+										<a href="#mode=s2" data-mode="s2" title="by car with 2 people"><img src="../style/images/modes/s2.png"/></a>
 										<a href="#mode=wTrnW" data-mode="wTrnW" title="by public transit"><img src="../style/images/modes/transit.png"/></a>
 										<a href="#mode=bike" data-mode="bike" title="by bicycle"><img src="../style/images/modes/bike.png"/></a>
 										<a href="#mode=walk" data-mode="walk" title="by foot" class="last_right"><img src="../style/images/modes/walk.png"/></a>
@@ -365,9 +370,9 @@
 
 									<span id="time-of-day" class="time">
 										<label>when:</label>
-										<a href="#time=EA" data-time="EA"><img src="../style/images/times/EA.png"/><span> Early AM</a>
+										<a href="#time=EA" data-time="EA"><img src="../style/images/times/EA.png"/><span>early AM</a>
 										<a href="#time=AM" data-time="AM"><img src="../style/images/times/AM.png"/><span>AM commute</span></a>
-										<a href="#time=MD" data-time="MD"><img src="../style/images/times/MD.png"/><span>Mid-day</span></a>
+										<a href="#time=MD" data-time="MD"><img src="../style/images/times/MD.png"/><span>mid-day</span></a>
 										<a href="#time=PM" data-time="PM"><img src="../style/images/times/PM.png"/><span>PM commute</span></a>
 										<a href="#time=EV" data-time="EV" class="last_right"><img src="../style/images/times/EV.png"/><span>Evening</span></a>
 										<input type="hidden" name="time" value="AM"/>
@@ -433,7 +438,7 @@
 								<a class="marker" id="dest-marker" data-location="0,0">B</a>
 
 								<div id="map-title">
-									<h2 class="title"><span class="prefix">Places</span> <strong class="travel_time_threshold"></strong></h2>
+									<h2 class="title"><span class="prefix">Places</span> <span class="travel_time_threshold"></span></h2>
 									<div class="controls">
 										<label>Zoom:</label> <a class="zoom-in" href="#zoom-in"><img alt="in" src="../style/images/zoom-plus.png"/></a>
 										<a class="zoom-out" href="#zoom-out"><img alt="out" src="../style/images/zoom-minus.png"/></a>
@@ -442,7 +447,7 @@
 
 								<div id="taztip"><span class="nub"></span><p id="tazinfo"></p></div>
 								
-								<p id="copyright">map &copy; <a href="http://www.geoiq.com/" title="qeoiq site">GeoIQ</a> & <a href="http://www.stamen.com/" title="stamen site">Stamen</a></p>
+								<p id="copyright">Map &copy; <a href="http://www.geoiq.com/" title="qeoiq site">GeoIQ</a> &amp; <a href="http://www.stamen.com/" title="stamen site">Stamen</a></p>
 							</div>
 						</div>
 					</div><!-- close right column -->
