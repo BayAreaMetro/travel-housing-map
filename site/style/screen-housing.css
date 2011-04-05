@@ -30,7 +30,10 @@ a:visited {
 	text-decoration: none;
 	border-bottom: 1px dotted;
 }
-img { border: none; }
+img {
+	border: none;
+	vertical-align: middle;
+}
 
 .clear{clear:both;height:0;}
 .clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden;}
@@ -335,14 +338,21 @@ bottom: -10px;
 .ui-progressbar-value { background-image: url(images/loading_stripe-light.png); }
 */
 
-h1, h2 {
-	font-size: 150%;
-	margin: 0;
-	line-height: 1.2em;
+h1 {
+	font-size: 32px;
+	font-weight: normal;
+	margin: 0 0 20px 0;
+	line-height: 42px;
+}
+
+h1 img {
+	margin-top: -4px;
 }
 
 h2 {
-	font-size: 200%;
+	font-size: 24px;
+	line-height: 30px;
+	margin: 0;
 }
 
 ol {
@@ -406,6 +416,7 @@ ol li p {
 	#info .select-center img {
 		margin-right: 2px;
 		margin-bottom: -2px;
+		vertical-align: baseline;
 	}
 
 	.controls a img {
