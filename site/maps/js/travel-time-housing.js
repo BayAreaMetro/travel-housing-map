@@ -982,7 +982,7 @@ $(function() {
 	var showMax = true;
 	function updateTimeText(t) {
 		if (time_slider_active) {
-			$(".travel_time_threshold").html(" in <strong>&le;" + ((typeof t == "string") ? t : formatTime(t)) + "</strong>").show();
+			$(".travel_time_threshold").html(" in <strong>" + ((typeof t == "string") ? t : formatTime(t)) + "</strong>").show();
 		} else {
 			$(".travel_time_threshold").empty().hide();
 		}
