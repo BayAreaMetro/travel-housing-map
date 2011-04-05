@@ -71,18 +71,18 @@ var hashState;
 		state.mode = "da"; // drive alone
 
 		// The color scale
-		var colorScale = controller.colorScale = pv.Scale.linear()
-			.domain(NIL, 	0,			15, 		30, 		60)
-			// .range("#000", "#063", "#063", "#8c7", "#ffc");
-			.range("#000", "#009DDC", "#009DDC", "#d87", "#ffe");
+		var colorScale = controller.colorScale = pv.Scale.linear();
 
+		// for travel time:
+		/*
 		colorScale.domain(NIL, 		0,			60, 		90);
 		colorScale.range("#000",	"#d09", "#fd6", "#ffe");
-		// colorScale.range(BLUE, BLUE, BLUE, BLUE);
+		*/
 
+		// for housing prices:
 		/*
-		colorScale.domain(NIL, 	0, 5,			30, 60, 90);
-		colorScale.range("#000", "#a73", "#a73", "#d83", "#fc6", "#ffe");
+		colorScale.domain(NIL, 		100000,	1000000, 	4000000, 10000000)
+		colorScale.range("#000",	"#ffe", "#fd6", 	"#d09", "#d09");
 		*/
 
 		// keep features around by ID, for cross-referencing from CSV data
@@ -148,9 +148,10 @@ var hashState;
 			.attr("display", displayFilter)
 			.attr("stroke", defaultColor)
 			.attr("stroke-width", function(feature) { return selected(feature) ? 1 : .15; })
-			.attr("fill", function(feature) {
+			.attr("fill", BLUE);
+			/*.attr("fill", function(feature) {
 				if (typeof feature.properties.travel == "object") {
-					var value = travelTime(feature);
+					var value = housingPrice(feature);
 					if (value == NIL) {
 						return defaultColor(feature);
 					} else {
@@ -159,7 +160,7 @@ var hashState;
 				} else {
 					return defaultColor(feature);
 				}
-			});
+			});*/
 
 		// re-show the layer
 		function applyStyle() {
