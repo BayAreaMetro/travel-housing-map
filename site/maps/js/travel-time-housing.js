@@ -4,6 +4,10 @@ var NIL = -999,
 		BLUE = "#009DDC";
 
 var hashState;
+function reallyUpdateHash() {
+	window.location.hash = makeQueryString(hashState);
+}
+var updateMapHrefs = defer(100, reallyUpdateHash);
 		
 (function(mtc) {
 
@@ -74,16 +78,12 @@ var hashState;
 		var colorScale = controller.colorScale = pv.Scale.linear();
 
 		// for travel time:
-		/*
 		colorScale.domain(NIL, 		0,			60, 		90);
 		colorScale.range("#000",	"#d09", "#fd6", "#ffe");
-		*/
 
 		// for housing prices:
-		/*
 		colorScale.domain(NIL, 		100000,	1000000, 	4000000, 10000000)
 		colorScale.range("#000",	"#ffe", "#fd6", 	"#d09", "#d09");
-		*/
 
 		// keep features around by ID, for cross-referencing from CSV data
 		var featuresById = {};
@@ -149,7 +149,8 @@ var hashState;
 			.attr("stroke", defaultColor)
 			.attr("stroke-width", function(feature) { return selected(feature) ? 1 : .15; })
 			.attr("fill", BLUE);
-			/*.attr("fill", function(feature) {
+			/*
+			.attr("fill", function(feature) {
 				if (typeof feature.properties.travel == "object") {
 					var value = housingPrice(feature);
 					if (value == NIL) {
@@ -160,7 +161,8 @@ var hashState;
 				} else {
 					return defaultColor(feature);
 				}
-			});*/
+			});
+			*/
 
 		// re-show the layer
 		function applyStyle() {
@@ -250,8 +252,6 @@ var hashState;
 
 		// update permalinks on map move
 		function onMapMove(e) {
-			
-			//updateHrefs(permalinks, null, window.location.hash);
 		}
 
 		////////// TOOLTIP //////////////
@@ -479,7 +479,6 @@ var hashState;
 			dispatchStdout("loading", "Looking up &ldquo;" + loc + "&rdquo;...");
 			hashState['origin']=loc
 			updateMapHrefs(hashState);
-			//updateHrefs(permalinks, {"origin": loc}, window.location.hash);
 			state.origin = loc;
 			state.origin_location = null;
 			clearStyle();
@@ -513,7 +512,6 @@ var hashState;
 
 		function lookupDest(loc, success, failure) {
 			dispatchStdout("loading", "Looking up &ldquo;" + loc + "&rdquo;...");
-			//updateHrefs(permalinks, {"dest": loc}, window.location.hash);
 			hashState['dest']=loc
 			updateMapHrefs(hashState);
 			
@@ -701,7 +699,6 @@ var hashState;
 				applyStyle();
 				hashState['mode']=state.mode;
 				updateMapHrefs(hashState);
-				//updateHrefs(permalinks, {"mode": state.mode}, window.location.hash);
 			} else {
 				return state.mode;
 			}
@@ -713,7 +710,6 @@ var hashState;
 				state.direction = x;
 				hashState['dir']=state.direction;
 				updateMapHrefs(hashState);
-				//updateHrefs(permalinks, {"dir": state.direction}, window.location.hash);
 				if (state.origin_taz) {
 					loadScenario();
 				}
@@ -726,7 +722,6 @@ var hashState;
 				state.time = x;
 				hashState['time']=state.time;
 				updateMapHrefs(hashState);
-				//updateHrefs(permalinks, {"time": state.time}, window.location.hash);
 				if (state.origin_taz) {
 					loadScenario();
 				}
@@ -744,7 +739,6 @@ var hashState;
 					
 					updateMapHrefs(hashState);
 					
-					//updateHrefs(permalinks, {"origin": loc}, window.location.hash);
 					state.origin = loc;
 					state.origin_taz = getTAZ(loc);
 					state.origin_location = latlon;
@@ -788,11 +782,8 @@ var hashState;
 			if (arguments.length) {
 				if (latlon) {
 					var taz = getTAZ(loc);
-					
 					hashState['dest']=formatLocation(latlon);
 					updateMapHrefs(hashState);
-					
-				//	updateHrefs(permalinks, {"dest": formatLocation(latlon)}, window.location.hash);
 					state.dest = state.dest_taz = taz;
 					state.dest_location = latlon;
 					updateMarkers();
@@ -1168,7 +1159,6 @@ $(function() {
 			deferredUpdate();
 			hashState['max_time'] = t;
 			updateMapHrefs(hashState);
-			//updateHrefs(controller.permalinks(), {"max_time": t}, window.location.hash);
 		}
 	}
 	
@@ -1285,8 +1275,8 @@ $(function() {
 	// need to defer to after shapes have been loaded
 	var housing_slider = null;
 	function createHousingSlider(){
-		var step = 100000;
-		minPrice = Math.round(controller.priceRange.minPrice / step) * step;
+		var step = 10000;
+		minPrice = Math.floor(controller.priceRange.minPrice / step) * step;
 		maxPrice = Math.ceil(controller.priceRange.maxPrice / step) * step;
 		
 		// create a local copy
@@ -1334,7 +1324,6 @@ $(function() {
 				
 			for (var i = 0; i <= last; i++) {
 				var current = steps[i];
-			
 				var label = $("<a/>")
 					.text("$"+convertCurrency(current))
 					.attr("href", "#")
@@ -1342,25 +1331,21 @@ $(function() {
 					.data("hprice", current)
 					.css("left", hpct(current) + "%")
 					.appendTo(housingticks);
-					
 			}
 			
 			housingticks.find("a").click(function(e) {
 				e.preventDefault();
-				if(!housing_slider_active) return;
+				if (!housing_slider_active) return;
 				var t = $(this).data("hprice");
-				
-				if( Math.abs(minPrice - t) < Math.abs(maxPrice - t)){
+				if (Math.abs(minPrice - t) < Math.abs(maxPrice - t)) {
 					$(housing_slider).slider("values", 0, t);
-				}else{
+				} else {
 					$(housing_slider).slider("values", 1, t);
 				}
-				
 				setHousingPrice( housing_slider.slider("values") );
 			});
 	
-				
-		}else{
+		} else {
 			$(housing_slider).slider("values", 0, minVal); 
 			$(housing_slider).slider("values", 1, maxVal);
 		}
@@ -1451,7 +1436,7 @@ $(function() {
 	}).change();
 
 	/* adjust map size based on viewport */
-	function setMapHeight() {
+	function resizeMap() {
 		try {
 			var _mapHeight = container.height();
 			var _mapWidth = container.width();
@@ -1461,16 +1446,15 @@ $(function() {
 			map.dispatch({type: "move"});
 			updateLeftColumnHeight(_mapHeight);
 		} catch (e) {
-			// console.log("setMapHeight() error:", e);
+			// console.log("resizeMap() error:", e);
 		}
 	}
 
 	/* listen for window resize then adjust map size */
-	$(window).resize(defer(5, setMapHeight));
+	$(window).resize(defer(5, resizeMap));
 	$(window).trigger("resize");
 
 	map.on("move",function(){
-		formatZYX(map.zoom(), map.center())
 		hashState['xyz'] = formatZYX(map.zoom(), map.center());
 		updateMapHrefs(hashState);
 	});

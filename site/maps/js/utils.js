@@ -5,15 +5,15 @@
 function identity(n) { return n; }
 
 function commize(n) {
-  var c = 3,
-      o = Math.round(n).toString(),
-      parts = [];
-  while (o.length > c) {
-    parts.unshift(o.substr(o.length - c));
-    o = o.substr(0, o.length - c);
-  }
-  parts.unshift(o);
-  return parts.join(',');
+	var c = 3,
+			o = Math.round(n).toString(),
+			parts = [];
+	while (o.length > c) {
+		parts.unshift(o.substr(o.length - c));
+		o = o.substr(0, o.length - c);
+	}
+	parts.unshift(o);
+	return parts.join(',');
 }
 
 function capitalize(str, skip) {
@@ -36,16 +36,16 @@ function fixed(n, precision) {
 }
 
 function percent(n) {
-  return fixed(Math.min(n, 100)) + '%';
+	return fixed(Math.min(n, 100)) + '%';
 }
 
 function uncommize(s) {
-  return parseInt(s.split(',').join(''));
+	return parseInt(s.split(',').join(''));
 }
 
 function quantize(n, q, round) {
-  if (!round) round = Math.round;
-  return q * round(n / q);
+	if (!round) round = Math.round;
+	return q * round(n / q);
 }
 
 function convertCurrency(num){
@@ -105,9 +105,9 @@ function sortBy(prop) {
 	if (dir == "+" || dir == "-") {
 		prop = prop.substr(1);
 	}
-  return function(a, b) {
-    return rev * (getProp(a, prop) - getProp(b, prop));
-  };
+	return function(a, b) {
+		return rev * (getProp(a, prop) - getProp(b, prop));
+	};
 }
 
 function multisort(props) {
@@ -124,26 +124,26 @@ function multisort(props) {
 }
 
 function distance(a, b) {
-  var dx = b.x - a.x,
-      dy = b.y - a.y;
-  return Math.sqrt(dx * dx + dy * dy);
+	var dx = b.x - a.x,
+			dy = b.y - a.y;
+	return Math.sqrt(dx * dx + dy * dy);
 }
 
 function mousePos(event, absolute) {
-  if (absolute) {
+	if (absolute) {
 
-    return {x: event.pageX,
-            y: event.pageY};
+		return {x: event.pageX,
+						y: event.pageY};
 
-  } else if (typeof event.offsetX == "undefined") {
+	} else if (typeof event.offsetX == "undefined") {
 
-    var offset = $(event.target).offset();
-    return {x: event.pageX - offset.left,
-            y: event.pageY - offset.top};
+		var offset = $(event.target).offset();
+		return {x: event.pageX - offset.left,
+						y: event.pageY - offset.top};
 
-  }
-  return {x: event.offsetX,
-          y: event.offsetY};
+	}
+	return {x: event.offsetX,
+					y: event.offsetY};
 }
 
 function parseQueryString(str) {
@@ -151,24 +151,25 @@ function parseQueryString(str) {
 			parts = str.split("&");
 	for (var i = 0; i < parts.length; i++) {
 		var part = parts[i].split('=');
-    q[part[0]] = decodeURIComponent(part[1]).replace(/\+/g, " ");
+		q[part[0]] = decodeURIComponent(part[1]).replace(/\+/g, " ");
 	}
 	return q;
 }
 
 function prettyEscape(str) {
-  return encodeURIComponent(str)
-    .replace(/%20/g, "+")
-    .replace(/%2C/g, ",")
-    .replace(/%3A/g, ":");
+	return encodeURIComponent(str)
+		.replace(/%2F/g, "/")
+		.replace(/%20/g, "+")
+		.replace(/%2C/g, ",")
+		.replace(/%3A/g, ":");
 }
 
 function makeQueryString(q, sorted) {
 	var parts = [];
 	for (var k in q) {
-		if (k.match(/^\w+$/) && q[k] != null) {
-      parts.push(k + '=' + prettyEscape(q[k]));
-    }
+			if (k.match(/^\w+$/) && q[k] != null) {
+				parts.push(k + '=' + prettyEscape(q[k]));
+			}
 	}
 	if (sorted) {
 		parts = parts.sort();
@@ -271,74 +272,38 @@ function average(a) {
 }
 
 function zoomPrecision(z) {
-  return Math.ceil(Math.log(z) / Math.LN2);
+	return Math.ceil(Math.log(z) / Math.LN2);
 }
 
 function formatLocation(loc, zoom) {
-  var pn = isNaN(zoom) ? 6 : zoomPrecision(zoom);
-  return loc.lat.toFixed(pn) + "," + loc.lon.toFixed(pn);
+	var pn = isNaN(zoom) ? 6 : zoomPrecision(zoom);
+	return loc.lat.toFixed(pn) + "," + loc.lon.toFixed(pn);
 }
 
 function formatZYX(z, xy, y) {
-  if (!xy) return "";
-  var pn = zoomPrecision(z);
-  var x = xy;
-  if (arguments.length == 2) {
-    x = xy.lon;
-    y = xy.lat;
-  }
-  return [z.toFixed(2), y.toFixed(pn), x.toFixed(pn)].join("/");
+	if (!xy) return "";
+	var pn = zoomPrecision(z);
+	var x = xy;
+	if (arguments.length == 2) {
+		x = xy.lon;
+		y = xy.lat;
+	}
+	return [z.toFixed(2), y.toFixed(pn), x.toFixed(pn)].join("/");
 }
 
 function hashCoordParser(s) {
-   var args = s.split("/").map(Number);
-   if (args.length < 3 || args.some(isNaN)){
-     	return [];
-   } else {
+	 var args = s.split("/").map(Number);
+	 if (args.length < 3 || args.some(isNaN)){
+			return [];
+	 } else {
 		return args;
-   }
-}
-
-//BBQ mode
-/*
-
-// 	sets hash
-function setHash(){
-	var filters = config.mapSelection.join('/');
-	if(filters.charAt(-1) == "/")filters = filters.slice(0,-1); // remove trailing forward slash
-	var coords = hashCoordFormatter();
-	var newHash = "v="+filters+"&c="+coords;
-	
-	if(currentHash != newHash){
-		window.location.hash = newHash;
-		currentHash = newHash;
-	}
-}
-*/
-function reallyUpdateHash(){
-	clearTimeout(hashInterval);
-	var hash = location.hash;
-	var _new = "";
-	var ct = 0;
-	for(var prop in hashState){
-		_new += ((ct==0)?"":"&")+prop +"="+hashState[prop];
-		ct++;
-	}
-	window.location.hash = _new;
-}
-var hashInterval;
-function updateMapHrefs(obj){
-	// had to move away for pushState function BBQ for general hash update
-	// possibly use for mode and time updates (seanc | 4/1/2011)
-	clearTimeout(hashInterval);
-	hashInterval = setTimeout(function(){reallyUpdateHash();}, 100);
+	 }
 }
 
 function updateHrefs(links, vars, hash) {
-	return;
-  var suffix = hash
-    ? (hash.charAt(0) == "#" ? hash : ("#" + hash))
-    : "";
+	var suffix = hash
+		? (hash.charAt(0) == "#" ? hash : ("#" + hash))
+		: "";
 	if (vars) {
 		links.attr("href", function() {
 			var href = this.href.split("#")[0],
@@ -349,7 +314,7 @@ function updateHrefs(links, vars, hash) {
 				href = href.substr(0, i);
 			}
 			qs = $.extend(qs, vars);
-      return href + "?" + makeQueryString(qs) + suffix;
+			return href + "?" + makeQueryString(qs) + suffix;
 		});
 		return true;
 	} else if (hash) {
@@ -362,13 +327,13 @@ function updateHrefs(links, vars, hash) {
 }
 
 function parseCSV(text, delim, newline) {
-  if (typeof delim != "string") delim = ",";
-  if (typeof newline != "string") newline = "\n";
-  
-  var rows = text.split(newline),
+	if (typeof delim != "string") delim = ",";
+	if (typeof newline != "string") newline = "\n";
+	
+	var rows = text.split(newline),
 			headers = rows.shift().split(delim),
-			hlen = headers.length,
-			len = rows.length;
+      hlen = headers.length,
+      len = rows.length;
 
 	for (var i  = 0; i < len; i++) {
 		var row = {},
@@ -383,34 +348,33 @@ function parseCSV(text, delim, newline) {
 }
 
 function pluralize(n, str, plural) {
-  return (n == 1) ? str : (plural || (str + "s"));
+	return (n == 1) ? str : (plural || (str + "s"));
 }
 
 function formatTime(minutes) {
-  var min = Math.round(Number(minutes)),
-      str = String(min);
-  // console.log(minutes, min);
-  if (isNaN(min) || min < 0) return null;
-  if (min >= 60) {
-    var hours = (min / 60) >>> 0;
-    min %= 60;
-    if (min == 30) {
-      return hours + "&frac12; hours";
-    }
-    str = hours + " " + pluralize(hours, "hour");
-    if (min > 0) str += ", " + min;
-    else return str;
-  /*
-  } else if (min == 30) {
-      return "&frac12; hour";
-  */
-  }
-  return str + " minutes";
+	var min = Math.round(Number(minutes)),
+			str = String(min);
+	if (isNaN(min) || min < 0) return null;
+	if (min >= 60) {
+		var hours = (min / 60) >>> 0;
+		min %= 60;
+		if (min == 30) {
+			return hours + "&frac12; hours";
+		}
+		str = hours + " " + pluralize(hours, "hour");
+		if (min > 0) str += ", " + min;
+		else return str;
+	/*
+	} else if (min == 30) {
+			return "&frac12; hour";
+	*/
+	}
+	return str + " minutes";
 }
 
 function defer(ms, fn) {
-  return function() {
-    if (fn.timeout) clearTimeout(fn.timeout);
-    return fn.timeout = setTimeout(fn, ms);
-  };
+	return function() {
+		if (fn.timeout) clearTimeout(fn.timeout);
+		return fn.timeout = setTimeout(fn, ms);
+	};
 }
