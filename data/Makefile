@@ -12,8 +12,8 @@ all: output/areas/taz1454.json output/blk2taz/$(LAST_BLKID).txt output-html
 # simplified geometries.
 input/$(TAZ_SHAPEFILE).shp:
 	unzip -d input input/$(TAZ_SHAPEFILE).zip
-	cd input && cp $(TAZ_SHAPEFILE)-simplified.shp $(TAZ_SHAPEFILE).shp
-	cd input && cp $(TAZ_SHAPEFILE)-simplified.shx $(TAZ_SHAPEFILE).shx
+	cp input/$(TAZ_SHAPEFILE)-simplified.shp input/$(TAZ_SHAPEFILE).shp
+	cp input/$(TAZ_SHAPEFILE)-simplified.shx input/$(TAZ_SHAPEFILE).shx
 
 # Strip out unnecessary fields from the buildings.csv and remove "_i4" suffix
 # from column names.
@@ -38,7 +38,8 @@ output-html: output
 output/areas/taz1454.json: input/taz1454.json input/buildings_min.csv output/areas
 	python merge_taz.py input/buildings_min.csv $< > $@
 
-output/areas/taz1454-clipurb.json: output/taz1454.json
+# TODO: generate separate files for clipped urban areas!
+output/areas/taz1454-clipurb.json: output/areas/taz1454.json
 	cp $< $@
 
 # This filename is the last one that should be generated in the list of
@@ -47,9 +48,9 @@ output/blk2taz/$(LAST_BLKID).txt:
 	python publish_blk2taz.py input/BLK00_MTCTAZ.csv $(dir $@)
 
 clean:
-	rm -f input/taz1454.json
+	rm -f input/*.json
 	rm -f output/*.csv
-	rm -f output/*.json
+	rm -f output/areas/*.json
 	rm -f $(SHAPEFILE_EXTS:%=input/taz1454.%)
 
 really-clean: clean
