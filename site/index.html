@@ -179,25 +179,25 @@
 			/* for new two-column layout */
 			/* fixed left column width for controls & fluid right column width for map */
 			#page{
-				position:relative;
-				width:100%;
-				margin-top:10px;
+				position: relative;
+				width: 100%;
+				margin-top: 10px;
 			}
 			#main-form{
-				position:relative;
-				width:100%;
+				position: relative;
+				width: 100%;
 			}
 			#left_column{
-				position:relative;
-				float:left;
-				width:450px;
-				height:100%;
-				z-index:100;
-				overflow:hidden;
+				position: relative;
+				float: left;
+				width: 450px;
+				height: 100%;
+				z-index: 100;
+				overflow: hidden; /* TODO: overflow: auto? */
 			}
 			
 			#right_column{
-				position:relative;
+				position: relative;
 				float: left;
 				width: 100%;
 				margin-left: -450px; /* based of left column width */
@@ -210,7 +210,7 @@
 			
 			.inactive {
 				opacity: .3 !important;
-				cursor:default !important;
+				cursor: default !important;
 				pointer-events: none;
 			}
 
@@ -390,6 +390,7 @@
 									<div id="ticks"></div>
 									<div id="time-slider"></div>
 								</div>
+								<p class="help">(help text here)</p>
 							</div>
 						
 							<div id="housing-slider-container" class="slider-container inactive">
@@ -398,6 +399,7 @@
 									<div id="ticks"></div>
 									<div id="housing-slider"></div>
 								</div>
+								<p class="help">(help text here)</p>
 							</div>
 
 							<div id="feedback">
