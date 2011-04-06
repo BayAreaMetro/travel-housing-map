@@ -7,7 +7,7 @@ NULL_VALUE = -999
 
 # filename pattern
 FILENAME_MATCH = re.compile('^(\w+)SkimsDatabase([A-Z]{2})(dest)?.csv$')
-COL_TO_DIR = {"orig": "to", "dest": "from"}
+COL_TO_DIR = {"orig": "from", "dest": "to"}
 
 # Process a filename into one or more files in an output directory.
 def process_file(in_filename, out_dir='.', **options):
@@ -68,7 +68,29 @@ if __name__ == "__main__":
 	import optparse
 	import glob
 
-	parser = optparse.OptionParser()
+	parser = optparse.OptionParser(usage="""%prog [files or dirs] out_dir
+Generate per-TAZ travel time "skims" from larger collections. CSV file names
+are expected to match the following regular expression:
+
+	^(\w+)SkimsDatabase([A-Z]{2})(dest)?.csv$
+
+The first component is lowercased and used as the primary directory name
+("time", "cost", "distance"). The two-char time of day component after
+"Database" is the second, and the optional "dest" component at the end
+indicates a file sorted by destination TAZ (the default assumes rows are sorted
+by origin TAZ). So the following filename:
+
+	TimeSkimsDatabaseAM.csv
+
+gets churned into a directory of per-TAZ "slices" with paths like this in the
+output directory:
+
+	time/AM/from/{1-1545}.csv
+
+NOTE: publish_scenario.sh generates dest-sorted versions automatically if they
+don't exist. You should use that shell script to publish entire scenarios from
+one input directory (input/scenarios/2005) to another (output/scenarios/2005).
+""")
 	opts, args = parser.parse_args()
 
 	if len(args) < 2:
