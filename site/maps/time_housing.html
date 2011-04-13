@@ -1,5 +1,6 @@
 <html>
 	<head>
+		<META http-equiv="Cache-Control" content="no-store">
 		<title>One Bay Area: Move / Maps / Travel Time</title>
 		
 		<link rel="stylesheet/less" type="text/css" href="../style/screen-housing.css">
@@ -228,8 +229,8 @@
 			
 			#helper_btn {
 				position: absolute;
-				right: 15px;
-				top: 8px;
+				right: 5px;
+				top: 0;
 				cursor: pointer;
 			}
 
@@ -238,26 +239,24 @@
 			}
 
 			#helper_panel{
-				position: absolute;
-				width: 97%;
-				height: 100%;
-				background: rgba(0,0,0,.9);
-				display: none;
-				z-index: 500;
-				color: #fff;
-				padding: 0;
-				margin: 0;
-				overflow: auto;
+				position:absolute;
+				width:99%;
+				height:100%;
+				background:rgba(0,0,0,.9);
+				display:none;
+				z-index:500;
+				color:#fff;
+				padding:0;
+				margin:0;
 			}
-
 			#helper_panel div {
 				padding: 10px;
 			}
-
 			#helper_panel p {
+				font-family: Helvetica,Arial,sans-serif;
 				font-weight: lighter;
-				font-size: 13px;
-				line-height: 16px;
+				font-size: 14px; /* ems ?*/
+				line-height: 18px;/* ems ?*/
 			}
 			
 			#location_origin,
@@ -331,7 +330,7 @@
 					<!-- left column -->
 					<div id="left_column">
 						<div id="title">
-							<h1><a href="http://www.onebayarea.org/"><img src="../style/images/OneBayArea_small.png" width="198" height="32" alt="OneBayArea"/></a> / Maps</h1>
+							<h1><a href="/">Move</a> / <a href="./">Maps</a> / Travel Time</h1>
 							<a href="/" id="helper_btn" title="show info layer"><img src="../style/images/confused.png" alt="question mark"/></a>
 						</div>
 						<!-- <input type="hidden" name="taz" value=""/> -->
@@ -385,31 +384,32 @@
 								</p>
 							</div>
 							
-							<div id="time-slider-container" class="slider-container inactive">
-								<h5><label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Filter by travel time in minutes:</label></h5>
-								<div class="slider_wrapper">
+								<div id="time-slider-container" class="slider-container inactive">
+									<h5><label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Filter by travel time in minutes:</label></h5>
+									
+									<div class="slider_wrapper">
 									<div id="ticks"></div>
 									<div id="time-slider"></div>
+									</div>
+								
+									<!-- <div id="legend"><span class="chips"></span><span class="labels"></span></div> -->
 								</div>
-							</div>
-						
-							<div id="housing-slider-container" class="slider-container inactive">
-								<h5><label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Filter by average home price:</label></h5>
-								<div class="slider_wrapper">
+							
+							
+							
+								<div id="housing-slider-container" class="slider-container inactive">
+									<h5><label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Filter by average home price:</label></h5>
+									<div class="slider_wrapper">
 									<div id="ticks"></div>
 									<div id="housing-slider"></div>
+									</div>
 								</div>
-							</div>
-
-							<div id="feedback">
-								<!-- <h3>Give us feedback!</h3> -->
-								<p id="twitter"><a href="http://www.twitter.com/OneBayArea"><img src="http://twitter-badges.s3.amazonaws.com/t_small-b.png" alt=""/></a> <a href="http://www.twitter.com/OneBayArea">Follow OneBayArea on Twitter</a></p>
-							</div>
-
+							
+							
 						</div>
 						<div id="helper_panel">
 							<div>
-							<h2>What is this?</h2>
+							<h1>What is this?</h1>
 							<p>MTC maintains an analytical tool referred to by transportation planning professionals as a "travel demand model" (or "travel forecasting model").  The purpose of the tool is to first describe the reaction of travelers to expected changes in transport projects, transport policies, and development patterns and to then quantify the impact of cumulative individual decisions on the Bay Area's transport networks and environment.  For example, if a congested section of a freeway is widened, the MTC travel model could be used to estimate the short term changes in travel speed, as well as longer term responses such as travelers choosing to commute a bit earlier/later or by different routes.</p>
 							<p>To accurately describe the behavior of travelers in the Bay Area, MTC needs to understand the travel options available to residents of all nine Bay Area counties.  As such, a key feature of MTC's travel model is a representation of the roadway and transit networks.  These networks are used to estimate travel time to and from locations throughout the Bay Area during different times of the day and for different ways of getting from A to B.  The travel times shown in the interactive map are for the year 2005.  In subsequent versions of this map, we hope to present travel time estimates for the year 2010 as well as future years (2020! 2035! 2040 even!).  In doing so, we hope to give the public a more tangible and enjoyable way to understand the various future year scenarios MTC and ABAG will consider during our long range planning exercises.</p>
 							</div>
