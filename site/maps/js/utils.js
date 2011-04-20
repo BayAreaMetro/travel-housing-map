@@ -369,7 +369,11 @@ function formatTime(minutes) {
 			return "&frac12; hour";
 	*/
 	}
-	return str + " minutes";
+	if(min == 1){
+		return str + " minute";
+	}else{
+		return str + " minutes";
+	}
 }
 
 function defer(ms, fn) {

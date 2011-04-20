@@ -61,9 +61,14 @@ var updateMapHrefs = defer(100, reallyUpdateHash);
 				originMarker,
 				destMarker;
 		
-		var priceRange = {};
-
-		var state = {};
+		var priceRange = {},
+		sliderStates = {},
+		state = {};
+		
+		// set slider states to true, will get updated
+		sliderStates.housing = true;
+		sliderStates.travel = true;
+		
 		// these variables go into the scenario request URI
 		// state.scenario = "2005"; // scenario directory name
 		state.time = "AM"; // morning commute
@@ -291,14 +296,21 @@ var updateMapHrefs = defer(100, reallyUpdateHash);
 					
 					
 					// set text
-				/*
 					var tazid = Number(($(this).attr("id")).slice(3));
 					var tazPrice = (featuresById[tazid] && featuresById[tazid].properties['average_value_per_unit']) 
-									? "<br/>$" + commize(featuresById[tazid].properties['average_value_per_unit']) 
+									? "$" + commize(featuresById[tazid].properties['average_value_per_unit']) 
 									: "";
-				*/
-					
-					var _outText = self.oldTitleAttr;// + tazPrice;
+				
+					var _outText = "";
+					if(controller.travelSlideState())
+							_outText += self.oldTitleAttr;
+							
+					if(controller.housingSlideState()){
+							if(_outText.length) _outText += "<br/>";
+							_outText += tazPrice;
+					}
+							
+					if(!_outText.length)return;
 					self.txtRef.html( _outText );
 					
 					// adjust width to size of txt
@@ -307,8 +319,9 @@ var updateMapHrefs = defer(100, reallyUpdateHash);
 				
 					// set width and offset margin to center tip based on new width above
 					var _w = self.tipRef.width();
+					var tipAdj = (_w * .3) + 20; //  based on nub style
 					self.tipRef.css("width",_w+"px");
-					self.tipRef.css("margin-left", "-"+(_w*.5)+"px");
+					self.tipRef.css("margin-left", "-"+tipAdj+"px");
 					
 					// set the height var
 					self.tipHeight = self.tipRef.height();
@@ -730,6 +743,22 @@ var updateMapHrefs = defer(100, reallyUpdateHash);
 			}
 		};
 		
+		// get/set travel slider state
+		controller.travelSlideState = function(x){
+			if (!arguments.length) 
+					return sliderStates.travel;
+			
+			sliderStates.travel = x;
+		}
+		
+		// get/set travel slider state
+		controller.housingSlideState = function(x){
+			if (!arguments.length) 
+					return sliderStates.housing;
+			
+			sliderStates.housing = x;
+		}
+		
 
 		// get/set the origin string (asynchronous)
 		controller.origin = function(loc, latlon, success, failure) {
@@ -863,48 +892,15 @@ $(function() {
 	// the event now, to handle the hash the page may have loaded with.
 	$(window).trigger( 'hashchange' );
 	
-	/// assign toggle handler to info button
-	$("#helper_btn").toggle(function(e) {
-	  	// show info panel
-		var _panel = $("#helper_panel");
-		var _top = $(this).offset().top + $(this).height();
-		var _height = $("#right_column").height() - _top;
-		var _width = _panel.width();
-		
-		_panel.css("top",_top+"px").css("left","-"+_width+"px").css("height",_height).css("display","block");
-		slidePanel(_panel,0,false);
-	}, function(e) {
-		// hide info panel
-		var _panel = $("#helper_panel");
-		var _width = _panel.width();
-		slidePanel(_panel,"-"+_width+"px",true);
-	});
-	
-	function slidePanel(_panel,_w,_hide){
-		  _panel.animate({
-		    left: _w
-		  }, 300, function() {
-			if(_hide){
-				$(this).css("display","none");
-			}
-		  });
-	}
-	
-	// need this to update helper panel mainly
-	function updateLeftColumnHeight(_h){
-		$("#left_column").height(_h);
-		
-		var _panel = $("#helper_panel");
-		var _top = $("#helper_btn").offset().top + $("#helper_btn").height();
-		var _height = $("#right_column").height() - _top;
-		_panel.css("height",_height);
-	}
 
 	
 	// flags to determine whether a slider is active and should be used in the filtering process
 	// true by default
 	var housing_slider_active = $("#housing_slider_enabled").is(':checked'),
 		time_slider_active = $("#time_slider_enabled").is(':checked');
+		
+	controller.housingSlideState(housing_slider_active);
+	controller.travelSlideState(time_slider_active);
 		
 	$("#housing_slider_enabled").change(function(){
 		housing_slider_active = $(this).is(':checked');
@@ -918,6 +914,10 @@ $(function() {
 	});
 
 	function handleSliderCheckboxes(){
+
+		controller.housingSlideState(housing_slider_active);
+		controller.travelSlideState(time_slider_active);
+		
 		if (housing_slider_active) {
 			$("#housing-slider").slider( "enable" );
 			$("#housing-slider-container").removeClass("disabled");
@@ -988,6 +988,30 @@ $(function() {
 		e.preventDefault();
 		return false;
 	}
+	
+	function updateTimeOfDayText() {
+		if ($("#time-of-day").hasClass("inactive") || typeof timeLinks == "undefined") {
+			$(".time_text").empty();
+		} else {
+			$(".time_text").html(" during the <strong>" + timeLinks.filter(".selected").find("span").text() + "</strong>");
+		}
+	}
+	function updateModeText() {
+		$(".mode_text").html("by <strong>" + modeLinks.filter(".selected").attr("title") + "</strong>");
+	}
+	
+	function updatePriceText() {
+		if (housing_slider_active) {
+			var maxpriceAdj = "";
+			if(controller.priceRange.maxPrice && maxPrice == controller.priceRange.maxPrice)maxpriceAdj = "+";
+			$(".housing_threshold").html("with home prices between "
+				+ "<strong>$" + convertCurrency(minPrice) + " and "
+				+ "$" + convertCurrency(maxPrice) + maxpriceAdj + "</strong>")
+				.show();
+		} else {
+			$(".housing_threshold").empty().hide();
+		}
+	}
 
 	controller.on("travel-time", function(e) {
 		var origin = e.origin,
@@ -1018,11 +1042,18 @@ $(function() {
 			page.removeClass("no_origin").addClass("has_origin").addClass("has_dest");
 
 		} else if (origin) {
-
+			/*
 			prefix.html('Bay Area places <span class="housing_threshold"></span>' +
 				' accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a>' +
 				' <span class="mode_text"></span> <span class="travel_time_threshold"></span>' + 
 				' <span class="time_text"></span>');
+			*/
+
+			prefix.html(
+				'Bay Area places accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> <span class="mode_text"></span>' 
+				+ ' <span class="travel_time_threshold"></span> <span class="time_text"></span>' + ' <span class="housing_threshold"></span>'
+			);
+				
 			updateTimeText(maxTime);
 			updatePriceText();
 			updateModeText();
@@ -1162,17 +1193,6 @@ $(function() {
 		}
 	}
 	
-	function updatePriceText() {
-		if (housing_slider_active) {
-			$(".housing_threshold").html("with home prices between "
-				+ "<strong>$" + convertCurrency(minPrice) + " and "
-				+ "$" + convertCurrency(maxPrice) + "</strong><br/>")
-				.show();
-		} else {
-			$(".housing_threshold").empty().hide();
-		}
-	}
-	
 	function setHousingPrice(x){
 		if (maxPrice != x[1] || minPrice != x[0]) {
 			maxPrice = x[1];
@@ -1273,8 +1293,10 @@ $(function() {
 	
 	// create the housing slider
 	// need to defer to after shapes have been loaded
+	// max price has been weighted
 	var housing_slider = null;
 	function createHousingSlider(){
+		controller.priceRange.maxPrice = 2000000;
 		var step = 10000;
 		minPrice = Math.floor(controller.priceRange.minPrice / step) * step;
 		maxPrice = Math.ceil(controller.priceRange.maxPrice / step) * step;
@@ -1325,7 +1347,7 @@ $(function() {
 			for (var i = 0; i <= last; i++) {
 				var current = steps[i];
 				var label = $("<a/>")
-					.text("$"+convertCurrency(current))
+					.text("$"+convertCurrency(current) + ((i==last)?"+":""))
 					.attr("href", "#")
 					.attr("class", "tick")	
 					.data("hprice", current)
@@ -1402,17 +1424,6 @@ $(function() {
 		 });
 	setMode(controller.mode());
 
-	function updateModeText() {
-		$(".mode_text").html("by <strong>" + modeLinks.filter(".selected").attr("title") + "</strong>");
-	}
-
-	function updateTimeOfDayText() {
-		if ($("#time-of-day").hasClass("inactive") || typeof timeLinks == "undefined") {
-			$(".time_text").empty();
-		} else {
-			$(".time_text").html("<br/>during the <strong>" + timeLinks.filter(".selected").find("span").text() + "</strong>");
-		}
-	}
 
 	function setTime(time) {
 		controller.time(time);
@@ -1434,6 +1445,102 @@ $(function() {
 		var dir = $(this).val();
 		controller.direction(dir);
 	}).change();
+	
+	// info buttons for sliders
+
+	var _infoSelected = null;
+	
+	function closeallInfoBoxes(){
+		_infoSelected = "";
+		$("#slider_info_box").hide();
+	}
+	
+	$("#housing-slider-container .slider-info-button").click(function(){
+		var _infobox = $("#slider_info_box");
+		if(_infoSelected != "housing"){
+			
+			closeallInfoBoxes();
+			_infoSelected = "housing";
+			var _boxWidth = _infobox.width();
+			var _boxHeight = _infobox.height();
+			var pos = $(this).parent().offset();
+			var _width = $(this).parent().width();
+			var _buttonWidth = $(this).width();	
+			var _leftPos = _width - ( (_boxWidth * .5) + ((_buttonWidth * .5) + 15) );
+
+			$("#sliderinfo").html("slider info here");
+			_infobox.css("top",pos.top-(_boxHeight+20)).css("left",_leftPos).show();
+		}else{
+			closeallInfoBoxes();
+		}
+	});
+
+	$("#time-slider-container .slider-info-button").click(function(){
+		var _infobox = $("#slider_info_box");
+		if(_infoSelected != "time"){
+			closeallInfoBoxes();
+			_infoSelected = "time";
+			var _boxWidth = _infobox.width();
+			var _boxHeight = _infobox.height();
+			var pos = $(this).parent().offset();
+			var _width = $(this).parent().width();
+			var _buttonWidth = $(this).width();	
+			var _leftPos = _width - ( (_boxWidth * .5) + ((_buttonWidth * .5) + 15) );
+
+			$("#sliderinfo").html("slider info here");
+			_infobox.css("top",pos.top-(_boxHeight+20)).css("left",_leftPos).show();
+		}else{
+			closeallInfoBoxes();
+		}
+	});
+
+	$(".closeinfobutton").click(function(){
+		closeallInfoBoxes();
+	});
+	
+	// helper info box
+	// assign toggle handler to info button
+	$("#helper_btn").toggle(function(e) {
+	  	// show info panel
+		closeallInfoBoxes();
+		var _panel = $("#helper_panel");
+		var _top = $(this).offset().top + $(this).height();
+		var _height = $("#right_column").height() - _top;
+		var _width = _panel.width();
+		
+		_panel.css("top",_top+"px").css("left","-"+_width+"px").css("height",_height).css("display","block");
+		slidePanel(_panel,0,false);
+	}, function(e) {
+		// hide info panel
+		var _panel = $("#helper_panel");
+		var _width = _panel.width();
+		slidePanel(_panel,"-"+_width+"px",true);
+	});
+	
+	$('.closehelperbutton').click(function(){
+		$("#helper_btn").trigger( 'click' );
+	});
+	
+	function slidePanel(_panel,_w,_hide){
+		  _panel.animate({
+		    left: _w
+		  }, 300, function() {
+			if(_hide){
+				$(this).css("display","none");
+			}
+		  });
+	}
+	
+	// need this to update helper panel mainly
+	function updateLeftColumnHeight(_h){
+		$("#left_column").height(_h);
+		
+		var _panel = $("#helper_panel");
+		var _top = $("#helper_btn").offset().top + $("#helper_btn").height();
+		var _height = $("#right_column").height() - _top;
+		_panel.css("height",_height);
+	}
+	
 
 	/* adjust map size based on viewport */
 	function resizeMap() {

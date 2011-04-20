@@ -86,6 +86,18 @@
 				font-size: .8em;
 				pointer-events: all;
 			}
+			
+			span.slider-info-button{
+				position:absolute;
+				top:3px;
+				right:15px;
+				z-index:100;
+				cursor:pointer;
+			}
+			
+			span.slider-info-button:hover{
+				opacity:.7;
+			}
 
 			#legend {
 				margin-top: -2em;
@@ -193,7 +205,7 @@
 				width: 450px;
 				height: 100%;
 				z-index: 100;
-				overflow: hidden; /* TODO: overflow: auto? */
+				/*overflow: hidden;*/ /* TODO: overflow: auto? */
 			}
 			
 			#right_column{
@@ -229,7 +241,7 @@
 			#helper_btn {
 				position: absolute;
 				right: 15px;
-				top: 8px;
+				top: 12px;
 				cursor: pointer;
 			}
 
@@ -299,6 +311,63 @@
 			#housing-slider-container #ticks .firsttick{
 				margin-left: -2em !important;
 			}
+			
+			#slider_info_box{
+				display:none;
+				position:absolute;
+				z-index:10001;
+				background:#000;
+				width:200px;
+				height:100px;
+				color: white;
+				
+				-webkit-border-radius: 3px;
+				-moz-border-radius: 3px;
+				border-radius: 3px;
+				-moz-box-shadow: 0 0 2px #333;
+				-webkit-box-shadow: 0 0 2px #333;
+				box-shadow: 0 0 2px #333;
+			}
+			
+			.infonub {
+			height: 0;
+			width: 0;
+			position: absolute;
+			border-left: 20px solid transparent;
+			border-right: 20px solid transparent;
+			border-top: 10px solid black;
+			border-bottom: 0;
+			left: 40%;
+			bottom: -10px;
+			}
+			#sliderinfo{
+				text-align: center;
+				margin-top: 30px;
+				font-size: 14px;
+			}
+			.closeinfobutton{
+				position:absolute;
+				top:2px;
+				right:4px;
+				z-index:10;
+				font-weight:800;
+				font-size:16px;
+				cursor:pointer;
+			}
+			span.closeinfobutton:hover{
+				opacity:.7;
+			}
+			
+			
+			span.closehelperbutton{
+				position:absolute;
+				top:2px;
+				right:4px;
+				z-index:10;
+				font-weight:800;
+				font-size:16px;
+				cursor:pointer;
+			}
 
 		</style>
 		<script type="text/javascript" src="maps/js/less-1.0.41.min.js"></script>
@@ -332,7 +401,7 @@
 					<div id="left_column">
 						<div id="title">
 							<h1><a href="http://www.onebayarea.org/"><img src="style/images/OneBayArea_small.png" width="198" height="32" alt="OneBayArea"/></a> / Maps</h1>
-							<a href="/" id="helper_btn" title="show info layer"><img src="style/images/confused.png" alt="question mark"/></a>
+							<a href="/" id="helper_btn" title="show info layer"><img src="style/images/info.png" alt="question mark"/></a>
 						</div>
 						<!-- <input type="hidden" name="taz" value=""/> -->
 						<input type="hidden" name="max_time" value="60"/>
@@ -385,25 +454,30 @@
 							</div>
 							
 							<div id="time-slider-container" class="slider-container inactive">
-								<h5><label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Filter by travel time in minutes:</label></h5>
+								<h5>
+									<label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Show travel times between:</label>
+									<span class="slider-info-button"><img src="style/images/info.png" width="16" height="16"/></span> 
+								</h5>
 								<div class="slider_wrapper">
 									<div id="ticks"></div>
 									<div id="time-slider"></div>
 								</div>
-								<!-- <p class="help">(help text here)</p> -->
+								
 							</div>
 						
 							<div id="housing-slider-container" class="slider-container inactive">
-								<h5><label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Filter by average home price:</label></h5>
+								<h5>
+									<label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Show average home prices between:</label>
+									<span class="slider-info-button"><img src="style/images/info.png" width="16" height="16"/></span> 
+								</h5>
 								<div class="slider_wrapper">
 									<div id="ticks"></div>
 									<div id="housing-slider"></div>
 								</div>
-								<!-- <p class="help">(help text here)</p> -->
 							</div>
 
 							<div id="feedback">
-								<!-- <h3>Give us feedback!</h3> -->
+								 <h3><a href="mailto:info@onebayarea.org?subject=feedback:%20onebayarea/maps">Give us feedback!</a></h3> 
 								<p id="twitter"><a href="http://www.twitter.com/OneBayArea"><img src="http://twitter-badges.s3.amazonaws.com/t_small-b.png" alt=""/></a> <a href="http://www.twitter.com/OneBayArea">Follow OneBayArea on Twitter</a></p>
 							</div>
 
@@ -414,7 +488,9 @@
 							<p>MTC maintains an analytical tool referred to by transportation planning professionals as a "travel demand model" (or "travel forecasting model").  The purpose of the tool is to first describe the reaction of travelers to expected changes in transport projects, transport policies, and development patterns and to then quantify the impact of cumulative individual decisions on the Bay Area's transport networks and environment.  For example, if a congested section of a freeway is widened, the MTC travel model could be used to estimate the short term changes in travel speed, as well as longer term responses such as travelers choosing to commute a bit earlier/later or by different routes.</p>
 							<p>To accurately describe the behavior of travelers in the Bay Area, MTC needs to understand the travel options available to residents of all nine Bay Area counties.  As such, a key feature of MTC's travel model is a representation of the roadway and transit networks.  These networks are used to estimate travel time to and from locations throughout the Bay Area during different times of the day and for different ways of getting from A to B.  The travel times shown in the interactive map are for the year 2005.  In subsequent versions of this map, we hope to present travel time estimates for the year 2010 as well as future years (2020! 2035! 2040 even!).  In doing so, we hope to give the public a more tangible and enjoyable way to understand the various future year scenarios MTC and ABAG will consider during our long range planning exercises.</p>
 							</div>
+							<span class="closehelperbutton">X</span>
 						</div>
+						<div id="slider_info_box"><span class="infonub"></span><p id="sliderinfo"></p><span class="closeinfobutton">X</span></div>
 					</div><!-- close left column -->
 				
 					<!-- right column -->
