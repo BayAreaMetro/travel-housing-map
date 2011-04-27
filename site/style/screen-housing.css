@@ -102,7 +102,7 @@ img {
 }
 
 #info #info-geo p label {
-	padding-left: .5em;
+	padding-left: 0em;
 }
 
 #info h5 {
@@ -175,14 +175,14 @@ img {
 
 .dest-circle, .marker {
 	display: inline-block;
-	width: 1.4em;
-	height: 1.4em;
+	width: 1em;
+	height: 1em;
 	color: #fff !important;
-	line-height: 1.6em;
+	line-height: 1em;
 	font-weight: 600;
 	text-align: center;
 	.ieInlineBlockFix;
-	.full-circle(.8em);/*radius*/
+	.full-circle(.5em);/*radius*/
 }
 
 #bottom-bar .title .marker {

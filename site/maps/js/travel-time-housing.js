@@ -1487,7 +1487,7 @@ $(function() {
 			var _buttonWidth = $(this).width();	
 			var _leftPos = _width - ( (_boxWidth * .5) + ((_buttonWidth * .5) + 15) );
 
-			$("#sliderinfo").html("slider info here");
+			$("#sliderinfo").html("Door-to-door travel time (in minutes) per MTC's travel model.");
 			_infobox.css("top",pos.top-(_boxHeight+20)).css("left",_leftPos).show();
 		}else{
 			closeallInfoBoxes();
