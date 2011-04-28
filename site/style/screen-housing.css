@@ -72,6 +72,7 @@ img {
 
 #info-geo p input[type=text] {
 	width: 30ex;
+	font-weight:400;
 }
 #info-geo p input.locate {
 	width: 12ex;
@@ -103,6 +104,7 @@ img {
 
 #info #info-geo p label {
 	padding-left: 0em;
+	font-weight:600;
 }
 
 #info h5 {
@@ -175,14 +177,14 @@ img {
 
 .dest-circle, .marker {
 	display: inline-block;
-	width: 1em;
-	height: 1em;
+	width: 1.4em;
+	height: 1.4em;
 	color: #fff !important;
-	line-height: 1em;
+	line-height: 1.6em;
 	font-weight: 600;
 	text-align: center;
 	.ieInlineBlockFix;
-	.full-circle(.5em);/*radius*/
+	.full-circle(.8em);/*radius*/
 }
 
 #bottom-bar .title .marker {
