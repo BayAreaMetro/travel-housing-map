@@ -1,111 +1,78 @@
 <html>
-	<head>
-		<title>One Bay Area: Move / Maps / Travel Time</title>
-		
-		<link rel="stylesheet/less" type="text/css" href="style/screen-housing.css">
-		<style type="text/css">
-			@import url("http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/themes/smoothness/jquery-ui.css");
-			body{
-				width:100%;
-			}
-			h1, h2, h3, h4, h5, h6, p {
-			font-family: Arial,Helvetica,sans-serif;
-			margin: 0 0 12px 0;
-			padding: 0;
-			}
-	
-			p{font-size:12px;}
-			ul{
-				margin:0;padding:0;
-				list-style: none;
-			}
-			li{font-size:12px;margin:0 0 5px 0;}
-			
-			#page{background:url(style/images/home_right_bar_bk.gif) repeat-y 0 0;width:790px;margin:10px auto 0 auto;}
-			#content{padding-left:40px;margin-top:20px;}
-			#left_col{
-				float:left;
-				width:420px;
-				padding-right:20px;
-			}
-			#right_col{
-				width:300px;
-				float:left;
-			}
-			#resources{
-				margin:20px 0 0;
-			}
-				#resources li.twitter{margin-bottom:8px;}
-			#browsers{
-				
-			}
-				#browsers li{
-					/*background:url(style/images/browsers.png) no-repeat 0 0;*/
-					line-height:16px;
-					height:16px;
-					padding-left:0px;
-				}
-				#browsers li.chrome{
-					background-position: 0 0;
-				}
-				#browsers li.firefox{
-					background-position: 0 -17px;
-				}
-				#browsers li.opera{
-					background-position: 0 -34px;
-				}
-				#browsers li.safari{
-					background-position: 0 -51px;
-				}
-				#browsers li.ie{
-					background-position: 0 -68px;
-				}
-				#browsers li img{vertical-align:text-bottom;padding-right:5px;}
-			h4{
-				font-size:11px;
-				text-transform:uppercase;
-				font-weight:800;
-				margin: 10px 0 5px;
-			}
-			
-			h3{
-				font-size:16px;
-				text-transform:uppercase;
-				font-weight:800;
-				margin: 0 0 5px 0;
-			}
-			
-		</style>
-		<script type="text/javascript" src="maps/js/less-1.0.41.min.js"></script>
-	</head>
-	<body>
-		<div id="page">
-			<div id="header"><img src="http://www.onebayarea.org/img/O-edge.gif" alt=" " width="24" height="124"><img src="http://www.onebayarea.org/img/OneBayArea.gif" alt="One Bay Area" width="750" height="123">
-			<div id="content">
-				<div id="left_col">
-					<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</p>
-					<p>Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna.</p>		
-					<ul id="resources">
-						<li><a href="mailto:info@onebayarea.org?subject=feedback:%20onebayarea/maps"><img src="style/images/email.png" alt="511.org logo"/></a> <a href="mailto:info@onebayarea.org?subject=feedback:%20onebayarea/maps">Give us feedback!</a></li>
-						<li class="twitter"><a href="http://www.twitter.com/OneBayArea"><img src="http://twitter-badges.s3.amazonaws.com/t_small-b.png" alt="twitter logo"/></a> <a href="http://www.twitter.com/OneBayArea">Follow OneBayArea on Twitter</a></li>
-						<li><a href="http://www.511.org"><img src="style/images/511-logo.png" alt="511.org logo"/></a> <a href="http://www.511.org">For real-time travel information</a></li>
-					</ul>
-				</div>
-				<div id="right_col">
-					<h3><a href="http://maps.onebayarea.org/travel_housing" title="launch interactive map">Launch interactive map &raquo;</a></h3>
-					<a href="http://maps.onebayarea.org/travel_housing" title="launch interactive map"><img src="style/images/home_thumb.jpg" width="300" alt="interactive map image"/></a>
-					
-					<h4>Compatible web browsers:</h4>
-					<ul id="browsers">
-						<li><a href="http://www.mozilla.com/en-US/firefox/new/"><img src="style/images/browser_firefox.png"/></a><a href="http://www.mozilla.com/en-US/firefox/new/">Firefox - 3.6+</a></li>
-						<li><a href="http://www.apple.com/safari/download/"><img src="style/images/browser_safari.png"/></a><a href="http://www.apple.com/safari/download/">Safari - 4.0+</a></li>
-						<li><a href="http://www.google.com/chrome"><img src="style/images/browser_chrome.png"/></a><a href="http://www.google.com/chrome">Chrome - all</a></li>
-						<li><a href="http://www.opera.com/download/"><img src="style/images/browser_opera.png"/></a><a href="http://www.opera.com/download/">Opera - 9+</a></li>
-					</ul>
-					
-				</div>
-				<div class="clear">&nbsp;</div>
-			</div>
-		</div><!-- close page wrapper -- >
-	</body>
+    <head>
+        <title>One Bay Area: Move / Maps / Travel Time</title>
+        
+        <link rel="stylesheet/less" type="text/css" href="style/screen-housing.css">
+        <link rel="stylesheet/less" type="text/css" href="style/home.css">
+        <script type="text/javascript" src="maps/js/less-1.0.41.min.js"></script>
+    </head>
+    <body>
+        <div id="page">
+            <h1 id="header">
+                <a href="http://onebayarea.org/"><img src="http://www.onebayarea.org/img/O-edge.gif" alt=" " width="24" height="124"><img src="http://www.onebayarea.org/img/OneBayArea.gif" alt="One Bay Area" width="750" height="123"/></a>
+            </h1>
+            <div id="content">
+                <div id="left_col">
+                    <h2>Maps</h2>
+
+                    <p>Welcome to maps.onebayarea.org.  If you&rsquo;ve landed here, it&rsquo;s
+                    likely you&rsquo;re already engaged in the onebayarea.com innovative regional
+                    planning effort addressing climate change, sustainable growth and development,
+                    transportation needs, and protection of our air and water.  If you&rsquo;re not
+                    involved in this unprecedented, collaborative, multi-agency and
+                    multi-jurisdiction regional planning challenge, we strongly encourage you to
+                    learn more.</p>
+
+                    <p>Whereas regional planning focuses on the overall health of the entire
+                    region, this interactive map site is all about bringing to life the rich
+                    regional planning data that&rsquo;s important to your life.  In other words,
+                    <strong>these interactive maps are designed to help
+                    translate the emerging vision of the <a
+                    href="http://onebayarea.org">OneBayArea</a> plan into personalized dynamic
+                    stories of what this vision means to your health, happiness
+                    and quality of life</strong>.</p>
+
+                    <p>The first map in this series, the <a
+                    href="travel_housing/">Travel Time and Housing Prices map</a>, helps
+                    show the relationship between travel time, using different modes of transit,
+                    and housing prices in the bay area.</p>
+
+                    <p>Why is this important to you?  Well, the quality of our lives is deeply
+                    connected to where we live, work, play and learn, and how we move between these
+                    places.  So, for example, if you work in Berkeley and would like to know where
+                    you might find a house for between $250,000 and $400,000, this map will show
+                    you where.  Furthermore, if you want to limit your commute to only 30 minutes
+                    by car, transit, bike or walking, you can see how these transportation
+                    preferences and limits affect your ability to find an affordable place to live
+                    that&rsquo;s close to where you spend your time working, playing or
+                    learning.</p>
+
+                    <p>We hope you enjoy your exploration of this map and data and find it useful
+                    to your life story&mdash;both the opportunities and challenges you face living
+                    in the bay area.</p>
+
+                    <ul id="resources">
+                        <li><a href="mailto:info@onebayarea.org?subject=feedback:%20onebayarea/maps"><img src="style/images/email.png" alt="511.org logo"/></a> <a href="mailto:info@onebayarea.org?subject=feedback:%20onebayarea/maps">Give us feedback!</a></li>
+                        <li class="twitter"><a href="http://www.twitter.com/OneBayArea"><img src="http://twitter-badges.s3.amazonaws.com/t_small-b.png" alt="twitter logo"/></a> <a href="http://www.twitter.com/OneBayArea">Follow OneBayArea on Twitter</a></li>
+                        <li><a href="http://www.511.org"><img src="style/images/511-logo.png" alt="511.org logo"/></a> <a href="http://www.511.org">For real-time travel information</a></li>
+                    </ul>
+                </div>
+
+                <div id="right_col">
+                    <h3><a href="http://maps.onebayarea.org/travel_housing" title="launch interactive map">Launch interactive map &raquo;</a></h3>
+                    <a href="http://maps.onebayarea.org/travel_housing" title="launch interactive map"><img src="style/images/home_thumb.png" width="300" alt="interactive map image"/></a>
+
+                    <h4>Compatible web browsers:</h4>
+                    <ul id="browsers">
+                        <li><a href="http://www.mozilla.com/en-US/firefox/new/"><img src="style/images/browser_firefox.png"/></a><a href="http://www.mozilla.com/en-US/firefox/new/">Firefox - 3.6+</a></li>
+                        <li><a href="http://www.apple.com/safari/download/"><img src="style/images/browser_safari.png"/></a><a href="http://www.apple.com/safari/download/">Safari - 4.0+</a></li>
+                        <li><a href="http://www.google.com/chrome"><img src="style/images/browser_chrome.png"/></a><a href="http://www.google.com/chrome">Chrome - all</a></li>
+                        <li><a href="http://www.opera.com/download/"><img src="style/images/browser_opera.png"/></a><a href="http://www.opera.com/download/">Opera - 9+</a></li>
+                    </ul>
+                </div>
+
+                <div class="clear">&nbsp;</div>
+            </div>
+        </div><!-- close page wrapper -- >
+    </body>
 </html>
