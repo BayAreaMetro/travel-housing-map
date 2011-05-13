@@ -234,6 +234,8 @@
 			 /* change housing slider bar color to match time slider */
 			
 			.slider-container.inactive { display: none; }
+
+			.slider-container p.info { display: none; }
 			
 			.slider-container label {
 			}
@@ -342,7 +344,7 @@
 			}
 			#sliderinfo{
 				text-align: center;
-				margin-top: 30px;
+				margin: 25px 10px 0 10px;
 				font-size: 14px;
 			}
 			.closeinfobutton{
@@ -433,8 +435,8 @@
 								<p id="travel-optionss">
 									<span id="travel-mode" class="mode">
 										<label>by:</label>
-										<a href="#mode=da" data-mode="da" title="car alone"><img src="../style/images/modes/da.png"/></a>
-										<a href="#mode=s3" data-mode="s3" title="car using carpool lane"><img src="../style/images/modes/s2.png"/></a>
+										<a href="#mode=da" data-mode="da" title="single-occupant auto"><img src="../style/images/modes/da.png"/></a>
+										<a href="#mode=s3" data-mode="s3" title="auto using carpool lane"><img src="../style/images/modes/s2.png"/></a>
 										<a href="#mode=wTrnW" data-mode="wTrnW" title="public transit"><img src="../style/images/modes/transit.png"/></a>
 										<a href="#mode=bike" data-mode="bike" title="bicycle"><img src="../style/images/modes/bike.png"/></a>
 										<a href="#mode=walk" data-mode="walk" title="foot" class="last_right"><img src="../style/images/modes/walk.png"/></a>
@@ -458,6 +460,7 @@
 									<label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Show travel times between:</label>
 									<span class="slider-info-button"><img src="../style/images/info.png" width="16" height="16"/></span> 
 								</h5>
+                                                                <p class="info">Door-to-door travel time (in minutes) per <a href="http://mtc.ca.gov/">MTC&rsquo;s</a> travel model.</p>
 								<div class="slider_wrapper">
 									<div id="ticks"></div>
 									<div id="time-slider"></div>
@@ -466,9 +469,10 @@
 						
 							<div id="housing-slider-container" class="slider-container inactive">
 								<h5>
-									<label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Show average home prices between:</label>
+									<label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Show median home prices between:</label>
 									<span class="slider-info-button"><img src="../style/images/info.png" width="16" height="16"/></span> 
 								</h5>
+                                                                <p class="info">Median neighborhood home value in year 2000 dollars, per <a href="http://www.abag.ca.gov/">ABAG&rsquo;s</a>  housing sales database.</p>
 								<div class="slider_wrapper">
 									<div id="ticks"></div>
 									<div id="housing-slider"></div>
@@ -484,9 +488,39 @@
 						<div id="helper_panel">
 							<div>
 							<h2>How to Use This Interactive Map</h2>
-							<p>This interactive map allows you to explore the connection between the average price of a home in the Bay Area and the time it takes to get to places based on the mode of travel you choose and the travel time parameters that you select.</p>
-							<p>Enter a city or a specific address and click on "Locate." To see the differences in distance that you can travel from that point, select your travel mode and when you travel (time of day) by clicking on the icons. Choose different icons to see differences among travel mode and time of day. Use the sliders to filter the number of minutes you want to spend traveling (one-way) and to select a range of average home prices. To see the actual travel time and housing price illustrated for a specific area, hover your mouse above that area on the map and pop-ups will provide those details.</p>
+<p>This interactive map allows you to explore the connection between the median
+year 2000 price of a home in the Bay Area and the time it takes to get to
+places based on the mode of travel you choose and the travel time parameters
+that you select.</p>
+
+<p>Enter a city or address, then click &ldquo;Locate.&rdquo;</p>
+
+<p>Click on the icons to change how you travel (as a single occupant in an
+automobile, in a carpool, or via transit, bicycle or walking) and the time of
+day you travel in order to see how travel times are affected by these variables
+to see the difference that you can travel. Hover your mouse over a specific
+location to see travel times.</p>
+
+<p><em>Note: The time of day options are not available if you choose
+bicycling or walking as your transportation mode.</em></p>
+
+<p>Adjust the sliding bars to filter the time you want to spend traveling
+(one-way) and to show those areas with median housing prices you select. Hover
+your mouse over a specific location to see the actual travel time and housing
+price. </p>
+
+<p>If you are interested in looking at travel time only, turn off the housing
+price feature by unchecking the box next to that slider. To look only at
+housing prices, uncheck the travel times box.</p>
+
+<p>Don&rsquo;t forget, for real-time travel information, visit <a
+href="http://511.org">511.org</a> or call <strong>511</strong> on the phone.</p>
+
+<!--
+							<p>This interactive map allows you to explore the connection between the average (median) price of a home in the Bay Area and the time it takes to get to places based on the mode of travel you choose and the travel time parameters that you select.</p>
+							<p>Enter a city or a specific address and click on "Locate." To see the differences in distance that you can travel from that point, select your travel mode and when you travel (time of day) by clicking on the icons. Choose different icons to see differences among travel mode and time of day. Use the sliders to filter the number of minutes you want to spend traveling (one-way) and to select a range of home prices. To see the actual travel time and housing price illustrated for a specific area, hover your mouse above that area on the map and pop-ups will provide those details.</p>
 							<p>If you are interested in looking at travel time only, turn off the average home price feature by unchecking the checkbox next to that slider. To look only at housing prices, uncheck the travel time checkbox next to its slider.</p>
+-->
 							</div>
 							<span class="closehelperbutton">X</span>
 						</div>

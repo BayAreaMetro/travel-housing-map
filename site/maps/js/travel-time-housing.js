@@ -1050,7 +1050,7 @@ $(function() {
 			*/
 
 			prefix.html(
-				'Bay Area places accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> <span class="mode_text"></span>' 
+				'Blue indicates Bay Area places accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> <span class="mode_text"></span>' 
 				+ ' <span class="travel_time_threshold"></span> <span class="time_text"></span>' + ' <span class="housing_threshold"></span>'
 			);
 				
@@ -1468,7 +1468,7 @@ $(function() {
 			var _buttonWidth = $(this).width();	
 			var _leftPos = _width - ( (_boxWidth * .5) + ((_buttonWidth * .5) + 15) );
 
-			$("#sliderinfo").html("slider info here");
+			$("#sliderinfo").html($(this).parents(".slider-container").find("p.info").html());
 			_infobox.css("top",pos.top-(_boxHeight+20)).css("left",_leftPos).show();
 		}else{
 			closeallInfoBoxes();
@@ -1487,7 +1487,7 @@ $(function() {
 			var _buttonWidth = $(this).width();	
 			var _leftPos = _width - ( (_boxWidth * .5) + ((_buttonWidth * .5) + 15) );
 
-			$("#sliderinfo").html("Door-to-door travel time (in minutes) per MTC's travel model.");
+			$("#sliderinfo").html($(this).parents(".slider-container").find("p.info").html());
 			_infobox.css("top",pos.top-(_boxHeight+20)).css("left",_leftPos).show();
 		}else{
 			closeallInfoBoxes();
