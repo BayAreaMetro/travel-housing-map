@@ -1,376 +1,13 @@
 <html>
 	<head>
-		<title>One Bay Area: Move / Maps / Travel Time</title>
+		<title>One Bay Area: Maps / Travel Time &amp; Housing Prices</title>
+		<!-- open graph meta tags-->
+		<meta property="og:description" content="The Travel Time and Housing Prices map, helps show the relationship between travel time, using different modes of transit, and housing prices in the bay area."/>
+		<meta property="og:image" content="http://maps.onebayarea.org/style/images/home_thumb.png"/>
 		
 		<link rel="stylesheet/less" type="text/css" href="../style/screen-housing.css">
 		<style type="text/css">
 			@import url("http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/themes/smoothness/jquery-ui.css");
-
-			.ui-corner-all { border-radius: 0 !important; }
-
-			.ui-widget-header {
-				background: #fff url("http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/themes/smoothness/images/ui-bg_flat_75_ffffff_40x100.png") 50% 50% repeat-x !important;
-			}
-
-			.ui-slider {
-				background: #ccc !important;
-				border-width: 0 !important;
-				cursor: pointer;
-			}
-			.ui-slider-handle,
-			.ui-slider-range {
-				background: #009DDC !important;
-				border-color: #009DDC !important;
-			}
-
-			#crosshairs {
-				position: absolute;
-				left: 50%;
-				top: 50%;
-				width: 15px;
-				height: 15px;
-				margin: -7px 0 0 -7px;
-				background-image: url("../style/images/crosshair.png");
-			}
-
-			#origin-marker, #dest-marker { display: none; }
-
-			#travel-time {
-				height: 94%;
-				background: #B1B8B8; /* acetate ocean */
-				overflow: hidden;
-			}
-
-			#crosshairs { z-index: 80; }
-			#travel-time .markers { z-index: 90; }
-			#map-title { z-index: 1000; }
-
-			#travel-time .markers .marker {
-				display: none;
-				margin: -.5em 0 0 -.5em;
-				cursor: pointer;
-				pointer-events: none; /* no mouse interaction with pointers */
-			}
-
-			#map-title {
-				background: rgba(255,255,255,.6);
-				/* border-bottom: 1px solid #fff; */
-				position: absolute;
-				left: 0;
-				top: 0;
-				width: 100%;
-				height: auto;
-			}
-
-			#map-title .title a {
-				pointer-events: all !important;
-			}
-			
-			#copyright{
-				position:absolute;
-				bottom:2px;
-				left:5px;
-				z-index:9999;
-				margin: 0;
-				font-size: 12px;
-				color: #666;
-			}
-			
-			.slider_wrapper{
-				margin: 0 2em 20px;
-			}
-
-			#time-slider,
-			#housing-slider {
-				margin: 0;
-				font-size: .8em;
-				pointer-events: all;
-			}
-			
-			span.slider-info-button{
-				position:absolute;
-				top:3px;
-				right:15px;
-				z-index:100;
-				cursor:pointer;
-			}
-			
-			span.slider-info-button:hover{
-				opacity:.7;
-			}
-
-			#legend {
-				margin-top: -2em;
-				height: 100%;
-				position: relative;
-			}
-
-			#legend .label,
-			#legend .chip {
-				position: absolute;
-				display: block;
-				text-align: center;
-				top: 0;
-				padding: .75em 0;
-				width: 2em;
-				height: 1.5em;
-			}
-
-			#legend .label {
-				padding-top: .25em;
-				padding-left: .5em;
-				padding-right: .5em;
-				margin-top: -1em;
-				margin-left: -1.5em !important;
-			}
-
-			#map-title .title {
-				color: #000;
-				font-weight: normal;
-				padding: 12px;
-				padding-top: 8px;
-				margin: 0;
-				pointer-events: all;
-				display: none;
-			}
-
-			#map-title .title span,
-			#map-title .title strong {
-			}
-
-			#legend .label {
-				text-shadow: #fff 1px 1px 1px;
-			}
-
-			#legend .chip {
-				padding-right: 1px;
-				border: 1px solid #fff;
-				border-width: 1px 0;
-			}
-
-			#legend .chip:first-child { padding-left: 1em; margin-left: -1em; }
-			#legend .chip:last-child { padding-left: 2px; padding-right: 1em; }
-
-			#legend .label {
-				color: #000 !important;
-				text-decoration: none;
-				font-weight: bold;
-				width: 2em;
-				margin-left: -1em;
-			}
-
-			image {
-				pointer-events: none;
-			}
-
-			.no_origin #info-dest,
-			.no_origin #travel-optionss {
-				opacity: .1;
-				pointer-events: none;
-			}
-
-			.has_origin #info-dest,
-			.has_origin #travel-optionss {
-				opacity: 1;
-				pointer-events: all;
-			}
-
-			.no_origin #info-extras {
-				/* padding: 0; */
-			}
-
-			.has_origin #info-extras {
-				/* border-top: 1px dashed #ccc; */
-			}
-
-			#map-title .controls {
-				top: 100%;
-				margin-top: 10px;
-			}
-			
-			/* for new two-column layout */
-			/* fixed left column width for controls & fluid right column width for map */
-			#page{
-				position: relative;
-				width: 100%;
-				margin-top: 10px;
-			}
-			#main-form{
-				position: relative;
-				width: 100%;
-			}
-			#left_column{
-				position: relative;
-				float: left;
-				width: 450px;
-				height: 100%;
-				z-index: 100;
-				/*overflow: hidden;*/ /* TODO: overflow: auto? */
-			}
-			
-			#right_column{
-				position: relative;
-				float: left;
-				width: 100%;
-				margin-left: -450px; /* based of left column width */
-			}
-			
-			#map-content {
-				position: relative;
-				margin-left: 450px; /* based of left column width */
-			}
-			
-			.inactive {
-				opacity: .3 !important;
-				cursor: default !important;
-				pointer-events: none;
-			}
-
-			.disabled {
-				color: #999 !important;
-			}
-			
-
-			 /* change housing slider bar color to match time slider */
-			
-			.slider-container.inactive { display: none; }
-
-			.slider-container p.info { display: none; }
-			
-			.slider-container label {
-			}
-			
-			#helper_btn {
-				position: absolute;
-				right: 15px;
-				top: 12px;
-				cursor: pointer;
-			}
-
-			#helper_btn:hover {
-				opacity: .5;
-			}
-
-			#helper_panel{
-				position: absolute;
-				width: 97%;
-				height: 100%;
-				background: rgba(0,0,0,.9);
-				display: none;
-				z-index: 500;
-				color: #fff;
-				padding: 0;
-				margin: 0;
-				overflow: auto;
-			}
-
-			#helper_panel div {
-				padding: 10px;
-			}
-
-			#helper_panel p {
-				font-weight: lighter;
-				font-size: 13px;
-				line-height: 16px;
-			}
-			
-			#location_origin,
-			#info-origin .or {
-				margin-left:0px;
-			}
-
-			#map-title h2 { font-size: 150%; }
-			
-			#time-slider-container,#housing-slider-container{
-				position:relative;
-				padding: .75em 0;
-				border-bottom: 1px solid #ccc;
-			}
-			#time-slider-container #ticks,#housing-slider-container #ticks{
-				position:relative;
-				margin: 0 2px 5px;
-				height:23px;
-			}
-			
-			#time-slider-container #ticks .tick,#housing-slider-container #ticks .tick{				
-				position: absolute;
-				display: block;
-				text-align: center;
-				top: 0;
-				width: 2em;
-				/*height: 1.5em; */
-				padding: .25em 0 5px;
-				background: white url("../style/images/tickmark.png") no-repeat 50% 100%;
-				font-size: 12px;
-				text-decoration: none;
-				color: black;
-				font-weight: 600;
-			}
-			#time-slider-container #ticks .tick{
-				margin-left: -1em !important;
-			}
-
-			#housing-slider-container #ticks .firsttick{
-				margin-left: -2em !important;
-			}
-			
-			#slider_info_box{
-				display:none;
-				position:absolute;
-				z-index:10001;
-				background:#000;
-				width:200px;
-				height:100px;
-				color: white;
-				
-				-webkit-border-radius: 3px;
-				-moz-border-radius: 3px;
-				border-radius: 3px;
-				-moz-box-shadow: 0 0 2px #333;
-				-webkit-box-shadow: 0 0 2px #333;
-				box-shadow: 0 0 2px #333;
-			}
-			
-			.infonub {
-			height: 0;
-			width: 0;
-			position: absolute;
-			border-left: 20px solid transparent;
-			border-right: 20px solid transparent;
-			border-top: 10px solid black;
-			border-bottom: 0;
-			left: 40%;
-			bottom: -10px;
-			}
-			#sliderinfo{
-				text-align: center;
-				margin: 25px 10px 0 10px;
-				font-size: 14px;
-			}
-			.closeinfobutton{
-				position:absolute;
-				top:2px;
-				right:4px;
-				z-index:10;
-				font-weight:800;
-				font-size:16px;
-				cursor:pointer;
-			}
-			span.closeinfobutton:hover{
-				opacity:.7;
-			}
-			
-			
-			span.closehelperbutton{
-				position:absolute;
-				top:2px;
-				right:4px;
-				z-index:10;
-				font-weight:800;
-				font-size:16px;
-				cursor:pointer;
-			}
-
 		</style>
 		<script type="text/javascript" src="../maps/js/less-1.0.41.min.js"></script>
 		<script type="text/javascript" src="../maps/js/LAB.min.js"></script>
@@ -460,7 +97,7 @@
 									<label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Show travel times between:</label>
 									<span class="slider-info-button"><img src="../style/images/info.png" width="16" height="16"/></span> 
 								</h5>
-                                                                <p class="info">Door-to-door travel time (in minutes) per <a href="http://mtc.ca.gov/">MTC&rsquo;s</a> travel model.</p>
+                                <p class="info">Door-to-door travel time (in minutes) per <a href="http://mtc.ca.gov/">MTC&rsquo;s</a> travel model.</p>
 								<div class="slider_wrapper">
 									<div id="ticks"></div>
 									<div id="time-slider"></div>
@@ -472,55 +109,51 @@
 									<label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Show median home prices between:</label>
 									<span class="slider-info-button"><img src="../style/images/info.png" width="16" height="16"/></span> 
 								</h5>
-                                                                <p class="info">Median neighborhood home value in year 2000 dollars, per <a href="http://www.abag.ca.gov/">ABAG&rsquo;s</a>  housing sales database.</p>
+                                <p class="info">Median neighborhood home value in year 2000 dollars, per <a href="http://www.abag.ca.gov/">ABAG&rsquo;s</a>  housing sales database.</p>
 								<div class="slider_wrapper">
 									<div id="ticks"></div>
 									<div id="housing-slider"></div>
 								</div>
 							</div>
-
-							<div id="feedback">
-								 <h3><a href="mailto:info@onebayarea.org?subject=feedback:%20onebayarea/maps">Give us feedback!</a></h3> 
-								<p id="twitter"><a href="http://www.twitter.com/OneBayArea"><img src="http://twitter-badges.s3.amazonaws.com/t_small-b.png" alt="twitter logo"/></a> <a href="http://www.twitter.com/OneBayArea">Follow OneBayArea on Twitter</a></p>
-							</div>
+							
+							<ul id="resources">
+								<li class="five-one-one"><a href="http://www.511.org"><img src="../style/images/511-logo.gif" alt="511.org logo"/></a> <a href="http://www.511.org">For real-time travel information</a></li>
+		                        <li><a href="mailto:info@onebayarea.org?subject=feedback:%20onebayarea/maps"><img src="../style/images/email.png" alt="511.org logo"/></a> <a href="mailto:info@onebayarea.org?subject=feedback:%20onebayarea/maps">Give us feedback!</a></li>
+		                        <li class="twitter"><a href="http://www.twitter.com/OneBayArea"><img src="http://twitter-badges.s3.amazonaws.com/t_small-b.png" alt="twitter logo"/></a> <a href="http://www.twitter.com/OneBayArea">Follow OneBayArea on Twitter</a></li>
+		                    	<li><a href="https://www.facebook.com/OneBayArea"><img src="../style/images/icn-facebook-20x20-8a.png" alt="facebook logo"/></a> <a href="https://www.facebook.com/OneBayArea">OneBayArea on Facebook</a></li>
+							</ul>
 
 						</div>
 						<div id="helper_panel">
 							<div>
-							<h2>How to Use This Interactive Map</h2>
-<p>This interactive map allows you to explore the connection between the median
-year 2000 price of a home in the Bay Area and the time it takes to get to
-places based on the mode of travel you choose and the travel time parameters
-that you select.</p>
+								<h2>How to Use This Interactive Map</h2>
+								<p>This interactive map allows you to explore the connection between the median
+								year 2000 price of a home in the Bay Area and the time it takes to get to
+								places based on the mode of travel you choose and the travel time parameters
+								that you select.</p>
 
-<p>Enter a city or address, then click &ldquo;Locate.&rdquo;</p>
+								<p>Enter a city or address, then click &ldquo;Locate.&rdquo;</p>
 
-<p>Click on the icons to change how you travel (as a single occupant in an
-automobile, in a carpool, or via transit, bicycle or walking) and the time of
-day you travel in order to see how travel times are affected by these variables
-to see the difference that you can travel. Hover your mouse over a specific
-location to see travel times.</p>
+								<p>Click on the icons to change how you travel (as a single occupant in an
+								automobile, in a carpool, or via transit, bicycle or walking) and the time of
+								day you travel in order to see how travel times are affected by these variables
+								to see the difference that you can travel. Hover your mouse over a specific
+								location to see travel times.</p>
 
-<p><em>Note: The time of day options are not available if you choose
-bicycling or walking as your transportation mode.</em></p>
+								<p><em>Note: The time of day options are not available if you choose
+								bicycling or walking as your transportation mode.</em></p>
 
-<p>Adjust the sliding bars to filter the time you want to spend traveling
-(one-way) and to show those areas with median housing prices you select. Hover
-your mouse over a specific location to see the actual travel time and housing
-price. </p>
+								<p>Adjust the sliding bars to filter the time you want to spend traveling
+								(one-way) and to show those areas with median housing prices you select. Hover
+								your mouse over a specific location to see the actual travel time and housing
+								price. </p>
 
-<p>If you are interested in looking at travel time only, turn off the housing
-price feature by unchecking the box next to that slider. To look only at
-housing prices, uncheck the travel times box.</p>
+								<p>If you are interested in looking at travel time only, turn off the housing
+								price feature by unchecking the box next to that slider. To look only at
+								housing prices, uncheck the travel times box.</p>
 
-<p>Don&rsquo;t forget, for real-time travel information, visit <a
-href="http://511.org">511.org</a> or call <strong>511</strong> on the phone.</p>
-
-<!--
-							<p>This interactive map allows you to explore the connection between the average (median) price of a home in the Bay Area and the time it takes to get to places based on the mode of travel you choose and the travel time parameters that you select.</p>
-							<p>Enter a city or a specific address and click on "Locate." To see the differences in distance that you can travel from that point, select your travel mode and when you travel (time of day) by clicking on the icons. Choose different icons to see differences among travel mode and time of day. Use the sliders to filter the number of minutes you want to spend traveling (one-way) and to select a range of home prices. To see the actual travel time and housing price illustrated for a specific area, hover your mouse above that area on the map and pop-ups will provide those details.</p>
-							<p>If you are interested in looking at travel time only, turn off the average home price feature by unchecking the checkbox next to that slider. To look only at housing prices, uncheck the travel time checkbox next to its slider.</p>
--->
+								<p>Don&rsquo;t forget, for real-time travel information, visit <a
+								href="http://511.org">511.org</a> or call <strong>511</strong> on the phone.</p>
 							</div>
 							<span class="closehelperbutton">X</span>
 						</div>

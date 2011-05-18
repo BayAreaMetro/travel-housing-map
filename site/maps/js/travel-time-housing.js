@@ -968,6 +968,38 @@ $(function() {
 	});
 	
 	var maxPrice, minPrice;
+	
+	// housing scale and labels
+	// hard coded
+	var house_labels = ["90k","250k","500k","1m","1.5m","2m+"];
+	//.range(0, .125, .25, .5, .75, 1),
+	var house_scale = pv.Scale.linear()
+		.domain(90000,250000,500000,1000000,1500000,2000000)
+		.range(0, .15, .4, .65, .85, 1),
+			house_bounds = house_scale.domain(),
+			house_boundMin = house_bounds[0],
+			house_boundMax = house_bounds[house_bounds.length - 1];
+			
+	var housing_step_th = 10000;
+	var housing_step_ml = 100000;
+	function convertMinPrice(n){
+		if (n >= 1000000){
+			return Math.floor(n / housing_step_ml) * housing_step_ml;
+		}else{
+			return Math.floor(n / housing_step_th) * housing_step_th;
+		}		
+	}
+
+	function convertMaxPrice(n){
+		if (n >= 1000000){
+			return quantize(n,housing_step_ml);
+		}else{
+			return quantize(n,housing_step_th);
+		}
+		//return Math.ceil(n / housing_step) * housing_step;
+	}
+	
+	// get time
 	var maxTime = (hashState['max_time']) ? parseInt(hashState['max_time']) : 60;
 	if (isNaN(maxTime)) maxTime = 60;
 	
@@ -1002,11 +1034,11 @@ $(function() {
 	
 	function updatePriceText() {
 		if (housing_slider_active) {
-			var maxpriceAdj = "";
-			if(controller.priceRange.maxPrice && maxPrice == controller.priceRange.maxPrice)maxpriceAdj = "+";
+			var maxpriceAdj = (controller.priceRange.maxPrice && maxPrice >= house_boundMax) ? "2m+" : convertCurrency(maxPrice);
+
 			$(".housing_threshold").html("with home prices between "
 				+ "<strong>$" + convertCurrency(minPrice) + " and "
-				+ "$" + convertCurrency(maxPrice) + maxpriceAdj + "</strong>")
+				+ "$" + maxpriceAdj + "</strong>")
 				.show();
 		} else {
 			$(".housing_threshold").empty().hide();
@@ -1194,6 +1226,9 @@ $(function() {
 	}
 	
 	function setHousingPrice(x){
+		x[0] = convertMinPrice(x[0]);
+		x[1] = convertMaxPrice(x[1]);
+		if(x[1] >= house_boundMax)x[1] = convertMaxPrice(controller.priceRange.maxPrice);
 		if (maxPrice != x[1] || minPrice != x[0]) {
 			maxPrice = x[1];
 			minPrice = x[0];
@@ -1231,7 +1266,6 @@ $(function() {
 		return timeScale(t) * 100;
 	}
 	
-	
 	var timeticks = $("#time-slider-container #ticks"),
 			steps = pv.range(0, boundMax + 1, 15),
 			last = steps.length - 1;
@@ -1258,48 +1292,15 @@ $(function() {
 	// show title now that bottom bar is rendered
 	$('#map-title .title').show();
 
-/*
-	var labels = $("#legend .labels"),
-			steps = pv.range(0, boundMax + 1, 15),
-			last = steps.length - 1;
-	for (var i = 1; i <= last; i++) {
-		var current = steps[i];
-		var label = $("<a/>")
-			.text(current)
-			.attr("href", "#")
-			.attr("class", "label")
-			.data("minutes", current)
-			.css("left", pct(current) + "%")
-			.css("background", colorScale(current).color)
-			.appendTo(labels);
-	}
 
-	var range = pv.range(boundMin, boundMax, 1),
-			left = pct(boundMin),
-			right = pct(boundMax),
-			width = right - left,
-			per = width / range.length;
-	var chips = $("#legend .chips");
-	for (var i = 0; i < range.length; i++) {
-		var chip = $("<span/>")
-			.attr("class", "chip")
-			.css("left", pct(range[i]) + "%")
-			.css("width", per + "%")
-			.css("background", colorScale(range[i]).color)
-			.appendTo(chips);
-	}
-*/
-	
 	
 	// create the housing slider
 	// need to defer to after shapes have been loaded
-	// max price has been weighted
 	var housing_slider = null;
 	function createHousingSlider(){
-		controller.priceRange.maxPrice = 2000000;
-		var step = 10000;
-		minPrice = Math.floor(controller.priceRange.minPrice / step) * step;
-		maxPrice = Math.ceil(controller.priceRange.maxPrice / step) * step;
+		//controller.priceRange.maxPrice = 2000000;
+		minPrice = convertMinPrice(controller.priceRange.minPrice);
+		maxPrice = convertMaxPrice(controller.priceRange.maxPrice);
 		
 		// create a local copy
 		var minVal = minPrice,
@@ -1307,51 +1308,42 @@ $(function() {
 		
 		// check to see if min & max prices are in the hash
 		if(hashState['max_price'] && Number(hashState['max_price']) <= controller.priceRange.maxPrice){
-			maxVal = Math.ceil(Number(hashState['max_price']) / step) * step;
+			maxVal = convertMaxPrice(Number(hashState['max_price']));
 		}
 		
 		if(hashState['min_price'] && Number(hashState['min_price']) >= controller.priceRange.minPrice){
-			minVal = Math.floor(Number(hashState['min_price']) / step) * step;
+			minVal = convertMinPrice(Number(hashState['min_price']));
 		}
-		
-		
-		///updatePriceText([minPrice, maxPrice]);
+		console.log(minVal,hashState['min_price'])
+		// set slider if not present
 		if(!housing_slider){
 			housing_slider = $("#housing-slider").slider({
 				slide: function(e, ui) {
-					setHousingPrice(ui.values);
+					setHousingPrice([house_scale.invert(ui.values[0]),house_scale.invert(ui.values[1])]);
 				},
 				range: true,
 				disabled: !housing_slider_enabled,
-				min: minPrice,
-				max: maxPrice,
-				step: step,
-				values: [minVal, maxVal]
-			});
+				min: house_scale(house_boundMin),
+				max: house_scale(house_boundMax),
+				step: .01,
+				values: [house_scale(minVal), house_scale(maxVal)]
+			});					
 			
-			var hpct = pv.Scale.linear(minPrice, maxPrice).range(0, 100);
-			
+			// house_scale(house_boundMin) = 0
+			// house_scale(house_boundMax) = 1
+			// house_scale.invert(0) = 90000
+
 			var housingticks = $("#housing-slider-container #ticks"),
-				steps = [minPrice],
-				step = 1000000;
-			var price = quantize(minPrice + step, step, Math.floor);
-			while (price <= maxPrice) {
-				steps.push(price);
-				price += step;
-			}
-			if (((price - step) - maxPrice) > step / 2) {
-				steps.push(maxPrice);
-			}
-			var last = steps.length - 1;
+			last = house_bounds.length-1;
 				
 			for (var i = 0; i <= last; i++) {
-				var current = steps[i];
+				var current = house_bounds[i];
 				var label = $("<a/>")
-					.text("$"+convertCurrency(current) + ((i==last)?"+":""))
+					.text("$"+house_labels[i])
 					.attr("href", "#")
 					.attr("class", "tick")	
 					.data("hprice", current)
-					.css("left", hpct(current) + "%")
+					.css("left", (house_scale(current) * 100) + "%")
 					.appendTo(housingticks);
 			}
 			
@@ -1360,16 +1352,20 @@ $(function() {
 				if (!housing_slider_active) return;
 				var t = $(this).data("hprice");
 				if (Math.abs(minPrice - t) < Math.abs(maxPrice - t)) {
-					$(housing_slider).slider("values", 0, t);
+					$(housing_slider).slider("values", 0, house_scale(t));
 				} else {
-					$(housing_slider).slider("values", 1, t);
+					$(housing_slider).slider("values", 1, house_scale(t));
 				}
-				setHousingPrice( housing_slider.slider("values") );
+				var _min = $(housing_slider).slider("values", 0);
+				var _max = $(housing_slider).slider("values", 1);
+				var _vals = [house_scale.invert(_min),house_scale.invert(_max)];
+				setHousingPrice( [house_scale.invert(_min),house_scale.invert(_max)] );
 			});
+			
 	
 		} else {
-			$(housing_slider).slider("values", 0, minVal); 
-			$(housing_slider).slider("values", 1, maxVal);
+			$(housing_slider).slider("values", 0, house_scale(minVal)); 
+			$(housing_slider).slider("values", 1, house_scale(maxVal));
 		}
 		
 		setHousingPrice([minVal,maxVal]);
@@ -1541,7 +1537,6 @@ $(function() {
 		_panel.css("height",_height);
 	}
 	
-
 	/* adjust map size based on viewport */
 	function resizeMap() {
 		try {
