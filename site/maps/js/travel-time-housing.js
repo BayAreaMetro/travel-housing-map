@@ -1552,11 +1552,57 @@ $(function() {
 		}
 	}
 
+	/* check to see if Bay Area is within bounds */
+	var processBounds = defer(100, checkExtentBounds);
+	function checkExtentBounds(){
+		var recenter_coords = "37.7639,-122.4130";
+		//bounds for bay area, taken from the place label bounds...
+		var e_max = -121.558;
+		var n_max = 38.809;
+		var s_max = 37.0026;
+		var w_max = -123.034;
+		
+		// get current map extent
+		var ext = map.extent();
+		var s = ext[0].lat;
+		var w = ext[0].lon;
+		var n = ext[1].lat;
+		var e = ext[1].lon;
+		
+		// do checks and show/hide message
+		var msg = [];
+		if(e < w_max)msg.push("east");
+		if(w > e_max)msg.push("west");
+		if(s > n_max)msg.push("south");
+		if(n < s_max)msg.push("north");
+		
+		if(msg.length > 0){
+			var display_msg = "The <strong>Bay Area</strong> is to the ";
+			for(var i = 0;i<msg.length;i++){
+				if(i == 0){
+					display_msg += msg[i];
+				}else{
+					display_msg += " &amp; " + msg[i];
+				}
+			}
+			$("#bounds-alert").html(display_msg);
+			$("#bounds-alert").show();
+		}else{
+			$("#bounds-alert").hide();
+			$("#bounds-alert").html("");
+		}
+	}
+	
+	$("#bounds-alert").click(function(){
+		map.center({lat: 37.7639, lon: -122.4130});
+	});
+
 	/* listen for window resize then adjust map size */
 	$(window).resize(defer(5, resizeMap));
 	$(window).trigger("resize");
-
+	
 	map.on("move",function(){
+		processBounds();
 		hashState['xyz'] = formatZYX(map.zoom(), map.center());
 		updateMapHrefs(hashState);
 	});
