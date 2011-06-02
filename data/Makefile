@@ -11,9 +11,10 @@ all: output/areas/taz1454.json output/blk2taz/$(LAST_BLKID).txt output-html
 # Unzip the TAZ boundaries and overwrite the SHP and SHX components with
 # simplified geometries.
 input/$(TAZ_SHAPEFILE).shp:
-	unzip -d input input/$(TAZ_SHAPEFILE).zip
-	cp input/$(TAZ_SHAPEFILE)-simplified.shp input/$(TAZ_SHAPEFILE).shp
-	cp input/$(TAZ_SHAPEFILE)-simplified.shx input/$(TAZ_SHAPEFILE).shx
+	@# echo "unzipping for $@"
+	unzip -n -d input input/$(TAZ_SHAPEFILE).zip
+	cp simplify/$(TAZ_SHAPEFILE)-simplified.shp input/$(TAZ_SHAPEFILE).shp
+	cp simplify/$(TAZ_SHAPEFILE)-simplified.shx input/$(TAZ_SHAPEFILE).shx
 
 # Strip out unnecessary fields from the buildings.csv and remove "_i4" suffix
 # from column names.
@@ -49,9 +50,10 @@ output/blk2taz/$(LAST_BLKID).txt:
 
 clean:
 	rm -f input/*.json
+	rm -f input/buildings_min.csv
 	rm -f output/*.csv
 	rm -f output/areas/*.json
-	rm -f $(SHAPEFILE_EXTS:%=input/taz1454.%)
+	rm -f $(SHAPEFILE_EXTS:%=input/$(TAZ_SHAPEFILE).%)
 
 really-clean: clean
 	rm -rf output
