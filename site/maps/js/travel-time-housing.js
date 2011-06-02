@@ -1314,7 +1314,7 @@ $(function() {
 		if(hashState['min_price'] && Number(hashState['min_price']) >= controller.priceRange.minPrice){
 			minVal = convertMinPrice(Number(hashState['min_price']));
 		}
-		console.log(minVal,hashState['min_price'])
+		// console.log(minVal,hashState['min_price'])
 		// set slider if not present
 		if(!housing_slider){
 			housing_slider = $("#housing-slider").slider({
