@@ -1,5 +1,11 @@
 1. `make clean all` to generate JSON data files
 
+1b. Due to a bug in the block file generation script, you'll need to move the
+California directory into its rightful place:
+
+    mv output/blk2taz/060/{stuff}/06 output/blk2taz/
+    rm -r output/blk2taz/060
+
 2. copy scenario-related zip archives to input/scenarios/{name}.
    These should have names like:
 
