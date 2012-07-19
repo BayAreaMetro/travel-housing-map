@@ -1,0 +1,27 @@
+1. `make clean all` to generate JSON data files
+
+2. copy scenario-related zip archives to input/scenarios/{name}.
+   These should have names like:
+
+    TimeSkimsDatabaseAM.zip
+    TimeSkimsDatabaseEA.zip
+    TimeSkimsDatabaseEV.zip
+    TimeSkimsDatabaseMD.zip
+    TimeSkimsDatabasePM.zip
+
+3. publish the scenario data:
+
+    `./publish_scenario.sh {name}`
+
+This should create paths like:
+
+    output/scenarios/{name}/time/AM/from/[1..1545].csv
+    output/scenarios/{name}/time/EV/to/[1..1545].csv
+
+4. Copy, move, or symlink the output directory to ../site/data:
+
+    mv output ../site/data
+
+or:
+
+    cd ../site && ln -s data ../data/output
