@@ -1,7 +1,7 @@
 var gov = {ca: {mtc: {}}},
-		po = org.polymaps;
+    po = org.polymaps;
 var NIL = -999,
-		BLUE = "#009DDC";
+    BLUE = "#009DDC";
 
 var hashState;
 function reallyUpdateHash() {
