@@ -6,8 +6,10 @@ function blk2url(fips) {
 		url.push(fips.substr(n, bits[i]));
 		n += bits[i];
 	}
-	return "http://move.onebayarea.org/data/blk2taz/" + url.join("/") + ".txt";
+	return [blk2url.baseURL, "blk2taz/", url.join("/"), ".txt"].join("");
 }
+
+blk2url.baseURL = "http://move.onebayarea.org/data/";
 
 function blk2taz(block, options) {
 	var opts = $.extend(options, {
@@ -34,7 +36,7 @@ function location2taz(loc, options) {
 		success: function(res) {
 			if (res.status == "OK") {
 				var fips = res.Block.FIPS;
-				// console.log("Got FIPS: " + fips);
+				console.log("Got FIPS: " + fips);
 				if (options.fips) {
 					options.fips.call(options.context, fips);
 				}
