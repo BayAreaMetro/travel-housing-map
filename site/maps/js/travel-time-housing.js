@@ -233,7 +233,7 @@ var updateMapHrefs = defer(100, reallyUpdateHash);
 			
 			dispatchStdout( "loading", "Loading scenario data...");
 			
-			var url = "/data/scenarios/2005/time/" + [state.time, state.direction, state.origin_taz].join("/") + ".csv";
+			var url = "../data/scenarios/2005/time/" + [state.time, state.direction, state.origin_taz].join("/") + ".csv";
 			return scenarioReq = $.ajax(url, {
 				dataType: "text",
 				success: function(text) {
