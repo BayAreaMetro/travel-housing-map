@@ -220,9 +220,10 @@
 	 * 	map.center($.htmapl.getLatLon(obj.data("center"));
 	 */
 	function applyData(obj, map, attrs) {
+        var parsed = {};
 		for (var key in attrs) {
 			var data = attrs[key],
-					value = null;
+                value = null;
 			// call it as transform(data) with the jQuery object as its context
 			if (typeof data == "function") {
 				var transform = data;
@@ -248,7 +249,9 @@
 			} else {
 				map[key] = value;
 			}
+            parsed[key] = value;
 		}
+        return parsed;
 	}
 
 	function px(n) {
@@ -738,9 +741,9 @@
 			
 		root.find(".layer").each(function(j, subel) {
 			var source = $(subel),
-					layer,
-					attrs = {},
-					type = source.data("type");
+                layer,
+                attrs = {},
+                type = source.data("type");
 	
 			switch (type) {
 				case "image":
@@ -748,6 +751,7 @@
 
 					layer = engine.image();
 					attrs.url = String;
+                    attrs.hosts = getArray;
 					/*
 					attrs.visible = getBoolean;
 					attrs.tile = getBoolean;
@@ -805,7 +809,13 @@
 			}
 
 			if (layer) {
-				applyData(source, layer, attrs);
+				var parsed = applyData(source, layer, attrs);
+                if (parsed.hosts) {
+                    var url = layer.url();
+                    // console.log("url:", url, "hosts:", parsed.hosts);
+                    url.hosts(parsed.hosts);
+                    layer.url(url);
+                }
 				map.add(layer);
 
 				if (typeof layer.container == "function") {
