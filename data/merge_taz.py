@@ -1,9 +1,5 @@
 import sys, csv
-try:
-	import jsonutil.jsonutil as json
-except ImportError:
-	print >> sys.stderr, "Warning: using simplejson may cause floating point issues."
-	import json
+import json
 from optparse import OptionParser
 
 parser = OptionParser()
@@ -57,4 +53,5 @@ for row in rows:
 		# sys.exit(1)
 		pass
 
-json.dump(output, sys.stdout, use_decimal=True)
+json.encoder.FLOAT_REPR = lambda f: ("%.3f" % f)
+json.dump(output, sys.stdout, indent=None, separators=(",", ":"))
