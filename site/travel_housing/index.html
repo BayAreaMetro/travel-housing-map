@@ -30,7 +30,11 @@
 			.script("../maps/js/autofill.js")
 			.script("../maps/js/geocode.js")
 			.script("../data/blk2taz/convert.js")
-			.script("travel-time-housing.js");
+            .script("travel-time-housing.js")
+            .wait(function() {
+                // point blk2url at the relative data directory
+                blk2url.baseURL = "../data/";
+            });
 
 		</script>
 	</head>
