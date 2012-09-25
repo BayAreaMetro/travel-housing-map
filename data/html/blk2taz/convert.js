@@ -9,7 +9,7 @@ function blk2url(fips) {
 	return [blk2url.baseURL, "blk2taz/", url.join("/"), ".txt"].join("");
 }
 
-blk2url.baseURL = "http://move.onebayarea.org/data/";
+blk2url.baseURL = "http://maps.onebayarea.org/data/";
 
 function blk2taz(block, options) {
 	var opts = $.extend(options, {
