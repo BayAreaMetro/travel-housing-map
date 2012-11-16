@@ -1552,8 +1552,6 @@ $(function() {
 		}
 	}
 
-	/* check to see if Bay Area is within bounds */
-	var processBounds = defer(100, checkExtentBounds);
 	function checkExtentBounds(){
 		var recenter_coords = "37.7639,-122.4130";
 		//bounds for bay area, taken from the place label bounds...
@@ -1592,6 +1590,9 @@ $(function() {
 			$("#bounds-alert").html("");
 		}
 	}
+
+	/* check to see if Bay Area is within bounds */
+	var processBounds = defer(100, checkExtentBounds);
 	
 	$("#bounds-alert").click(function(){
 		map.center({lat: 37.7639, lon: -122.4130});
