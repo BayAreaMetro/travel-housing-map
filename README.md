@@ -1,7 +1,7 @@
 # MTC Travel Time Maps
 
 ## TAZ API
-The map needs a way to know which TAZ (Transportation Analysis Zone) a given geographic point (latitude, longitude) belongs to. We're using Code for America's [US Census Area API](https://github.com/codeforamerica/US-Census-Area-API) for this, running at [mtc-taz-api.herokuapp.com](http://mtc-taz-api.herokuapp.com/).
+The map needs a way to know which TAZ (Transportation Analysis Zone) a given geographic point (latitude, longitude) belongs to. We're using Code for America's [US Census Area API](https://github.com/codeforamerica/US-Census-Area-API) for this, running at [mtc-taz-api.herokuapp.com](http://mtc-taz-api.herokuapp.com/) (try the [sample request](http://mtc-taz-api.herokuapp.com/areas?lat=37.7571&lon=-122.4410)).
 
 ### Setting up the API server
 
