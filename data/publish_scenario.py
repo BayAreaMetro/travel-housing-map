@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import csv, sys, re
 import os.path
 import itertools
@@ -85,7 +86,7 @@ by origin TAZ). So the following filename:
 gets churned into a directory of per-TAZ "slices" with paths like this in the
 output directory:
 
-	time/AM/from/{1-1545}.csv
+	time/AM/from/{1-1454}.csv
 
 NOTE: publish_scenario.sh generates dest-sorted versions automatically if they
 don't exist. You should use that shell script to publish entire scenarios from
