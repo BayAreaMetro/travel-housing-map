@@ -1,12 +1,11 @@
 # these are used to clean up after shapefile zip archives (see: "clean")
 TAZ_SHAPEFILE = taz1454_clipurb2002
 SHAPEFILE_EXTS = shp shx prj sbn sbx dbf
-LAST_BLKID = 060/971/543/024/999
 
 # Our "all" target makes:
 # 1. the TAZ GeoJSON file
-# 2. the blk2taz mapping files
-all: output/areas/taz1454.json output/blk2taz/$(LAST_BLKID).txt output-html
+# 2. html assets
+all: output/areas/taz1454.json output-html
 
 # Unzip the TAZ boundaries and overwrite the SHP and SHX components with
 # simplified geometries.
@@ -42,11 +41,6 @@ output/areas/taz1454.json: input/taz1454.json input/buildings_min.csv output/are
 # TODO: generate separate files for clipped urban areas!
 output/areas/taz1454-clipurb.json: output/areas/taz1454.json
 	cp $< $@
-
-# This filename is the last one that should be generated in the list of
-# blockgroups.
-output/blk2taz/$(LAST_BLKID).txt:
-	python publish_blk2taz.py input/BLK00_MTCTAZ.csv $(dir $@)
 
 clean:
 	rm -f input/*.json
