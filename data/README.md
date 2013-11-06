@@ -14,7 +14,7 @@ This should download the requisite scenario files (assuming the scenario directo
 input/scenarios/2010/TimeSkimsDatabaseEAdest.csv
 ```
 
-After that, the shell script will run `publish_scenario.py`, which should generate paths that look like:
+After that, the shell script will run [publish_scenario.py](publish_scenario.py), which should generate paths that look like:
 
 ```
 output/scenarios/{name}/time/AM/from/{1-1454}.csv
@@ -23,11 +23,13 @@ output/scenarios/{name}/time/EV/to/{1-1454}.csv
 
 ## Generate GeoJSON data files
 
-This step will probably go away once we update the app to load home prices from separate files, but for now:
+Whenever we receive new housing price data we'll need to update the TAZ GeoJSON file to include them. That work happens in [merge_taz.py](merge_taz.py), but to run it with the right inputs just do:
 
 ```sh
-make clean all
+make output/areas/taz1454.json
 ```
+
+To rebuild it, just `rm` it first then run `make` again.
 
 ## Symlinking to the docroot
 
