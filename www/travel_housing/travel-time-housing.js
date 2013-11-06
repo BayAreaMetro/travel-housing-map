@@ -2,7 +2,10 @@ var gov = {ca: {mtc: {}}},
     po = org.polymaps,
     LatLng = google.maps.LatLng,
     NIL = -999,
-    BLUE = "#009DDC";
+    BLUE = "#009DDC",
+    dataBaseUrl = (location.host === "localhost")
+        ? "http://maps.onebayarea.org/data/"
+        : "../data/";
 
 var hashState;
 function reallyUpdateHash() {
@@ -253,7 +256,7 @@ function location2taz(loc, options) {
 			
 			dispatchStdout( "loading", "Loading scenario data...");
 			
-			var url = "../data/scenarios/" + state.scenario + "/time/" + [state.time, state.direction, state.origin_taz].join("/") + ".csv";
+			var url = dataBaseUrl + "scenarios/" + state.scenario + "/time/" + [state.time, state.direction, state.origin_taz].join("/") + ".csv";
 			return scenarioReq = $.ajax(url, {
 				dataType: "text",
 				success: function(text) {
