@@ -87,7 +87,7 @@ function location2taz(loc, options) {
 		sliderStates.travel = true;
 		
 		// these variables go into the scenario request URI
-		// state.scenario = "2005"; // scenario directory name
+		state.scenario = "2010"; // scenario directory name
 		state.time = "AM"; // morning commute
 		state.direction = "from"; // from origin to dest
 		state.origin = null; // origin TAZ
@@ -250,7 +250,7 @@ function location2taz(loc, options) {
 			
 			dispatchStdout( "loading", "Loading scenario data...");
 			
-			var url = "../data/scenarios/2005/time/" + [state.time, state.direction, state.origin_taz].join("/") + ".csv";
+			var url = "../data/scenarios/" + state.scenario + "/time/" + [state.time, state.direction, state.origin_taz].join("/") + ".csv";
 			return scenarioReq = $.ajax(url, {
 				dataType: "text",
 				success: function(text) {
