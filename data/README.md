@@ -38,5 +38,5 @@ Copy, move, or symlink the output directory to `../www/data` so that it's availa
 ```sh
 $ mv output ../www/data
 # or:
-$ cd ../www && ln -s data ../data/output
+$ cd ../www && ln -s ../data/output data
 ```
