@@ -8,6 +8,23 @@ function reallyUpdateHash() {
 	window.location.hash = makeQueryString(hashState);
 }
 var updateMapHrefs = defer(100, reallyUpdateHash);
+
+var tazApiUrl = "http://mtc-taz-api.herokuapp.com/areas";
+function location2taz(loc, options) {
+    return $.ajax(tazApiUrl, {
+        data: loc,
+        dataType: "jsonp",
+        success: function(data) {
+            console.log("location2taz:", loc, "->", data);
+            if (data.features.length) {
+                options.success(data.features[0].properties.TAZ1454);
+            } else {
+                options.error(data);
+            }
+        },
+        error: options.error
+    });
+}
 		
 (function(mtc) {
 
@@ -475,8 +492,9 @@ var updateMapHrefs = defer(100, reallyUpdateHash);
 					extent = map.extent();
 			var LatLng = google.maps.LatLng;
 			data.bounds = new google.maps.LatLngBounds(
-					new LatLng(extent[0].lat, extent[0].lon),
-					new LatLng(extent[1].lat, extent[1].lon));
+                new LatLng(extent[0].lat, extent[0].lon),
+                new LatLng(extent[1].lat, extent[1].lon)
+            );
 			// otherwise, treat it as an address for geocoding
 			return geocode(geocoder, data, function(result) {
 				return location2taz(result.location, {
