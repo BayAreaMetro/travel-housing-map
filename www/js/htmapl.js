@@ -27,8 +27,8 @@
  	function getLatLon(str) {
 		if (typeof str === "string" && str.match(/^(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)$/)) {
 			var parts = str.split(/\s*,\s*/),
-					lat = parseFloat(parts[0]),
-					lon = parseFloat(parts[1]);
+                lat = parseFloat(parts[0]),
+                lon = parseFloat(parts[1]);
 			if (!isNaN(lat) && !isNaN(lon)) {
 				return {lon: lon, lat: lat};
 			}
