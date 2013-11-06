@@ -31,10 +31,10 @@ make clean all
 
 ## Symlinking to the docroot
 
-Copy, move, or symlink the output directory to `../site/data` so that it's available relative to the docroot:
+Copy, move, or symlink the output directory to `../www/data` so that it's available relative to the docroot:
 
 ```sh
-$ mv output ../site/data
+$ mv output ../www/data
 # or:
-$ cd ../site && ln -s data ../data/output
+$ cd ../www && ln -s data ../data/output
 ```
