@@ -869,13 +869,20 @@ function location2taz(loc, options) {
 })(gov.ca.mtc);
 
 $(function() {
+    var _initalMapLocation; // flag to determine if initial hash had location data in it...
 	try {
-		var _initalMapLocation; // flag to determine if initial hash had location data in it...
+
+    // update the TAZ GeoJSON URL to match our data path
+    $("#taz-shapes").each(function() {
+        var url = this.getAttribute("data-url");
+        this.setAttribute("data-url", url.replace("../data/", dataBaseUrl));
+    });
+
 	var container = $("#travel-time").htmapl(),
-			page = $("#page"),
-			form = $("#main-form")//container.parent("form").first(),
-			map = $.fn.htmapl.getMap(container[0].id),
-			shapes = $.fn.htmapl.getLayer("taz-shapes");
+        page = $("#page"),
+        form = $("#main-form")//container.parent("form").first(),
+        map = $.fn.htmapl.getMap(container[0].id),
+        shapes = $.fn.htmapl.getLayer("taz-shapes");
 
 	var controller = gov.ca.mtc.travelTimeMap()
 		.container(container)
