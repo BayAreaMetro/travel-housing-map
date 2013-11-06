@@ -272,11 +272,6 @@ input[disabled] {
 	margin-bottom: -4px;
 }
 
-/* hiding at first, shown once page is rendered */
-#travel-options{
-	display: none;
-}
-
 /* ticks for time of day slider */
 #tod-slider #tickbox{
 	position:absolute;
