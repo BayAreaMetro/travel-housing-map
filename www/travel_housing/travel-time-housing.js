@@ -316,7 +316,8 @@ function location2taz(loc, options) {
 					
 					
 					// set text
-					var tazid = String(this.id).match(/^taz(\d+)$/)[1],
+                    var match = String(this.id).match(/^taz(\d+)$/),
+					    tazid = match ? match[1] : null,
                         feature = featuresById[tazid],
 					    tazPrice = (feature && hasHousingPrice(feature))
                             ? "$" + commize(housingPrice(feature))
