@@ -11,7 +11,7 @@ rows = csv.DictReader(input_csv, dialect='excel')
 # CSV row foreign key
 input_key = "zone_id"
 
-null_value = -1
+null_value = -999
 
 def coerce_int(s):
     if len(s) > 0:
