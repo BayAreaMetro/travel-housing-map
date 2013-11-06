@@ -19,7 +19,7 @@ function location2taz(loc, options) {
         data: loc,
         dataType: "jsonp",
         success: function(data) {
-            console.log("location2taz:", loc, "->", data);
+            // console.log("location2taz:", loc, "->", data);
             if (data.features.length) {
                 options.success(data.features[0].properties.TAZ1454);
             } else {
@@ -34,7 +34,7 @@ function location2taz(loc, options) {
 
  	mtc.scenarioLoader = function() {
 		var loader = {},
-				req = null;
+            req = null;
 		loader.dispatch = po.dispatch(loader);
 
 		loader.load = function(url) {
