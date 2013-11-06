@@ -1,6 +1,7 @@
 var gov = {ca: {mtc: {}}},
-    po = org.polymaps;
-var NIL = -999,
+    po = org.polymaps,
+    LatLng = google.maps.LatLng,
+    NIL = -999,
     BLUE = "#009DDC";
 
 var hashState;
@@ -127,11 +128,13 @@ function location2taz(loc, options) {
 		/* 
 		 *
 		 */
-		function housingPrice(feature){
-			return (feature.properties.average_value_per_unit)
-				? feature.properties.average_value_per_unit
-				: NIL;
+		function housingPrice(feature) {
+			return feature.properties["price_" + state.scenario] || NIL;
 		}
+
+        function hasHousingPrice(feature) {
+            return housingPrice(feature) > 0;
+        }
 		
 		// determine if a feature is selected (either the origin or dest TAZ)
 		function selected(feature) {
@@ -203,7 +206,7 @@ function location2taz(loc, options) {
 
 		function dispatchInfo() {
 			var origin = featuresById[state.origin_taz],
-					dest = featuresById[state.dest_taz];
+                dest = featuresById[state.dest_taz];
 
 			if (origin) origin.location = state.origin_location;
 			if (dest) dest.location = state.dest_location;
@@ -214,10 +217,10 @@ function location2taz(loc, options) {
 				if (state.origin_location && state.dest_location) {
 					try {
 						var coords = [state.origin_location, state.dest_location],
-								xmin = min(coords, prop("lon").get),
-								xmax = max(coords, prop("lon").get),
-								ymin = min(coords, prop("lat").get),
-								ymax = max(coords, prop("lat").get);
+                            xmin = min(coords, prop("lon").get),
+                            xmax = max(coords, prop("lon").get),
+                            ymin = min(coords, prop("lat").get),
+                            ymax = max(coords, prop("lat").get);
 						e.extent = [{lon: xmin, lat: ymin}, {lon: xmax, lat: ymax}];
 					} catch (err) {
 						// console.log("ERROR calculating extent:", err);
@@ -255,7 +258,7 @@ function location2taz(loc, options) {
 				dataType: "text",
 				success: function(text) {
 					var rows = parseCSV(text),
-							len = rows.length;
+                        len = rows.length;
 					for (var i = 0; i < len; i++) {
 						var row = rows[i];
 						if (!isNaN(row.dest) && row.dest in featuresById) {
@@ -313,18 +316,20 @@ function location2taz(loc, options) {
 					
 					
 					// set text
-					var tazid = Number(($(this).attr("id")).slice(3));
-					var tazPrice = (featuresById[tazid] && featuresById[tazid].properties['average_value_per_unit']) 
-									? "$" + commize(featuresById[tazid].properties['average_value_per_unit']) 
-									: "";
+					var tazid = String(this.id).match(/^taz(\d+)$/)[1],
+                        feature = featuresById[tazid],
+					    tazPrice = (feature && hasHousingPrice(feature))
+                            ? "$" + commize(housingPrice(feature))
+                            : "";
 				
 					var _outText = "";
-					if(controller.travelSlideState())
-							_outText += self.oldTitleAttr;
+					if (controller.travelSlideState()) {
+                        _outText += self.oldTitleAttr;
+                    }
 							
 					if(controller.housingSlideState()){
-							if(_outText.length) _outText += "<br/>";
-							_outText += tazPrice;
+                        if (_outText.length) _outText += "<br/>";
+                        _outText += tazPrice;
 					}
 							
 					if(!_outText.length)return;
@@ -370,12 +375,12 @@ function location2taz(loc, options) {
 				});
 			}
 
-			this.closeTip = function(){
+			this.closeTip = function() {
 				$('#travel-time').unbind('mousemove');
 				self.tipState = false;
 				self.tipRef.hide();
 				self.txtRef.text("");
-			}
+			};
 		}
 
 		var tipController = new theTip();
@@ -392,7 +397,7 @@ function location2taz(loc, options) {
 			priceRange.maxPrice = 0;
 			
 			var features = e.features,
-					len = features.length;
+                len = features.length;
 			for (var i = 0; i < len; i++) {
 				var feature = e.features[i].data;
 				feature.id = tazID(feature);
@@ -402,10 +407,10 @@ function location2taz(loc, options) {
 					el.parentNode.appendChild(el);
 				}
 				
-				if(feature.properties.average_value_per_unit){
-					var _price = feature.properties.average_value_per_unit;
-					if(_price < priceRange.minPrice)priceRange.minPrice = _price;
-					if(_price > priceRange.maxPrice)priceRange.maxPrice = _price;
+                var price = housingPrice(feature);
+				if (price > NIL) {
+					if (price < priceRange.minPrice) priceRange.minPrice = price;
+					if (price > priceRange.maxPrice) priceRange.maxPrice = price;
 				}
 			}
 
@@ -428,10 +433,10 @@ function location2taz(loc, options) {
 					return false;
 				}
 				var match = click.target.id.match(/^taz(\d+)$/),
-						pos = {x: click.offsetX, y: click.offsetY};
+                    pos = {x: click.offsetX, y: click.offsetY};
 				if (match) {
 					var id = match[1],
-							feature = featuresById[id];
+                        feature = featuresById[id];
 					if (feature) {
 						controller.dispatch({
 							type: "select-taz",
@@ -489,8 +494,7 @@ function location2taz(loc, options) {
 			}
 
 			var data = {"address": str, "region": "us"},
-					extent = map.extent();
-			var LatLng = google.maps.LatLng;
+                extent = map.extent();
 			data.bounds = new google.maps.LatLngBounds(
                 new LatLng(extent[0].lat, extent[0].lon),
                 new LatLng(extent[1].lat, extent[1].lon)
@@ -1285,8 +1289,8 @@ $(function() {
 	}
 	
 	var timeticks = $("#time-slider-container #ticks"),
-			steps = pv.range(0, boundMax + 1, 15),
-			last = steps.length - 1;
+        steps = pv.range(0, boundMax + 1, 15),
+        last = steps.length - 1;
 	for (var i = 1; i <= last; i++) {
 		var current = steps[i];
 		var label = $("<a/>")
@@ -1430,7 +1434,7 @@ $(function() {
 		updateModeText();
 	}
 
-	var modeLinks = $("#travel-optionss .mode a")
+	var modeLinks = $("#travel-options .mode a")
 		 .click(function() {
 			 var mode = $(this).data("mode");
 			 setMode(mode);
@@ -1447,7 +1451,7 @@ $(function() {
 		updateTimeOfDayText();
 	}
 
-	var timeLinks = $("#travel-optionss .time a")
+	var timeLinks = $("#travel-options .time a")
 		.click(function() {
 			var time = $(this).data("time");
 			setTime(time);
