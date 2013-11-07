@@ -7,7 +7,7 @@ var gov = {ca: {mtc: {}}},
         ? "http://maps.onebayarea.org/data/"
         : "../data/";
 
-var hashState;
+var hashState = {};
 function reallyUpdateHash() {
 	window.location.hash = makeQueryString(hashState);
 }
@@ -923,7 +923,15 @@ $(function() {
 
 	// Since the event is only triggered when the hash changes, we need to trigger
 	// the event now, to handle the hash the page may have loaded with.
-	$(window).trigger( 'hashchange' );
+    if (location.hash) {
+        $(window).trigger('hashchange');
+    } else {
+        location.hash = $.param.fragment("", {
+            mode: "da",
+            time: "PM"
+        });
+        controller.origin("2017 Mission St, SF");
+    }
 	
 
 	
