@@ -738,6 +738,7 @@ function location2taz(loc, options) {
 				applyStyle();
 				hashState['mode']=state.mode;
 				updateMapHrefs(hashState);
+                return controller;
 			} else {
 				return state.mode;
 			}
@@ -926,11 +927,9 @@ $(function() {
     if (location.hash) {
         $(window).trigger('hashchange');
     } else {
-        location.hash = $.param.fragment("", {
-            mode: "da",
-            time: "PM"
-        });
-        controller.origin("2017 Mission St, SF");
+        controller
+            .mode("bike")
+            .origin("2017 Mission St, SF");
     }
 	
 
