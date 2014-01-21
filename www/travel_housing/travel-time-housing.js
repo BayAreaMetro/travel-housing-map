@@ -536,7 +536,7 @@ function location2taz(loc, options) {
 				if (success) success.call(null, latlon, taz, featuresById[taz]);
 			}, function(req, error, message) {
 				dispatchStdout("error", "ERROR: " + message);
-				
+				controller.dispatch({type: "lookup-failure"})
 				if (failure) failure.call(null, error);
 			});
 		}
@@ -1084,6 +1084,12 @@ $(function() {
 			$(".housing_threshold").empty().hide();
 		}
 	}
+
+	controller.on("lookup-failure", function(e) {
+	  var title = $("#map-title .title"),
+	      prefix = title.find(".prefix");
+	  prefix.html("Failed to find location.")
+	});
 
 	controller.on("travel-time", function(e) {
 		var origin = e.origin,
