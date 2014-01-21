@@ -756,6 +756,18 @@ function location2taz(loc, options) {
 			}
 		};
 
+    // get/set the decade for data (2010,2020,2030,2040)
+    controller.scenario = function(x) {
+      if (arguments.length) {
+        state.scenario = x;
+        hashState['scenario']=state.scenario;
+        updateMapHrefs(hashState);
+        if (state.origin_taz) {
+          loadScenario();
+        }
+      }
+    };
+
 		// get/set the time of day (async)
 		controller.time = function(x) {
 			if (arguments.length) {
@@ -1270,7 +1282,6 @@ $(function() {
 			updateMapHrefs(hashState);
 		}
 	}
-	
 	function setHousingPrice(x){
 		x[0] = convertMinPrice(x[0]);
 		x[1] = convertMaxPrice(x[1]);
@@ -1441,6 +1452,43 @@ $(function() {
 	if(controller.priceRange.minPrice)
 		createHousingSlider();
 	
+  // create the scenario slider
+	var scenario_scale = pv.Scale.linear()
+		.domain(2000,2010,2020,2030,2040)
+		.range(0.0, .25, .5, .75, 1.0);
+
+	var scenarioSlider = $("#scenario-slider").slider({
+		slide: function(e, ui) {
+      controller.scenario(ui.value);
+		},
+		range: false,
+		min: 2000,
+		max: 2040,
+		step: 10,
+		value: 2010
+	});
+
+  var scenarioTicks = $("#scenario-slider-container #ticks");
+  var years = [2000,2010,2020,2030,2040];
+	for (var i = 0; i < years.length; i++) {
+		var current = years[i];
+		var label = $("<a/>")
+			.text(years[i])
+			.attr("href", "#")
+			.attr("class", "tick")
+			.css("left", scenario_scale(current) * 100 + "%")
+      .css("width", "35px")
+			.css('margin-left', '-17px')
+      .data("year", current)
+			.appendTo(scenarioTicks);
+	}
+
+	scenarioTicks.find("a").click(function(e) {
+		e.preventDefault();
+		var t = $(this).data("year");
+		scenarioSlider.slider("option", "value", t);
+    controller.scenario(t);
+	});
 
 	$(".select-center").click(selectCenter);
 
@@ -1527,6 +1575,25 @@ $(function() {
 			var pos = $(this).parent().offset();
 			var _width = $(this).parent().width();
 			var _buttonWidth = $(this).width();	
+			var _leftPos = _width - ( (_boxWidth * .5) + ((_buttonWidth * .5) + 15) );
+
+			$("#sliderinfo").html($(this).parents(".slider-container").find("p.info").html());
+			_infobox.css("top",pos.top-(_boxHeight+20)).css("left",_leftPos).show();
+		}else{
+			closeallInfoBoxes();
+		}
+	});
+
+	$("#scenario-slider-container .slider-info-button").click(function(){
+		var _infobox = $("#slider_info_box");
+		if(_infoSelected != "scenario"){
+			closeallInfoBoxes();
+			_infoSelected = "scenario";
+			var _boxWidth = _infobox.width();
+			var _boxHeight = _infobox.height();
+			var pos = $(this).parent().offset();
+			var _width = $(this).parent().width();
+			var _buttonWidth = $(this).width();
 			var _leftPos = _width - ( (_boxWidth * .5) + ((_buttonWidth * .5) + 15) );
 
 			$("#sliderinfo").html($(this).parents(".slider-container").find("p.info").html());

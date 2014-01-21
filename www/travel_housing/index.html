@@ -83,7 +83,7 @@
                   <label><input type="checkbox" name="ts_enabled" value="ts_enabled" id="time_slider_enabled" checked="checked"/> Show travel times between:</label>
                   <span class="slider-info-button"><img src="../style/images/info.png" width="16" height="16"/></span> 
                 </h5>
-                                <p class="info">Door-to-door travel time (in minutes) per <a href="http://mtc.ca.gov/">MTC&rsquo;s</a> travel model.</p>
+                <p class="info">Door-to-door travel time (in minutes) per <a href="http://mtc.ca.gov/">MTC&rsquo;s</a> travel model.</p>
                 <div class="slider_wrapper">
                   <div id="ticks"></div>
                   <div id="time-slider"></div>
@@ -95,13 +95,25 @@
                   <label><input type="checkbox" name="hs_enabled" value="hs_enabled" id="housing_slider_enabled" checked="checked"/> Show median home prices between:</label>
                   <span class="slider-info-button"><img src="../style/images/info.png" width="16" height="16"/></span> 
                 </h5>
-                                <p class="info">Median neighborhood home value in year 2000 dollars, per <a href="http://www.abag.ca.gov/">ABAG&rsquo;s</a>  housing sales database.</p>
+                <p class="info">Median neighborhood home value in year 2000 dollars, per <a href="http://www.abag.ca.gov/">ABAG&rsquo;s</a>  housing sales database.</p>
                 <div class="slider_wrapper">
                   <div id="ticks"></div>
                   <div id="housing-slider"></div>
                 </div>
               </div>
-              
+
+              <div id="scenario-slider-container" class="slider-container inactive">
+                <h5>
+                  <label>Use data for year:</label>
+                  <span class="slider-info-button"><img src="../style/images/info.png" width="16" height="16"/></span>
+                </h5>
+                <p class="info">Decade to use for housing price and transportation time projections.</p>
+                <div class="slider_wrapper">
+                  <div id="ticks"></div>
+                  <div id="scenario-slider"></div>
+                </div>
+              </div>
+
               <ul id="resources">
                 <li class="five-one-one"><a href="http://www.511.org" title="visit 511.org"><img src="../style/images/511-logo.gif" alt="511.org logo"/></a> <a href="http://www.511.org" title="visit 511.org">For real-time travel information</a></li>
                             <li><a href="mailto:info@onebayarea.org?subject=feedback:%20onebayarea/maps" title="send email to onebayarea.org"><img src="../style/images/email.png" alt="email logo"/></a> <a href="mailto:info@onebayarea.org?subject=feedback:%20onebayarea/maps" title="send email to onebayarea.org">Give us feedback!</a></li>
