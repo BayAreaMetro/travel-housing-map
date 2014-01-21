@@ -1,4 +1,4 @@
-ZIP ?= http://analytics.mtc.ca.gov/foswiki/pub/Main/2010_03_YYY/SimpleTimeSkims.zip
+ZIP ?= http://analytics.mtc.ca.gov/foswiki/pub/Main/2000_03_YYY/SimpleTimeSkims.zip
 
 all: skims.zip
 	unzip -o skims.zip
