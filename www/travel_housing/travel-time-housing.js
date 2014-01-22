@@ -1344,7 +1344,7 @@ $(function() {
 	// need to defer to after shapes have been loaded
 	var housing_slider = null;
 	function createHousingSlider(){
-		//controller.priceRange.maxPrice = 2000000;
+		controller.priceRange.maxPrice = 2000000;
 		minPrice = convertMinPrice(controller.priceRange.minPrice);
 		maxPrice = convertMaxPrice(controller.priceRange.maxPrice);
 		
@@ -1360,7 +1360,7 @@ $(function() {
 		if(hashState['min_price'] && Number(hashState['min_price']) >= controller.priceRange.minPrice){
 			minVal = convertMinPrice(Number(hashState['min_price']));
 		}
-		// console.log(minVal,hashState['min_price'])
+
 		// set slider if not present
 		if(!housing_slider){
 			housing_slider = $("#housing-slider").slider({
