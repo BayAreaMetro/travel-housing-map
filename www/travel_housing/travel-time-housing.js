@@ -899,8 +899,8 @@ $(function() {
 	$(window).bind( 'hashchange', function(e) {
 
 		var url = $.deparam.fragment();
-		// set this only once on initial load
-		if(!hashState){
+		// set this only once on initial load (if hashState is empty object)
+		if($.isEmptyObject(hashState)){
 			hashState = url;
 			if(hashState['xyz']){
 				var coords = hashCoordParser(hashState['xyz']);
