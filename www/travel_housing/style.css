@@ -586,7 +586,7 @@ image{pointer-events:none;}
 #location_origin,
 #info-origin .or{margin-left:0px;}
 #map-title h2{font-size:150%;}
-#time-slider-container,#housing-slider-container{position:relative;padding:.75em 0;border-bottom:1px solid #ccc;}
+#time-slider-container,#housing-slider-container,#scenario-slider-container{position:relative;padding:.75em 0;border-bottom:1px solid #ccc;}
 #time-slider-container #ticks,#housing-slider-container #ticks,#scenario-slider-container #ticks{position:relative;margin:0 2px 5px;height:23px;}
 #time-slider-container #ticks .tick,#housing-slider-container #ticks .tick,#scenario-slider-container #ticks .tick{position:absolute;display:block;text-align:center;top:0;width:2em;/*height:1.5em;*/
 padding:.25em 0 5px;background:white url("../style/images/tickmark.png") no-repeat 50% 100%;font-size:12px;text-decoration:none;color:black;font-weight:600;}
