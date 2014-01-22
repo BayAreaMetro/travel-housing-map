@@ -1454,22 +1454,22 @@ $(function() {
 	
   // create the scenario slider
 	var scenario_scale = pv.Scale.linear()
-		.domain(2000,2010,2020,2030,2040)
-		.range(0.0, .25, .5, .75, 1.0);
+		.domain(2010,2020,2030,2040)
+		.range(0.0, 0.333, .667, 1.0);
 
 	var scenarioSlider = $("#scenario-slider").slider({
 		slide: function(e, ui) {
       controller.scenario(ui.value);
 		},
 		range: false,
-		min: 2000,
+		min: 2010,
 		max: 2040,
 		step: 10,
 		value: 2010
 	});
 
   var scenarioTicks = $("#scenario-slider-container #ticks");
-  var years = [2000,2010,2020,2030,2040];
+  var years = [2010,2020,2030,2040];
 	for (var i = 0; i < years.length; i++) {
 		var current = years[i];
 		var label = $("<a/>")
