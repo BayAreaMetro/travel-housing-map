@@ -1,5 +1,10 @@
 # Data Pipeline
 
+## Downloading MTC data
+
+In each of the directories under `input/scenarios` that are `2020` or above, you must navigate to the URL specified
+in the `Makefile` and download the file SimpleTimeSkims.zip from that site. Name this file `skims.zip` in the same directory as the `Makefile`. (This is necessary because there are no longer direct download links.)
+
 ## Publishing Scenarios
 
 To publish scenario data, where `$scenario` is the name of a directory in `input/scenarios`, e.g. [2010](https://github.com/stamen/mtc/blob/master/data/input/scenarios/2010/), run:
