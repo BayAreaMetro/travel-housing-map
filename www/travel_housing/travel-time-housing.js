@@ -1465,7 +1465,7 @@ $(function() {
 		min: 2010,
 		max: 2040,
 		step: 10,
-		value: 2010
+		value: parseInt(hashState['scenario']) || 2010
 	});
 
   var scenarioTicks = $("#scenario-slider-container #ticks");
