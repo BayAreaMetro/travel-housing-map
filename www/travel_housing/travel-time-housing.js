@@ -1050,10 +1050,14 @@ $(function() {
 		}
 		//return Math.ceil(n / housing_step) * housing_step;
 	}
-	
+
 	// get time
 	var maxTime = (hashState['max_time']) ? parseInt(hashState['max_time']) : 60;
 	if (isNaN(maxTime)) maxTime = 60;
+
+  if(hashState['scenario']) {
+    controller.scenario(parseInt(hashState['scenario']))
+  }
 	
 	var showMax = true;
 	function updateTimeText(t) {
