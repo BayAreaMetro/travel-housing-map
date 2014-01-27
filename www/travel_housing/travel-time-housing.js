@@ -79,8 +79,7 @@ function location2taz(loc, options) {
 				geocoder,
 				// The TAZ GeoJSON layer
 				shapes, filters,
-				originMarker,
-				destMarker;
+				originMarker;
 		
 		var priceRange = {},
 		sliderStates = {},
@@ -95,8 +94,6 @@ function location2taz(loc, options) {
 		state.time = "AM"; // morning commute
 		state.direction = "from"; // from origin to dest
 		state.origin = null; // origin TAZ
-		// the destination is a row with the destination TAZ's id
-		state.dest = null; // destination TAZ
 		// the mode is a column
 		state.mode = "da"; // drive alone
 
@@ -139,9 +136,9 @@ function location2taz(loc, options) {
             return housingPrice(feature) > 0;
         }
 		
-		// determine if a feature is selected (either the origin or dest TAZ)
+		// determine if a feature is selected (the origin TAZ)
 		function selected(feature) {
-			return feature.id == state.origin_taz || feature.id == state.dest_taz;
+			return feature.id == state.origin_taz;
 		}
 
 		// get the "default" color of a feature (this
@@ -208,28 +205,11 @@ function location2taz(loc, options) {
 		}
 
 		function dispatchInfo() {
-			var origin = featuresById[state.origin_taz],
-                dest = featuresById[state.dest_taz];
+			var origin = featuresById[state.origin_taz];
 
 			if (origin) origin.location = state.origin_location;
-			if (dest) dest.location = state.dest_location;
 
-			var e = {type: "travel-time", origin: origin, dest: dest};
-			if (state && dest) {
-				e.time = travelTime(dest);
-				if (state.origin_location && state.dest_location) {
-					try {
-						var coords = [state.origin_location, state.dest_location],
-                            xmin = min(coords, prop("lon").get),
-                            xmax = max(coords, prop("lon").get),
-                            ymin = min(coords, prop("lat").get),
-                            ymax = max(coords, prop("lat").get);
-						e.extent = [{lon: xmin, lat: ymin}, {lon: xmax, lat: ymax}];
-					} catch (err) {
-						// console.log("ERROR calculating extent:", err);
-					}
-				}
-			}
+			var e = {type: "travel-time", origin: origin};
 			controller.dispatch(e);
 		}
 		
@@ -549,41 +529,9 @@ function location2taz(loc, options) {
 			return false;
 		}
 
-		function lookupDest(loc, success, failure) {
-			dispatchStdout("loading", "Looking up &ldquo;" + loc + "&rdquo;...");
-			hashState['dest']=loc
-			updateMapHrefs(hashState);
-			
-			state.dest = loc;
-			state.dest_location = null;
-			updateMarkers();
-			return lookupTAZ(loc, function(taz, latlon) {
-				dispatchStdout("loaded", "Found dest. TAZ: " + taz);
-				state.dest_location = latlon;
-				updateMarkers();
-				applyDest(taz);
-				controller.dispatch({
-					type: "locate-dest", 
-					location: latlon,
-					taz: taz,
-					feature: featuresById[taz]
-				});
-				if (success) success.call(null, latlon, taz, featuresById[taz]);
-			}, function(req, error, message) {
-				dispatchStdout("error", "ERROR: " + message);
-				if (failure) failure.call(null, error);
-			});
-		}
-
-		function applyDest(taz) {
-			state.dest_taz = taz;
-			applyStyle();
-			return false;
-		}
-
 		function updateMarkers() {
 			var features = [],
-					origin, dest;
+					origin;
 
 			if (state.origin && state.origin_location) {
 				originMarker.attr("title", "Origin: " + state.origin);
@@ -591,15 +539,6 @@ function location2taz(loc, options) {
 				originMarker.show();
 			} else {
 				originMarker.attr("title", null).data("location", null).hide();
-			}
-
-			if (state.dest && state.dest_location) {
-				destMarker.attr("title", "Origin: " + state.origin);
-				destMarker.data("location", formatLocation(state.dest_location));
-				destMarker.show();
-			} else {
-				destMarker.attr("title", null).data("location", null).hide();
-				destMarker.hide();
 			}
 
 			if (typeof map.updateMarkers == "function") {
@@ -622,10 +561,9 @@ function location2taz(loc, options) {
 		// get/set the container element
 		controller.container = function(x) {
 			if (arguments.length) {
-				originMarker = destMarker = null;
+				originMarker = null;
 				container = x;
 				originMarker = container.find("#origin-marker");
-				destMarker = container.find("#dest-marker");
 				return controller;
 			}
 		};
@@ -845,36 +783,6 @@ function location2taz(loc, options) {
 			return loc;
 		}
 
-		// get/set the destination string (asynchronous)
-		controller.dest = function(loc, latlon, success, failure) {
-			if (arguments.length) {
-				if (latlon) {
-					var taz = getTAZ(loc);
-					hashState['dest']=formatLocation(latlon);
-					updateMapHrefs(hashState);
-					state.dest = state.dest_taz = taz;
-					state.dest_location = latlon;
-					updateMarkers();
-					applyStyle();
-					return controller;
-				}
-
-				state.dest_taz = null;
-				if (loc) {
-					lookupDest(loc, success, failure);
-				} else {
-					state.dest = state.dest_location = null;
-					updateMarkers();
-					applyStyle();
-					dispatchStdout("", "Cleared destination");
-					if (success) success.call();
-				}
-				return controller;
-			} else {
-				return state.origin;
-			}
-		};
-
 		return controller;
 	};
 
@@ -1005,9 +913,6 @@ $(function() {
 				console.log("ERROR:", e);
 			}
 			var loc = formatLocation(e.location);
-			inputs.dest.val(loc);
-		} else {
-			// controller.dest("TAZ:" + e.id);
 		}
 		return true;
 	});
@@ -1015,8 +920,6 @@ $(function() {
 		if (!_initalMapLocation) {
 			map.center(e.location);
 		}
-	});
-	controller.on("locate-dest", function(e) {
 	});
 	
 	var maxPrice, minPrice;
@@ -1109,33 +1012,12 @@ $(function() {
 
 	controller.on("travel-time", function(e) {
 		var origin = e.origin,
-				dest = e.dest,
 				time = e.time;
 
 		var title = $("#map-title .title"),
 			prefix = title.find(".prefix");
 
-		if (origin && dest) {
-
-			prefix.html('Travel time from <a name="origin" class="marker">' +
-				$("#origin-marker").html() + '</a> to <a name="dest" class="marker">' +
-				$("#dest-marker").html() + '</a>:');
-			if (time != NIL) {
-				updateTimeText(time);
-			} else {
-				updateTimeText("(unknown)");
-			}
-			if (e.extent) {
-				// TODO
-				// map.extent(e.extent);
-				// map.zoom(map.zoom() >>> 0);
-			}
-			showMax = showPrice = false;
-			$(".slider-container").removeClass("inactive");
-			adjustHousingTicks()
-			page.removeClass("no_origin").addClass("has_origin").addClass("has_dest");
-
-		} else if (origin) {
+		if (origin) {
 			/*
 			prefix.html('Bay Area places <span class="housing_threshold"></span>' +
 				' accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a>' +
@@ -1175,7 +1057,6 @@ $(function() {
 		}
 
 		if (origin) prefix.find("a[name=origin]").attr("href", "#" + formatZYX(map.zoom(), origin.location));
-		if (dest) prefix.find("a[name=dest]").attr("href", "#" + formatZYX(map.zoom(), dest.location));
 	});
 
 	var inputs = {},
@@ -1217,7 +1098,7 @@ $(function() {
 		return false;
 	});
 
-	form.find("input[name=clear-origin], input[name=clear-dest]").click(function(e) {
+	form.find("input[name=clear-origin]").click(function(e) {
 		var name = this.name.split("-")[1];
 		if (inputs[name]) inputs[name].val("");
 		if (submits[name]) submits[name].click();
@@ -1225,40 +1106,11 @@ $(function() {
 		return false;
 	});
 
-	// lookup destination in <input name="dest"/>
-	// this keydown handler clicks the related submit input when the user hits
-	// enter, and clears the input on escape
-	inputs.dest = form.find("input[name=dest]").keydown(function(e) {
-		if (e.keyCode == 13 || e.keyCode == 27) {
-			if (e.keyCode == 27) inputs.dest.val("").blur();
-			submits.dest.click();
-			e.preventDefault();
-			return false;
-		}
-	});
-	if (inputs.dest.length) {
-		// submit the destination on <input name="submit-dest"/> click
-		submits.dest = form.find("input[name=submit-dest]").click(function() {
-			var submit = $(this),
-					label = submit.val();
-			submit.val("Locating...").attr("disabled", true);
-			function revert() {
-				submit.val(label).attr("disabled", false);
-			}
-			controller.dest(inputs.dest.val(), null, revert, revert);
-			return false;
-		});
-	}
-	
-	
 	// submit the origin if there is one
 	if (inputs.origin.val()) {
 		submits.origin.click();
 	} else {
 		inputs.origin.focus();
-	}
-	if (inputs.dest.length && inputs.dest.val()) {
-		submits.dest.click();
 	}
 
 	controller.filters([
