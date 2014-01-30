@@ -1249,7 +1249,7 @@ $(function() {
 			var housingticks = $("#housing-slider-container #ticks"),
 			last = house_bounds.length-1;
 				
-			for (var i = 0; i <= last; i++) {
+			for (var i = 1; i <= last; i++) {
 				var current = house_bounds[i];
 				var label = $("<a/>")
 					.text("$"+house_labels[i])
