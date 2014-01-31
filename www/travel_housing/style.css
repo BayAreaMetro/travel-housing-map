@@ -123,6 +123,33 @@ img {
 	*display: inline;
 }
 
+#info #scenario-options a {
+	display: inline-block;
+	width: 40px;
+	background-color: #000;
+	text-align: center;
+	*display: inline;
+	position: relative;
+	color: #fff;
+	text-decoration: none;
+	padding-top: 4px;
+	padding-bottom: 4px;
+  padding-right: 10px;
+  padding-left: 10px;
+  font-size: 80%;
+}
+
+#info #scenario-options a:hover {
+	background-color: #555;
+}
+#info #scenario-options a.selected {
+	background-color: #009ddc;
+}
+
+#scenario-options {
+  padding-left: 65px;
+}
+
 #info #travel-options img {
 	vertical-align: middle;
 }
@@ -592,7 +619,6 @@ image{pointer-events:none;}
 padding:.25em 0 5px;background:white url("../style/images/tickmark.png") no-repeat 50% 100%;font-size:12px;text-decoration:none;color:black;font-weight:600;}
 #time-slider-container #ticks .tick{margin-left:-1em !important;}
 #housing-slider-container #ticks .firsttick{margin-left:-2em !important;}
-#scenario-slider-container label{margin-left: 1.6em}
 
 #slider_info_box{display:none;position:absolute;z-index:10001;background:#000;width:200px;height:100px;color:white;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-moz-box-shadow:0 0 2px #333;-webkit-box-shadow:0 0 2px #333;box-shadow:0 0 2px #333;}
 .infonub{height:0;width:0;position:absolute;border-left:20px solid transparent;border-right:20px solid transparent;border-top:10px solid black;border-bottom:0;left:40%;bottom:-10px;}
