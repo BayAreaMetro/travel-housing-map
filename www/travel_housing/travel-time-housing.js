@@ -703,6 +703,8 @@ function location2taz(loc, options) {
         if (state.origin_taz) {
           loadScenario();
         }
+      } else {
+        return state.scenario;
       }
     };
 
@@ -958,10 +960,6 @@ $(function() {
 	var maxTime = (hashState['max_time']) ? parseInt(hashState['max_time']) : 60;
 	if (isNaN(maxTime)) maxTime = 60;
 
-  if(hashState['scenario']) {
-    controller.scenario(parseInt(hashState['scenario']))
-  }
-	
 	var showMax = true;
 	function updateTimeText(t) {
 		if (time_slider_active) {
@@ -1069,6 +1067,10 @@ $(function() {
 	// update time on <select name="time"/> change
 	inputs.time = form.find("input[name=time]").change(function() {
 		controller.time($(this).val());
+	}).change();
+  // update scenario on select name="scenario"/> change
+	inputs.scenario = form.find("input[name=scenario]").change(function() {
+		controller.scenario($(this).val());
 	}).change();
 
 	// lookup origin in <input name="origin"/>
@@ -1307,44 +1309,6 @@ $(function() {
 	// if the min/max are already set, then create housing slider
 	if(controller.priceRange.minPrice)
 		createHousingSlider();
-	
-  // create the scenario slider
-	var scenario_scale = pv.Scale.linear()
-		.domain(2010,2020,2030,2040)
-		.range(0.0, 0.333, .667, 1.0);
-
-	var scenarioSlider = $("#scenario-slider").slider({
-		slide: function(e, ui) {
-      controller.scenario(ui.value);
-		},
-		range: false,
-		min: 2010,
-		max: 2040,
-		step: 10,
-		value: parseInt(hashState['scenario']) || 2010
-	});
-
-  var scenarioTicks = $("#scenario-slider-container #ticks");
-  var years = [2010,2020,2030,2040];
-	for (var i = 0; i < years.length; i++) {
-		var current = years[i];
-		var label = $("<a/>")
-			.text(years[i])
-			.attr("href", "#")
-			.attr("class", "tick")
-			.css("left", scenario_scale(current) * 100 + "%")
-      .css("width", "35px")
-			.css('margin-left', '-17px')
-      .data("year", current)
-			.appendTo(scenarioTicks);
-	}
-
-	scenarioTicks.find("a").click(function(e) {
-		e.preventDefault();
-		var t = $(this).data("year");
-		scenarioSlider.slider("option", "value", t);
-    controller.scenario(t);
-	});
 
 	$(".select-center").click(selectCenter);
 
@@ -1370,6 +1334,21 @@ $(function() {
 		 });
 	setMode(controller.mode());
 
+	function setScenario(scenario) {
+		controller.scenario(scenario);
+		scenarioLinks.attr("class", function() {
+			return $(this).data("scenario") == scenario ? "selected" : "";
+		});
+	}
+
+	var scenarioLinks = $("#scenario-options a")
+		 .click(function() {
+			 var scenario = $(this).data("scenario");
+       setScenario(scenario);
+			 return false;
+		 });
+
+  setScenario(controller.scenario());
 
 	function setTime(time) {
 		controller.time(time);
@@ -1431,25 +1410,6 @@ $(function() {
 			var pos = $(this).parent().offset();
 			var _width = $(this).parent().width();
 			var _buttonWidth = $(this).width();	
-			var _leftPos = _width - ( (_boxWidth * .5) + ((_buttonWidth * .5) + 15) );
-
-			$("#sliderinfo").html($(this).parents(".slider-container").find("p.info").html());
-			_infobox.css("top",pos.top-(_boxHeight+20)).css("left",_leftPos).show();
-		}else{
-			closeallInfoBoxes();
-		}
-	});
-
-	$("#scenario-slider-container .slider-info-button").click(function(){
-		var _infobox = $("#slider_info_box");
-		if(_infoSelected != "scenario"){
-			closeallInfoBoxes();
-			_infoSelected = "scenario";
-			var _boxWidth = _infobox.width();
-			var _boxHeight = _infobox.height();
-			var pos = $(this).parent().offset();
-			var _width = $(this).parent().width();
-			var _buttonWidth = $(this).width();
 			var _leftPos = _width - ( (_boxWidth * .5) + ((_buttonWidth * .5) + 15) );
 
 			$("#sliderinfo").html($(this).parents(".slider-container").find("p.info").html());
