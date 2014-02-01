@@ -125,7 +125,7 @@ img {
 
 #info #scenario-options a {
 	display: inline-block;
-	width: 40px;
+	width: 81px;
 	background-color: #000;
 	text-align: center;
 	*display: inline;
@@ -134,8 +134,6 @@ img {
 	text-decoration: none;
 	padding-top: 4px;
 	padding-bottom: 4px;
-  padding-right: 10px;
-  padding-left: 10px;
   font-size: 80%;
 }
 
@@ -147,7 +145,7 @@ img {
 }
 
 #scenario-options {
-  padding-left: 5.3em;
+  padding-left: 5.2em;
 }
 
 #info #travel-options img {
