@@ -1,3 +1,4 @@
 .*.sw?
 .DS_Store
 .s3cfg
+www/data
