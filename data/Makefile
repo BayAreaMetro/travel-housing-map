@@ -30,7 +30,7 @@ output-html: output
 
 # Merge fields from buildings_min.csv into the TAZ boundaries GeoJSON
 output/areas/taz1454.json: input/taz1454.json input/home-prices.csv output/areas
-	python merge_taz.py input/home-prices.csv $< > $@
+	python merge_taz.py input/home-prices.csv input/home-counts.csv input/taz1454.json > $@
 
 # TODO: generate separate files for clipped urban areas!
 output/areas/taz1454-clipurb.json: output/areas/taz1454.json
