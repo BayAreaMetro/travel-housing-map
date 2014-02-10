@@ -79,6 +79,7 @@ function location2taz(loc, options) {
 				geocoder,
 				// The TAZ GeoJSON layer
 				shapes, filters,
+        aggFunction,
 				originMarker;
 		
 		var priceRange = {},
@@ -132,16 +133,20 @@ function location2taz(loc, options) {
 			return feature.properties["price_" + state.scenario] || NIL;
 		}
 
-        function hasHousingPrice(feature) {
-            return housingPrice(feature) > 0;
-        }
+    function hasHousingPrice(feature) {
+        return housingPrice(feature) > 0;
+    }
+
+    function housingUnits(feature) {
+      return feature.properties["units_" + state.scenario] || NIL;
+    }
 		
 		// determine if a feature is selected (the origin TAZ)
 		function selected(feature) {
 			return feature.id == state.origin_taz;
 		}
 
-		// get the "default" color of a feature (this
+		// get the "default" color of a feature
 		function defaultColor(feature) {
 			return selected(feature) ? BLUE : "none";
 		}
@@ -612,6 +617,23 @@ function location2taz(loc, options) {
 			}
 		};
 
+    controller.aggFunction = function(x) {
+      if (arguments.length) {
+        aggFunction = x;
+        return controller;
+      } else {
+        return aggFunction;
+      }
+    }
+
+    controller.aggregate = function() {
+      var agg = 0;
+      for(var id in featuresById) {
+        agg = agg + aggFunction(featuresById[id]);
+      }
+      return agg;
+    }
+
 		controller.updateFilters = function() {
 			shapes.off("show", onShapesShow);
 			var display = po.stylist().attr("display", displayFilter);
@@ -636,6 +658,7 @@ function location2taz(loc, options) {
 
 		// export this for use outside
 		controller.housingPrice = housingPrice;
+    controller.housingUnits = housingUnits;
 		controller.travelTime = travelTime;
 		controller.priceRange = priceRange;
 
@@ -993,9 +1016,15 @@ $(function() {
 		if (housing_slider_active) {
 			var maxpriceAdj = (controller.priceRange.maxPrice && maxPrice >= house_boundMax) ? "2m+" : convertCurrency(maxPrice);
 
+      var housing_count = controller.aggregate();
+
+      function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
 			$(".housing_threshold").html("with home prices between "
 				+ "<strong>$" + convertCurrency(minPrice) + " and "
-				+ "$" + maxpriceAdj + "</strong>")
+				+ "$" + maxpriceAdj + "</strong>" + " (" + numberWithCommas(housing_count) + " units)")
 				.show();
 		} else {
 			$(".housing_threshold").empty().hide();
@@ -1016,13 +1045,6 @@ $(function() {
 			prefix = title.find(".prefix");
 
 		if (origin) {
-			/*
-			prefix.html('Bay Area places <span class="housing_threshold"></span>' +
-				' accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a>' +
-				' <span class="mode_text"></span> <span class="travel_time_threshold"></span>' + 
-				' <span class="time_text"></span>');
-			*/
-
 			prefix.html(
 				'Blue indicates Bay Area places accessible from <a name="origin" class="marker">' + $("#origin-marker").html() + '</a> <span class="mode_text"></span>' 
 				+ ' <span class="travel_time_threshold"></span> <span class="time_text"></span>' + ' <span class="housing_threshold"></span>'
@@ -1129,12 +1151,27 @@ $(function() {
 		}
 	]);
 
+  controller.aggFunction(
+		function(feature) {
+			if (time_slider_active) {
+				var time = controller.travelTime(feature);
+				if (time == NIL || time > maxTime) return 0;
+			}
+			if (housing_slider_active) {
+				var price = controller.housingPrice(feature);
+				if (price < minPrice || price > maxPrice) return 0;
+			}
+			return controller.housingUnits(feature);
+		}
+  )
+
 	// defer calling updateFilters() for 10ms each time
 	var deferredUpdate = defer(10, controller.updateFilters);
 	function setMaxTime(t) {
 		if (maxTime != t) {
 			maxTime = t;
 			if (showMax) updateTimeText(t);
+      updatePriceText();
 			deferredUpdate();
 			hashState['max_time'] = t;
 			updateMapHrefs(hashState);
