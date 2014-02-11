@@ -382,11 +382,12 @@ function location2taz(loc, options) {
 		
 		function onShapesLoad(e) {
 			// reset price ranges
-			priceRange.minPrice = Infinity;
+      // hardcode the minimum to be uniform across scenarios.
+			priceRange.minPrice = 90000;
 			priceRange.maxPrice = 0;
 			
 			var features = e.features,
-                len = features.length;
+          len = features.length;
 			for (var i = 0; i < len; i++) {
 				var feature = e.features[i].data;
 				feature.id = tazID(feature);
@@ -396,9 +397,8 @@ function location2taz(loc, options) {
 					el.parentNode.appendChild(el);
 				}
 				
-                var price = housingPrice(feature);
+        var price = housingPrice(feature);
 				if (price > NIL) {
-					if (price < priceRange.minPrice) priceRange.minPrice = price;
 					if (price > priceRange.maxPrice) priceRange.maxPrice = price;
 				}
 			}
