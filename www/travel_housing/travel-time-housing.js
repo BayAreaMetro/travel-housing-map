@@ -1024,7 +1024,7 @@ $(function() {
 
 			$(".housing_threshold").html("with home prices between "
 				+ "<strong>$" + convertCurrency(minPrice) + " and "
-				+ "$" + maxpriceAdj + "</strong>" + " (" + numberWithCommas(housing_count) + " units)")
+				+ "$" + maxpriceAdj + " (" + numberWithCommas(housing_count) + " units)</strong>")
 				.show();
 		} else {
 			$(".housing_threshold").empty().hide();
