@@ -1244,8 +1244,6 @@ $(function() {
 	// show title now that bottom bar is rendered
 	$('#map-title .title').show();
 
-
-	
 	// create the housing slider
 	// need to defer to after shapes have been loaded
 	var housing_slider = null;
@@ -1274,7 +1272,6 @@ $(function() {
 					setHousingPrice([house_scale.invert(ui.values[0]),house_scale.invert(ui.values[1])]);
 				},
 				range: true,
-				disabled: !housing_slider_enabled,
 				min: house_scale(house_boundMin),
 				max: house_scale(house_boundMax),
 				step: .01,
