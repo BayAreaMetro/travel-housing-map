@@ -1,5 +1,18 @@
 # MTC Travel Time Maps
 
+## Overview
+
+There's three major components to the MTC travel time application:
+
+1. JavaScript front-end (currently hosted on Amazon S3), found in `/www`
+2. Scripts to process raw MTC transit data and create CSVs, found in `/data`. See `/data/README.md`
+3. The TAZ API, outlined below.
+
+To run the front end locally I'd recommend using the built in Python HTTP server:
+
+`python -m SimpleHTTPServer 8000 .`
+
+
 ## TAZ API
 The map needs a way to know which TAZ (Transportation Analysis Zone) a given geographic point (latitude, longitude) belongs to. We're using Code for America's [US Census Area API](https://github.com/codeforamerica/US-Census-Area-API) for this, running at [mtc-taz-api.herokuapp.com](http://mtc-taz-api.herokuapp.com/) (try the [sample request](http://mtc-taz-api.herokuapp.com/areas?lat=37.7571&lon=-122.4410)).
 
