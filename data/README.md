@@ -1,5 +1,15 @@
 # Data Pipeline
 
+## Prerequisites
+
+The data generation steps have been tested on Mac OS X and should work on Linux as well. You will need `GDAL/OGR` for the `ogr2ogr` conversion utility. The easiest way to install this on Macintosh is with [Homebrew](http://brew.sh/)
+
+Once you have Homebrew installed, installing `GDAL/OGR`:
+
+    brew install gdal
+
+For more in depth information see [Installing Open Source Geo Software](https://github.com/nvkelso/geo-how-to/wiki/Installing-Open-Source-Geo-Software:-Mac-Edition#wiki-gdalogr)
+
 ## Downloading MTC data
 
 In each of the directories under `input/scenarios` that are `2020` or above, you must navigate to the URL specified
