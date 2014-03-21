@@ -29,9 +29,9 @@ mapping = {
   "units_2030": "units30",
   "units_2040": "units40",
   "price_2010": "allprice10",
-  "price_2020": "allprice20np",
-  "price_2030": "allprice30np",
-  "price_2040": "allprice40np"
+  "price_2020": "allprice20",
+  "price_2030": "allprice30",
+  "price_2040": "allprice40"
 }
 
 # create a dictionary of all TAZ zones
