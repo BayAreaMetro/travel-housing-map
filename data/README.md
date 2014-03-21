@@ -38,9 +38,16 @@ output/scenarios/{name}/time/EV/to/{1-1454}.csv
 
 ## Generate GeoJSON data files
 
-Whenever we receive new housing price data we'll need to update the TAZ GeoJSON file to include them. That work happens in [merge_taz.py](merge_taz.py), but to run it with the right inputs just do:
+Whenever we receive new housing price data we'll need to update the TAZ GeoJSON file to include them. 
+
+The housing price and count data is committed at `data/input/hp_adj6_proj_allunits.csv`.
+
+If you change this file name, you will need to edit the `Makefile` under the task `output/areas/taz1454.json`.
+
+To regenerate the taz1454.json file with new data, just do:
 
 ```sh
+rm output/areas/taz1454.json
 make output/areas/taz1454.json
 ```
 
