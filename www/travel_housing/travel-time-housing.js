@@ -383,7 +383,7 @@ function location2taz(loc, options) {
 		function onShapesLoad(e) {
 			// reset price ranges
       // hardcode the minimum to be uniform across scenarios.
-			priceRange.minPrice = 0;
+			priceRange.minPrice = 90000;
 			priceRange.maxPrice = 0;
 			
 			var features = e.features,
@@ -951,11 +951,11 @@ $(function() {
 	
 	// housing scale and labels
 	// hard coded
-	var house_labels = ["0","1.5m","3m","4.5m","6m"];
+	var house_labels = ["90k","800k","2m","3.25m","4.25m","5m+"];
 	//.range(0, .125, .25, .5, .75, 1),
 	var house_scale = pv.Scale.linear()
-		.domain(0,1500000, 3000000, 4500000, 6000000)
-		.range(0,0.25,0.5,0.75,1),
+		.domain(50000,792500, 2030000, 3267500, 4257500, 5000000)
+		.range(0,0.15,0.4,0.65,0.85,1),
 			house_bounds = house_scale.domain(),
 			house_boundMin = house_bounds[0],
 			house_boundMax = house_bounds[house_bounds.length - 1];
@@ -1014,7 +1014,7 @@ $(function() {
 	
 	function updatePriceText() {
 		if (housing_slider_active) {
-			var maxpriceAdj = (controller.priceRange.maxPrice && maxPrice >= house_boundMax) ? "6m+" : convertCurrency(maxPrice);
+			var maxpriceAdj = (controller.priceRange.maxPrice && maxPrice >= house_boundMax) ? "5m+" : convertCurrency(maxPrice);
 
       var housing_count = controller.aggregate();
 
@@ -1248,7 +1248,7 @@ $(function() {
 	// need to defer to after shapes have been loaded
 	var housing_slider = null;
 	function createHousingSlider(){
-		controller.priceRange.maxPrice = 6000000;
+		controller.priceRange.maxPrice = 5000000;
 		minPrice = convertMinPrice(controller.priceRange.minPrice);
 		maxPrice = convertMaxPrice(controller.priceRange.maxPrice);
 		
