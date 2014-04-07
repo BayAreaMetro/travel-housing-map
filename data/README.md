@@ -12,8 +12,7 @@ For more in depth information see [Installing Open Source Geo Software](https://
 
 ## Downloading MTC data
 
-In each of the directories under `input/scenarios` that are `2020` or above, you must navigate to the URL specified
-in the `Makefile` and download the file SimpleTimeSkims.zip from that site. Name this file `skims.zip` in the same directory as the `Makefile`. (This is necessary because there are no longer direct download links.)
+In each of the directories under `input/scenarios`, a `Makefile` contains the URL of the specific simulation used for scenario.
 
 ## Publishing Scenarios
 
