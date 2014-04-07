@@ -1248,7 +1248,6 @@ $(function() {
 	// need to defer to after shapes have been loaded
 	var housing_slider = null;
 	function createHousingSlider(){
-		controller.priceRange.maxPrice = 2000000;
 		minPrice = convertMinPrice(controller.priceRange.minPrice);
 		maxPrice = convertMaxPrice(controller.priceRange.maxPrice);
 		
