@@ -951,11 +951,11 @@ $(function() {
 	
 	// housing scale and labels
 	// hard coded
-	var house_labels = ["90k","800k","2m","3.25m","4.25m","5m+"];
+	var house_labels = ["90k","250k","500k","1m","1.5m","2m+"];
 	//.range(0, .125, .25, .5, .75, 1),
 	var house_scale = pv.Scale.linear()
-		.domain(50000,792500, 2030000, 3267500, 4257500, 5000000)
-		.range(0,0.15,0.4,0.65,0.85,1),
+		.domain(90000,250000,500000,1000000,1500000,2000000)
+		.range(0, .15, .4, .65, .85, 1),
 			house_bounds = house_scale.domain(),
 			house_boundMin = house_bounds[0],
 			house_boundMax = house_bounds[house_bounds.length - 1];
@@ -1014,7 +1014,7 @@ $(function() {
 	
 	function updatePriceText() {
 		if (housing_slider_active) {
-			var maxpriceAdj = (controller.priceRange.maxPrice && maxPrice >= house_boundMax) ? "5m+" : convertCurrency(maxPrice);
+			var maxpriceAdj = (controller.priceRange.maxPrice && maxPrice >= house_boundMax) ? "2m+" : convertCurrency(maxPrice);
 
       var housing_count = controller.aggregate();
 
@@ -1248,7 +1248,7 @@ $(function() {
 	// need to defer to after shapes have been loaded
 	var housing_slider = null;
 	function createHousingSlider(){
-		controller.priceRange.maxPrice = 5000000;
+		controller.priceRange.maxPrice = 2000000;
 		minPrice = convertMinPrice(controller.priceRange.minPrice);
 		maxPrice = convertMaxPrice(controller.priceRange.maxPrice);
 		
