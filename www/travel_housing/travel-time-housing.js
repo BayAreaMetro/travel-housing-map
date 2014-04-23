@@ -872,9 +872,7 @@ $(function() {
     if (location.hash) {
         $(window).trigger('hashchange');
     } else {
-        controller
-            .mode("bike")
-            .origin("2017 Mission St, SF");
+        controller.origin("375 Beale St, SF, CA");
     }
 	
 

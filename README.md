@@ -29,8 +29,10 @@ $ git config heroku.remote heroku
 
 # 3. use CfA's pygeo buildpack
 $ heroku config:set BUILDPACK_URL=https://github.com/codeforamerica/heroku-buildpack-pygeo
+
 # 4. point it at our TAZ Shapefile zip
 $ heroku config:set ZIPPED_DATA_URL=http://maps.onebayarea.org/data/areas/taz1454_4326.zip
+
 # 5. use the user-env-compile addon
 $ heroku labs:enable user-env-compile
 
