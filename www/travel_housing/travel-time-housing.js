@@ -1449,6 +1449,25 @@ $(function() {
 			closeallInfoBoxes();
 		}
 	});
+	
+	$("#scenario-slider-container .slider-info-button").click(function(){
+		var _infobox = $("#slider_info_box");
+		if(_infoSelected != "scenario"){
+			closeallInfoBoxes();
+			_infoSelected = "scenario";
+			var _boxWidth = _infobox.width();
+			var _boxHeight = _infobox.height();
+			var pos = $(this).parent().offset();
+			var _width = $(this).parent().width();
+			var _buttonWidth = $(this).width();	
+			var _leftPos = _width - ( (_boxWidth * .5) + ((_buttonWidth * .5) + 15) );
+
+			$("#sliderinfo").html($(this).parents(".slider-container").find("p.info").html());
+			_infobox.css("top",pos.top-(_boxHeight+20)).css("left",_leftPos).show();
+		}else{
+			closeallInfoBoxes();
+		}
+	});
 
 	$(".closeinfobutton").click(function(){
 		closeallInfoBoxes();
